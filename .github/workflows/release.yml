@@ -74,5 +74,3 @@ jobs:
           files: release-assets/*.apk
           body_path: RELEASE_NOTES.md
           fail_on_unmatched_files: true
-          draft: false
-          prerelease: false
