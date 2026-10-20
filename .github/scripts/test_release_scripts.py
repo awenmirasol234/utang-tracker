@@ -13,14 +13,14 @@ def main():
     test_dir = Path(tempfile.mkdtemp())
     try:
         def generate_notes(fixture, output_dir):
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            output_dir.mkdir(parents=True, exist_ok=True)
             env = os.environ.copy()
             env["TAG_NAME"] = "v1.0.35"
             env["RELEASE_NOTES_JSON"] = str(fixture)
             script = repo_root / ".github" / "scripts" / "generate_release_notes.py"
             result = subprocess.run(
                 [sys.executable, str(script)],
-                cwd=str(output_dir),
+                cwd=output_dir,
                 env=env,
                 capture_output=True,
                 text=True,
@@ -31,14 +31,14 @@ def main():
                 sys.exit(result.returncode)
 
         def assert_contains(expected, file_path):
-            content = Path(file_path).read_text(encoding="utf-8")
+            content = file_path.read_text(encoding="utf-8")
             if expected not in content:
                 print(f"Expected '{expected}' not found in {file_path}")
                 print(f"Content was:\n{content}")
                 sys.exit(1)
 
         def assert_no_category_headings(file_path):
-            content = Path(file_path).read_text(encoding="utf-8")
+            content = file_path.read_text(encoding="utf-8")
             if re.search(r"^## (Added|Changed|Fixed)$", content, re.MULTILINE):
                 print(f"Empty release note categories were rendered in {file_path}.")
                 sys.exit(1)
@@ -50,10 +50,10 @@ def main():
         )
         generate_notes(mixed_json, test_dir / "mixed")
         mixed_output = test_dir / "mixed" / "RELEASE_NOTES.md"
-        assert_contains("Release date: 2026-08-05", str(mixed_output))
-        assert_contains("## Added", str(mixed_output))
-        assert_contains("## Changed", str(mixed_output))
-        assert_contains("## Fixed", str(mixed_output))
+        assert_contains("Release date: 2026-08-05", mixed_output)
+        assert_contains("## Added", mixed_output)
+        assert_contains("## Changed", mixed_output)
+        assert_contains("## Fixed", mixed_output)
         changed_json = test_dir / "changed.json"
         changed_json.write_text(
             '{"version":"1.0.35","date":"2026-08-05","notes":{"added":[],"changed":["Changed item"],"fixed":[]}}',
@@ -61,7 +61,7 @@ def main():
         )
         generate_notes(changed_json, test_dir / "changed")
         changed_output = test_dir / "changed" / "RELEASE_NOTES.md"
-        assert_contains("## Changed", str(changed_output))
+        assert_contains("## Changed", changed_output)
         changed_content = Path(changed_output).read_text(encoding="utf-8")
         if re.search(r"^## (Added|Fixed)$", changed_content, re.MULTILINE):
             print(f"Empty Added or Fixed category was rendered in {changed_output}.")
@@ -72,7 +72,7 @@ def main():
             encoding="utf-8",
         )
         generate_notes(empty_json, test_dir / "empty")
-        assert_no_category_headings(str(test_dir / "empty" / "RELEASE_NOTES.md"))
+        assert_no_category_headings(test_dir / "empty" / "RELEASE_NOTES.md")
         print("Release script tests passed.")
     finally:
         shutil.rmtree(str(test_dir), ignore_errors=True)

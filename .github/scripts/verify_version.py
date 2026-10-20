@@ -3,8 +3,14 @@ import json
 import re
 import sys
 import os
-from pathlib import Path
 from datetime import datetime
+
+def load_release_notes(path):
+    try:
+        with open(path, "r", encoding="utf-8-sig") as file:
+            return json.load(file)
+    except Exception:
+        return None
 
 def main():
     tag_name = os.environ.get("TAG_NAME", "")
@@ -21,20 +27,13 @@ def main():
                     break
     except FileNotFoundError:
         pass
+    release_notes = load_release_notes(release_notes_json)
     notes_version = ""
-    try:
-        with open(release_notes_json, "r", encoding="utf-8-sig") as f:
-            data_preview = json.load(f)
-            notes_version = str(data_preview.get("version", ""))
-    except Exception:
-        pass
+    if isinstance(release_notes, dict):
+        notes_version = str(release_notes.get("version", ""))
 
     def validate_release_notes_schema():
-        try:
-            with open(release_notes_json, "r", encoding="utf-8-sig") as f:
-                data = json.load(f)
-        except Exception:
-            return False
+        data = release_notes
         if not isinstance(data, dict):
             return False
         if not isinstance(data.get("version"), str):
@@ -53,12 +52,10 @@ def main():
         return True
 
     def validate_release_date():
-        try:
-            with open(release_notes_json, "r", encoding="utf-8-sig") as f:
-                data = json.load(f)
-            notes_date = str(data.get("date", ""))
-        except Exception:
+        data = release_notes
+        if not isinstance(data, dict):
             return False
+        notes_date = str(data.get("date", ""))
         if not re.match(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$", notes_date):
             return False
         try:
