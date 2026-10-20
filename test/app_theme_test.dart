@@ -151,4 +151,75 @@ void main() {
       );
     }
   });
+
+  test('buttons settle lower when pressed than when resting', () {
+    final theme = AppTheme.light();
+    final buttonStyles = <String, ButtonStyle?>{
+      'elevated': theme.elevatedButtonTheme.style,
+      'filled': theme.filledButtonTheme.style,
+      'outlined': theme.outlinedButtonTheme.style,
+      'text': theme.textButtonTheme.style,
+      'icon': theme.iconButtonTheme.style,
+    };
+
+    for (final entry in buttonStyles.entries) {
+      final restingElevation = entry.value?.elevation?.resolve(<WidgetState>{});
+      final pressedElevation = entry.value?.elevation?.resolve(
+        <WidgetState>{WidgetState.pressed},
+      );
+      final hoveredElevation = entry.value?.elevation?.resolve(
+        <WidgetState>{WidgetState.hovered},
+      );
+      final focusedElevation = entry.value?.elevation?.resolve(
+        <WidgetState>{WidgetState.focused},
+      );
+      final disabledElevation = entry.value?.elevation?.resolve(
+        <WidgetState>{WidgetState.disabled},
+      );
+
+      expect(
+        restingElevation,
+        isNotNull,
+        reason: '${entry.key} buttons need a resting elevation.',
+      );
+      expect(
+        pressedElevation,
+        isNotNull,
+        reason: '${entry.key} buttons need a pressed elevation.',
+      );
+      expect(
+        hoveredElevation,
+        isNotNull,
+        reason: '${entry.key} buttons need a hovered elevation.',
+      );
+      expect(
+        focusedElevation,
+        isNotNull,
+        reason: '${entry.key} buttons need a focused elevation.',
+      );
+      expect(
+        disabledElevation,
+        isNotNull,
+        reason: '${entry.key} buttons need a disabled elevation.',
+      );
+      if (restingElevation == null ||
+          pressedElevation == null ||
+          hoveredElevation == null ||
+          focusedElevation == null) {
+        continue;
+      }
+      expect(
+        restingElevation,
+        greaterThan(pressedElevation),
+        reason: '${entry.key} buttons should feel pressed down.',
+      );
+      expect(hoveredElevation, greaterThan(restingElevation));
+      expect(focusedElevation, greaterThan(restingElevation));
+      expect(pressedElevation, 0);
+      expect(disabledElevation, 0);
+    }
+
+    expect(theme.floatingActionButtonTheme.elevation, greaterThan(0));
+    expect(theme.floatingActionButtonTheme.highlightElevation, lessThan(1));
+  });
 }
