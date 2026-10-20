@@ -23,6 +23,15 @@ const _supportedAbis = ['arm64-v8a', 'armeabi-v7a', 'x86_64'];
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('updater targets the current GitHub repository', () {
+    expect(AppConstants.githubOwner, 'awenmirasol234');
+    expect(AppConstants.githubRepo, 'utang-tracker');
+    expect(
+      AppConstants.githubLatestReleaseUrl,
+      'https://github.com/awenmirasol234/utang-tracker/releases/latest',
+    );
+  });
+
   group('isNewerVersion', () {
     test('patch bump is newer', () {
       expect(isNewerVersion('1.0.0', '1.0.1'), isTrue);
@@ -334,7 +343,8 @@ Release date: 2026-08-10
       addTearDown(() => directory.delete(recursive: true));
       const asset = ReleaseAsset(
         name: 'utang-tracker-universal-v1.1.0.apk',
-        browserDownloadUrl: 'https://example.com/update.apk',
+        browserDownloadUrl:
+            'https://github.com/awenmirasol234/utang-tracker/releases/download/v1.1.0/update.apk',
         sizeBytes: 8,
       );
       final cached = File('${directory.path}/${asset.name}');
@@ -355,6 +365,62 @@ Release date: 2026-08-10
       expect(await File(path).readAsBytes(), validApk);
     },
   );
+
+  group('APK download safety', () {
+    const validUrl =
+        'https://github.com/awenmirasol234/utang-tracker/releases/download/v1.1.0/update.apk';
+
+    test('rejects path separators in the asset filename', () async {
+      final repository = UpdateRepositoryImpl(
+        updateDirectory: () async => Directory.systemTemp,
+      );
+
+      await expectLater(
+        repository.downloadApk(
+          const ReleaseAsset(
+            name: '../update.apk',
+            browserDownloadUrl: validUrl,
+            sizeBytes: 0,
+          ),
+          (_) {},
+        ),
+        throwsA(isA<AppException>()),
+      );
+    });
+
+    test('rejects non-GitHub download URLs', () async {
+      final repository = UpdateRepositoryImpl(
+        updateDirectory: () async => Directory.systemTemp,
+      );
+
+      await expectLater(
+        repository.downloadApk(
+          const ReleaseAsset(
+            name: 'update.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 0,
+          ),
+          (_) {},
+        ),
+        throwsA(isA<AppException>()),
+      );
+    });
+
+    test('times out stalled release requests', () async {
+      final repository = UpdateRepositoryImpl(
+        httpClient: MockClient((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+          return http.Response('{}', 200);
+        }),
+        requestTimeout: const Duration(milliseconds: 1),
+      );
+
+      await expectLater(
+        repository.fetchLatestRelease(),
+        throwsA(isA<AppException>()),
+      );
+    });
+  });
 
   group('install permission round trip', () {
     const channel = MethodChannel(AppConstants.updaterChannel);

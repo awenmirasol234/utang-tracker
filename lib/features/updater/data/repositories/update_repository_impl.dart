@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -15,11 +16,15 @@ const _keyLastCheck = 'updater_last_check_ms';
 const _keyDismissedVersion = 'updater_dismissed_version';
 
 class UpdateRepositoryImpl implements UpdateRepository {
-  UpdateRepositoryImpl({http.Client? httpClient, this.updateDirectory})
-    : _client = httpClient ?? http.Client();
+  UpdateRepositoryImpl({
+    http.Client? httpClient,
+    this.updateDirectory,
+    this.requestTimeout = const Duration(seconds: 15),
+  }) : _client = httpClient ?? http.Client();
 
   final http.Client _client;
   final Future<Directory> Function()? updateDirectory;
+  final Duration requestTimeout;
   static const _channel = MethodChannel(AppConstants.updaterChannel);
 
   @override
@@ -29,7 +34,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
     try {
       final request = http.Request('GET', latestUri);
       request.followRedirects = false;
-      final streamed = await _client.send(request);
+      final streamed = await _client.send(request).timeout(requestTimeout);
       final location = streamed.headers['location'];
       if (streamed.statusCode >= 300 &&
           streamed.statusCode < 400 &&
@@ -53,6 +58,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       }
     } on SocketException {
       throw const AppException('No internet connection.');
+    } on TimeoutException {
+      throw const AppException('Network request timed out.');
     } on http.ClientException catch (clientException) {
       throw AppException('Network error: ${clientException.message}');
     }
@@ -69,12 +76,13 @@ class UpdateRepositoryImpl implements UpdateRepository {
     );
     final http.Response rawResponse;
     try {
-      rawResponse = await _client.get(
-        rawTagUri,
-        headers: {'Accept': 'application/json'},
-      );
+      rawResponse = await _client
+          .get(rawTagUri, headers: {'Accept': 'application/json'})
+          .timeout(requestTimeout);
     } on SocketException {
       throw const AppException('No internet connection.');
+    } on TimeoutException {
+      throw const AppException('Network request timed out.');
     } on http.ClientException catch (clientException) {
       throw AppException('Network error: ${clientException.message}');
     }
@@ -177,12 +185,13 @@ class UpdateRepositoryImpl implements UpdateRepository {
 
     final http.Response response;
     try {
-      response = await _client.get(
-        uri,
-        headers: {'Accept': 'application/json'},
-      );
+      response = await _client
+          .get(uri, headers: {'Accept': 'application/json'})
+          .timeout(requestTimeout);
     } on SocketException {
       throw const AppException('No internet connection.');
+    } on TimeoutException {
+      throw const AppException('Network request timed out.');
     } on http.ClientException catch (clientException) {
       throw AppException('Network error: ${clientException.message}');
     }
@@ -266,6 +275,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
     ReleaseAsset asset,
     void Function(double progress) onProgress,
   ) async {
+    _validateAsset(asset);
     final dir = await _updateDir();
     final file = File('${dir.path}/${asset.name}');
 
@@ -275,16 +285,20 @@ class UpdateRepositoryImpl implements UpdateRepository {
         onProgress(1.0);
         return file.path;
       } on AppException {
-        await Future<void>.value();
+        // Invalid cached APK; download a fresh copy.
       }
     }
 
     final uri = Uri.parse(asset.browserDownloadUrl);
     final http.StreamedResponse response;
     try {
-      response = await _client.send(http.Request('GET', uri));
+      response = await _client
+          .send(http.Request('GET', uri))
+          .timeout(requestTimeout);
     } on SocketException {
       throw const AppException('No internet connection.');
+    } on TimeoutException {
+      throw const AppException('Download timed out.');
     } on http.ClientException catch (clientException) {
       throw AppException('Download failed: ${clientException.message}');
     }
@@ -298,7 +312,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
     final sink = file.openWrite();
 
     try {
-      await for (final chunk in response.stream) {
+      await for (final chunk in response.stream.timeout(requestTimeout)) {
         sink.add(chunk);
         received += chunk.length;
         if (totalBytes > 0) onProgress(received / totalBytes);
@@ -382,6 +396,20 @@ class UpdateRepositoryImpl implements UpdateRepository {
     }
   }
 
+  void _validateAsset(ReleaseAsset asset) {
+    if (!RegExp(r'^[A-Za-z0-9._-]+\.apk$').hasMatch(asset.name)) {
+      throw const AppException('Invalid APK filename.');
+    }
+
+    final uri = Uri.tryParse(asset.browserDownloadUrl);
+    if (uri == null ||
+        uri.scheme != 'https' ||
+        uri.host != 'github.com' ||
+        uri.pathSegments.isEmpty) {
+      throw const AppException('Invalid APK download URL.');
+    }
+  }
+
   @override
   Future<String> getCurrentVersion() async {
     final info = await PackageInfo.fromPlatform();
@@ -412,11 +440,14 @@ class UpdateRepositoryImpl implements UpdateRepository {
   @override
   Future<bool> isAssetAvailable(ReleaseAsset asset) async {
     try {
+      _validateAsset(asset);
       final uri = Uri.parse(asset.browserDownloadUrl);
-      final response = await _client.head(uri);
+      final response = await _client.head(uri).timeout(requestTimeout);
       return response.statusCode == 200 || response.statusCode == 302;
     } on SocketException {
       throw const AppException('No internet connection.');
+    } on TimeoutException {
+      throw const AppException('Network request timed out.');
     } catch (_) {
       return false;
     }

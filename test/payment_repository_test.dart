@@ -245,7 +245,7 @@ void main() {
     expect(await payments.getByDebt(debt.id), isEmpty);
   });
 
-  test('paid history remains visible after customer deletion', () async {
+  test('paid history is hidden after customer deletion', () async {
     final customer = await customers.create(name: 'Archived customer');
     final debt = await debts.create(
       customerId: customer.id,
@@ -268,9 +268,10 @@ void main() {
     await customers.delete(customer.id);
 
     expect(await customers.getById(customer.id), isNull);
-    expect(await debts.getById(debt.id), isNotNull);
+    expect(await debts.getById(debt.id), isNull);
+    expect(await debts.getAll(), isEmpty);
     expect(await payments.getByDebt(debt.id), hasLength(1));
-    expect(await payments.getAll(), hasLength(1));
+    expect(await payments.getAll(), isEmpty);
   });
 
   test('cannot delete customer with debts', () async {

@@ -22,6 +22,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
   Expression<bool> get _activePayment => _db.payments.deletedAt.isNull();
   Expression<bool> get _activeDebt => _db.debts.deletedAt.isNull();
+  Expression<bool> get _activeCustomer => _db.customers.deletedAt.isNull();
 
   @override
   Future<List<Payment>> getAll() async {
@@ -33,7 +34,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
               _db.customers.id.equalsExp(_db.debts.customerId),
             ),
           ])
-          ..where(_activePayment & _activeDebt)
+          ..where(_activePayment & _activeDebt & _activeCustomer)
           ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
 
     final rows = await query.get();
@@ -72,7 +73,8 @@ class PaymentRepositoryImpl implements PaymentRepository {
           ..where(
             _db.debts.customerId.equals(customerId) &
                 _activePayment &
-                _activeDebt,
+                _activeDebt &
+                _activeCustomer,
           )
           ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
 
@@ -99,7 +101,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
               _db.customers.id.equalsExp(_db.debts.customerId),
             ),
           ])
-          ..where(_activePayment & _activeDebt)
+          ..where(_activePayment & _activeDebt & _activeCustomer)
           ..orderBy([OrderingTerm.desc(_db.payments.createdAt)])
           ..limit(limit);
 

@@ -31,7 +31,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(_activeDebt);
+    ])..where(_activeDebt & _db.customers.deletedAt.isNull());
     if (status != null) {
       query.where(_db.debts.status.equals(status.value));
     }
@@ -54,7 +54,11 @@ class DebtRepositoryImpl implements DebtRepository {
               _db.customers.id.equalsExp(_db.debts.customerId),
             ),
           ])
-          ..where(_db.debts.customerId.equals(customerId) & _activeDebt)
+          ..where(
+            _db.debts.customerId.equals(customerId) &
+                _activeDebt &
+                _db.customers.deletedAt.isNull(),
+          )
           ..orderBy([OrderingTerm.desc(_db.debts.transactionDate)]);
 
     final rows = await query.get();
@@ -72,7 +76,11 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(_db.debts.id.equals(debtId) & _activeDebt);
+    ])..where(
+      _db.debts.id.equals(debtId) &
+          _activeDebt &
+          _db.customers.deletedAt.isNull(),
+    );
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -96,7 +104,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(_activeDebt);
+    ])..where(_activeDebt & _db.customers.deletedAt.isNull());
     if (status != null) {
       query.where(_db.debts.status.equals(status.value));
     }

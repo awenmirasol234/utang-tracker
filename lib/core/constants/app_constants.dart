@@ -13,17 +13,17 @@ class AppConstants {
 
   static const int recentItemsLimit = 5;
 
-  static const String githubOwner = 'alduanemirasol';
-  static const String githubRepo = 'utang_tracker';
+  static const String githubOwner = 'awenmirasol234';
+  static const String githubRepo = 'utang-tracker';
   static const String githubApiBaseUrl = 'https://api.github.com';
 
   static const String githubLatestReleaseUrl =
-      'https://github.com/alduanemirasol/utang_tracker/releases/latest';
+      'https://github.com/awenmirasol234/utang-tracker/releases/latest';
 
   static const String rawReleaseNotesUrl =
-      'https://raw.githubusercontent.com/alduanemirasol/utang_tracker/main/assets/release_notes/current.json';
+      'https://raw.githubusercontent.com/awenmirasol234/utang-tracker/main/assets/release_notes/current.json';
   static const String githubReleasesBaseUrl =
-      'https://github.com/alduanemirasol/utang_tracker/releases/download';
+      'https://github.com/awenmirasol234/utang-tracker/releases/download';
 
   static const String apkAssetPrefix = 'utang-tracker';
 
