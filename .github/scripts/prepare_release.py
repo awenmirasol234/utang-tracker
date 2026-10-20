@@ -11,7 +11,7 @@ def copy_apk(source_file, output_name):
         print(f"APK not found: {source_file}")
         sys.exit(1)
     dest = Path(release_dir) / output_name
-    shutil.copy(str(source), str(dest))
+    shutil.copy(source, dest)
 
 def main():
     release_dir = os.environ.get("RELEASE_DIR", "release-assets")

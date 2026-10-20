@@ -9,18 +9,16 @@ def main():
     key_store_password = os.environ.get("KEY_STORE_PASSWORD", "")
     key_password = os.environ.get("KEY_PASSWORD", "")
     key_alias = os.environ.get("KEY_ALIAS", "")
-    if not signing_key_base64:
-        print("SIGNING_KEY_BASE64 is missing.")
-        sys.exit(1)
-    if not key_store_password:
-        print("KEY_STORE_PASSWORD is missing.")
-        sys.exit(1)
-    if not key_password:
-        print("KEY_PASSWORD is missing.")
-        sys.exit(1)
-    if not key_alias:
-        print("KEY_ALIAS is missing.")
-        sys.exit(1)
+    required_values = (
+        ("SIGNING_KEY_BASE64", signing_key_base64),
+        ("KEY_STORE_PASSWORD", key_store_password),
+        ("KEY_PASSWORD", key_password),
+        ("KEY_ALIAS", key_alias),
+    )
+    for name, value in required_values:
+        if not value:
+            print(f"{name} is missing.")
+            sys.exit(1)
     keystore_path = Path("android/app/release.keystore")
     keystore_path.parent.mkdir(parents=True, exist_ok=True)
     try:

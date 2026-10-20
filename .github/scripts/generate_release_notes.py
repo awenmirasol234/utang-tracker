@@ -4,14 +4,16 @@ import sys
 import os
 from pathlib import Path
 
+CATEGORY_TITLES = {
+    "added": "Added",
+    "changed": "Changed",
+    "fixed": "Fixed",
+}
+
+
 def category_title(category):
-    if category == "added":
-        return "Added"
-    elif category == "changed":
-        return "Changed"
-    elif category == "fixed":
-        return "Fixed"
-    return category
+    return CATEGORY_TITLES.get(category, category)
+
 
 def main():
     release_notes_json = os.environ.get("RELEASE_NOTES_JSON", "assets/release_notes/current.json")
