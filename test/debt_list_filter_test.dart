@@ -93,6 +93,10 @@ class _FakeDebtRepository implements DebtRepository {
   Future<DebtDetail?> getById(String debtId) async => throw UnimplementedError();
 
   @override
+  Future<List<DebtDetail>> getAllWithItems() async =>
+      throw UnimplementedError();
+
+  @override
   Future<List<Debt>> getRecent({int limit = 5, DebtStatus? status}) async =>
       throw UnimplementedError();
 

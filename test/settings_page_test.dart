@@ -12,6 +12,7 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and updates'), findsOneWidget);
+    expect(find.text('Export data'), findsOneWidget);
 
     final listView = tester.widget<ListView>(find.byType(ListView));
     expect(

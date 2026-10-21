@@ -1,5 +1,6 @@
 package com.example.utang_tracker
 
+import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -13,6 +14,7 @@ import java.io.File
 class MainActivity : FlutterActivity() {
 
     private val channel = "com.example.utang_tracker/updater"
+    private val exportChannel = "com.example.utang_tracker/export"
     private val installSettingsRequest = 8403
     private var pendingInstallSettingsResult: MethodChannel.Result? = null
 
@@ -85,6 +87,48 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     } catch (e: Exception) {
                         result.error("INSTALL_FAILED", e.message, null)
+                    }
+                }
+
+                else -> result.notImplemented()
+            }
+        }
+
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            exportChannel,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "shareFiles" -> {
+                    val paths = call.argument<List<String>>("paths")
+                    if (paths.isNullOrEmpty()) {
+                        result.error("INVALID_ARGUMENT", "paths is required", null)
+                        return@setMethodCallHandler
+                    }
+                    val mimeType = call.argument<String>("mimeType") ?: "text/csv"
+                    try {
+                        val uris = paths.map { path ->
+                            FileProvider.getUriForFile(
+                                this,
+                                "$packageName.fileprovider",
+                                File(path),
+                            )
+                        }
+                        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                            type = mimeType
+                            putParcelableArrayListExtra(
+                                Intent.EXTRA_STREAM,
+                                ArrayList(uris),
+                            )
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        val clipData = ClipData.newUri(contentResolver, "Export", uris.first())
+                        uris.drop(1).forEach { clipData.addItem(ClipData.Item(it)) }
+                        intent.clipData = clipData
+                        startActivity(Intent.createChooser(intent, "Share export"))
+                        result.success(null)
+                    } catch (e: Exception) {
+                        result.error("SHARE_FAILED", e.message, null)
                     }
                 }
 

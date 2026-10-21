@@ -77,11 +77,11 @@ lib/
   mappers: features/customers|debts|payments/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart)
   core/router/ app_router.dart / app_shell.dart   # go_router StatefulShellRoute.indexedStack (5 tabs)
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
-  features/customers|debts|payments|dashboard|notifications|updater|settings  # 7 dirs
+  features/customers|debts|payments|dashboard|notifications|updater|export|settings  # 8 dirs
     domain/entities + domain/repositories (interface) + domain/usecases
     data/repositories (impl) + data/datasources + data/services
     presentation/pages + presentation/providers + presentation/widgets
-  android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater
+  android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater + export channel com.example.utang_tracker/export
 assets/images/ + assets/release_notes/current.json
 rules/database_rules.md   # authoritative schema v5 spec
 test/                     # AppDatabase.forTesting() (in-memory SQLite)
@@ -109,7 +109,7 @@ State and navigation details are in §4.
 
 ### 4.3 Updater (GitHub Releases)
 
-- **Channel:** `com.example.utang_tracker/updater` lives in `android/app/src/main/kotlin/.../MainActivity.kt` (only method channel in the app). Handles APK install permission (`REQUEST_INSTALL_PACKAGES`) + `FileProvider` (`@xml/file_provider_paths`).
+- **Channel:** `com.example.utang_tracker/updater` lives in `android/app/src/main/kotlin/.../MainActivity.kt`. Handles APK install permission (`REQUEST_INSTALL_PACKAGES`) + `FileProvider` (`@xml/file_provider_paths`).
 - **Dart side:** `lib/features/updater/data/repositories/update_repository_impl.dart` checks `https://api.github.com/repos/<owner>/<repo>/releases/latest` via `http ^1.4.0` + `pub_semver ^2.2.0` comparison, surfaces via `lib/features/updater/presentation` sheet + About page.
 - **Known quirk:** permission flow uses deprecated `onActivityResult` — intentional for now, do not migrate without testing on Android 11-15.
 
@@ -141,7 +141,13 @@ State and navigation details are in §4.
   ```
   from `lib/app/coordination.dart:9-25`. New `FutureProvider`s for list/detail must be registered there.
 
-### 4.7 Release process
+### 4.7 CSV export
+
+- **Entry point:** Settings > Export data (`lib/features/settings/presentation/pages/settings_page.dart`).
+- **Dart side:** `lib/features/export/domain/usecases/export_data.dart` builds three CSVs (customers, debts with items, payments) from the active records. Amounts are plain pesos, dates are `yyyy-MM-dd`, free text is RFC 4180 quoted (`lib/core/utils/csv.dart`).
+- **Sharing:** `lib/features/export/data/repositories/file_share_repository_impl.dart` writes the files to `<external files>/exports/` and calls the `com.example.utang_tracker/export` channel; `MainActivity.kt` shares them with `ACTION_SEND_MULTIPLE` through the existing `FileProvider`.
+
+### 4.8 Release process
 
 Version is triple-locked — CI fails if any drift:
 
