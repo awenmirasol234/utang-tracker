@@ -118,21 +118,6 @@ class AppTheme {
           displayColor: AppColors.textPrimary,
         );
 
-    final buttonElevation = WidgetStateProperty.resolveWith<double>((states) {
-      if (states.contains(WidgetState.disabled)) {
-        return 0;
-      }
-      if (states.contains(WidgetState.pressed)) {
-        return 0;
-      }
-      if (states.contains(WidgetState.hovered) ||
-          states.contains(WidgetState.focused)) {
-        return 3;
-      }
-      return 2;
-    });
-    const buttonShadow = WidgetStatePropertyAll<Color?>(AppColors.shadow);
-
     return ThemeData(
       useMaterial3: true,
       fontFamily: _fontFamily,
@@ -221,18 +206,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: textTheme.titleMedium,
-        ).copyWith(elevation: buttonElevation, shadowColor: buttonShadow),
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          minimumSize: const Size(64, AppSpacing.minTapTarget),
-          backgroundColor: AppColors.primaryDark,
-          foregroundColor: AppColors.textOnPrimary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: textTheme.titleMedium,
-        ).copyWith(elevation: buttonElevation, shadowColor: buttonShadow),
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -244,29 +218,19 @@ class AppTheme {
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: textTheme.titleMedium,
-        ).copyWith(elevation: buttonElevation, shadowColor: buttonShadow),
+        ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTapTarget),
           foregroundColor: AppColors.primaryDark,
           textStyle: textTheme.titleSmall,
-        ).copyWith(elevation: buttonElevation, shadowColor: buttonShadow),
-      ),
-      iconButtonTheme: IconButtonThemeData(
-        style: ButtonStyle(
-          elevation: buttonElevation,
-          shadowColor: buttonShadow,
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primaryDark,
         foregroundColor: AppColors.textOnPrimary,
-        elevation: 2,
-        focusElevation: 3,
-        hoverElevation: 3,
-        highlightElevation: 0,
-        disabledElevation: 0,
+        elevation: 1,
         iconSize: 20,
         extendedTextStyle: textTheme.labelLarge,
         shape: const RoundedRectangleBorder(
