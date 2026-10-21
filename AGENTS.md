@@ -19,6 +19,7 @@
 - `debt_items.price` is the final custom line amount; quantity does NOT multiply price
 - Soft delete everywhere (`deleted_at IS NULL` = active); no cascades; debt/payment deletion intentionally not exposed
 - Debt status derived: UNPAID → PARTIAL → PAID; debt editable only while `paid_amount == 0`
+- Items can be appended to a PARTIAL debt via `DebtRepository.addItems` (total grows, paid unchanged, balance/status recomputed); rejected for PAID debts
 - Dates: user-selected local day + save-time clock, stored UTC
 
 ## Architecture

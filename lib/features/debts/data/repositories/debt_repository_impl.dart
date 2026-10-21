@@ -267,6 +267,66 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
+  Future<Debt> addItems({
+    required String debtId,
+    required List<DebtItemInput> items,
+  }) async {
+    final existing = await getById(debtId);
+    if (existing == null) {
+      throw const NotFoundException('Debt not found.');
+    }
+    if (existing.debt.status == DebtStatus.paid) {
+      throw const ConflictException(
+        'Cannot add items to a fully paid debt.',
+      );
+    }
+
+    _validateItems(items);
+    final prepared = _prepareItems(items);
+    final addedTotal = computeTotal(prepared.map((item) => item.price));
+    final total = existing.debt.totalAmount + addedTotal;
+    final paid = existing.debt.paidAmount;
+    final balance = total - paid;
+    final status = deriveStatus(totalAmount: total, paidAmount: paid);
+    final now = _now().toUtc();
+
+    await _db.transaction(() async {
+      for (final item in prepared) {
+        await _db
+            .into(_db.debtItems)
+            .insert(
+              DebtItemsCompanion.insert(
+                id: _uuid.v4(),
+                debtId: debtId,
+                productName: item.productName,
+                quantity: item.quantity,
+                unit: Value(item.unit),
+                price: item.price.centavos,
+              ),
+            );
+      }
+
+      final updated =
+          await (_db.update(
+            _db.debts,
+          )..where((table) => table.id.equals(debtId) & table.deletedAt.isNull())).write(
+            DebtsCompanion(
+              totalAmount: Value(total.centavos),
+              balance: Value(balance.centavos),
+              status: Value(status.value),
+              updatedAt: Value(now),
+            ),
+          );
+      if (updated == 0) {
+        throw const NotFoundException('Debt not found.');
+      }
+    });
+
+    final detail = await getById(debtId);
+    return detail!.debt;
+  }
+
+  @override
   Future<int> countActive() async {
     final count = countAll();
     final query = _db.selectOnly(_db.debts)

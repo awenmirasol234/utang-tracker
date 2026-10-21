@@ -122,6 +122,8 @@ Fresh databases create these indexes:
 - Saving a debt preserves the selected transaction day and stamps it with the current local time.
 - A debt is editable only while `paid_amount = 0`.
 - Editing a debt is atomic: existing active items are soft-deleted, replacement items are inserted, and the debt totals and dates are updated in the same transaction.
+- Items can be appended to a debt that has payments (`PARTIAL` status) without editing the record: existing items and payments are left untouched, `total_amount` grows by the added items, `paid_amount` is unchanged, and `balance` and `status` are recomputed in the same transaction.
+- Appending items to a fully paid debt is rejected.
 
 ### Payments and debt status
 

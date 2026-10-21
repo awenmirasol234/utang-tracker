@@ -115,6 +115,12 @@ class _FakeDebtRepository implements DebtRepository {
   }) async => throw UnimplementedError();
 
   @override
+  Future<Debt> addItems({
+    required String debtId,
+    required List<DebtItemInput> items,
+  }) async => throw UnimplementedError();
+
+  @override
   Future<int> countActive() async => throw UnimplementedError();
 
   @override

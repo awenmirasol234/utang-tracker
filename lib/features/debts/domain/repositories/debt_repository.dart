@@ -28,6 +28,10 @@ abstract class DebtRepository {
     String? notes,
     required List<DebtItemInput> items,
   });
+  Future<Debt> addItems({
+    required String debtId,
+    required List<DebtItemInput> items,
+  });
 
   Future<int> countActive();
   Future<int> outstandingBalanceCentavos();

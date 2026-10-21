@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/domain/money.dart';
+import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
+import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
+import 'package:utang_tracker/features/debts/presentation/widgets/debt_item_sheet.dart';
 
 class DebtDetailPage extends ConsumerWidget {
   const DebtDetailPage({super.key, required this.debtId});
@@ -137,9 +143,21 @@ class DebtDetailPage extends ConsumerWidget {
                   ),
                 ],
                 const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'Items (${items.length})',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Items (${items.length})',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    if (debt.status == DebtStatus.partial)
+                      TextButton.icon(
+                        key: const Key('add-debt-item-button'),
+                        onPressed: () => _addItem(context, ref, debt),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('Add item'),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _DebtItemsCard(items: items, totalAmount: debt.totalAmount),
@@ -197,6 +215,75 @@ class DebtDetailPage extends ConsumerWidget {
         );
       },
     );
+  }
+
+  Future<void> _addItem(
+    BuildContext context,
+    WidgetRef ref,
+    Debt debt,
+  ) async {
+    final result = await showDebtItemSheet(context);
+    if (result == null) return;
+    final input = result.input;
+    if (input == null) return;
+    if (!context.mounted) return;
+
+    final newTotal = debt.totalAmount + input.price;
+    final newBalance = newTotal - debt.paidAmount;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+        title: const Text('Add item?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              input.productName,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text('Amount: ${input.price.format()}'),
+            Text('New balance: ${newBalance.format()}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Add item'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    try {
+      await ref
+          .read(debtRepositoryProvider)
+          .addItems(debtId: debt.id, items: [input]);
+      if (!context.mounted) return;
+      invalidateBusinessData(
+        ref,
+        customerId: debt.customerId,
+        debtId: debt.id,
+      );
+      AppSnackBar.success(context, 'Item added');
+    } on AppException catch (appException) {
+      if (!context.mounted) return;
+      AppSnackBar.error(context, appException.message);
+    } catch (caughtError) {
+      if (!context.mounted) return;
+      AppSnackBar.error(context, caughtError.toString());
+    }
   }
 
   Widget _kv(

@@ -7,7 +7,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 ## Features
 
 - **Customers** - create/edit/soft-delete, unique name (case-insensitive), search, sort by name/date
-- **Debts** - one debt = many `debt_items` (product, qty, unit, price), editable only while `paid_amount == 0`
+- **Debts** - one debt = many `debt_items` (product, qty, unit, price), editable only while `paid_amount == 0`, items can be appended to a partially paid debt
 - **Payments** - record partial/full bayad, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
 - **Overdue & notifications** - due-date aware
@@ -73,6 +73,7 @@ Summary (enforced in repository impls, not SQL):
 - `debt_items.price` = final custom line amount - `quantity` does **not** multiply price; `total_amount = sum(active prices)`
 - Debt status derived: `UNPAID (paid<=0)` -> `PARTIAL (0<paid<total)` -> `PAID (paid>=total)`; `balance = total - paid`
 - Debt editable only while `paid_amount == 0`; edit = soft-delete old items + insert new in transaction
+- Items can be appended to a `PARTIAL` debt (total grows, paid unchanged, balance/status recomputed); appending to a `PAID` debt is rejected
 - Payment: `0 < amount <= balance`, only against active non-PAID debt; insert + debt update atomic
 - Dates: user-selected local day + save-time clock -> stored UTC; `due_date` is date-only
 - Customer delete blocked if active `UNPAID`/`PARTIAL` debts exist; names unique among active (case-insensitive)
