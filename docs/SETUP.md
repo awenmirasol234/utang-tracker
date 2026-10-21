@@ -145,13 +145,13 @@ State and navigation details are in §4.
 
 Version is triple-locked — CI fails if any drift:
 
-1. Bump `version: 1.0.48+47` in `pubspec.yaml` (semver + build number).
-2. Bump `version: "1.0.47"` in `assets/release_notes/current.json` (same semver, no `+build`).
-3. Tag `v<version>` where `<version>` is the semver from `pubspec.yaml` (e.g. `v1.0.47`):
+1. Bump `version: 1.0.49+48` in `pubspec.yaml` (semver + build number).
+2. Bump `version: "1.0.49"` in `assets/release_notes/current.json` (same semver, no `+build`).
+3. Tag `v<version>` where `<version>` is the semver from `pubspec.yaml` (e.g. `v1.0.49`):
    ```sh
-   git commit -m "release: v1.0.47"
-   git tag v1.0.47
-   git push origin v1.0.47
+   git commit -m "release: v1.0.49"
+   git tag v1.0.49
+   git push origin v1.0.49
    ```
 4. Push tag triggers `.github/workflows/release.yml`:
    `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (6 helpers in `.github/scripts/`).

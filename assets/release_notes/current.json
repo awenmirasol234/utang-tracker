@@ -1,18 +1,11 @@
 {
-  "version": "1.0.48",
+  "version": "1.0.49",
   "date": "2026-10-21",
   "notes": {
-    "added": [
-      "Added tactile depth to buttons for a more physical press feel"
-    ],
+    "added": [],
     "changed": [
-      "Removed the Google Drive backup and restore feature",
-      "Hardened updater APK downloads and device ABI selection",
-      "Simplified the release workflow and validation scripts"
+      "Removed the button drop shadows and press elevation, restoring the flat button look"
     ],
-    "fixed": [
-      "Updated updater endpoints to the awenmirasol234/utang-tracker repository",
-      "Hardened debt and payment data visibility"
-    ]
+    "fixed": []
   }
 }

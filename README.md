@@ -24,7 +24,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
 
-Version: `1.0.48+47` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
+Version: `1.0.49+48` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
 
 ## Prerequisites
 
