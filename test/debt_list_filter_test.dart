@@ -102,6 +102,7 @@ class _FakeDebtRepository implements DebtRepository {
 
   @override
   Future<Debt> create({
+    String? id,
     required String customerId,
     required DateTime transactionDate,
     DateTime? dueDate,

@@ -8,6 +8,10 @@ import 'package:utang_tracker/features/debts/data/repositories/debt_repository_i
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
 import 'package:utang_tracker/features/export/data/repositories/file_share_repository_impl.dart';
 import 'package:utang_tracker/features/export/domain/repositories/file_share_repository.dart';
+import 'package:utang_tracker/features/import/data/repositories/csv_file_picker_impl.dart';
+import 'package:utang_tracker/features/import/data/repositories/transaction_runner_impl.dart';
+import 'package:utang_tracker/features/import/domain/repositories/csv_file_picker.dart';
+import 'package:utang_tracker/features/import/domain/repositories/transaction_runner.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_repository_impl.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
@@ -45,4 +49,12 @@ final updateRepositoryProvider = Provider<UpdateRepository>(
 
 final fileShareRepositoryProvider = Provider<FileShareRepository>(
   (_) => const FileShareRepositoryImpl(),
+);
+
+final csvFilePickerProvider = Provider<CsvFilePicker>(
+  (_) => const MethodChannelCsvFilePickerImpl(),
+);
+
+final transactionRunnerProvider = Provider<TransactionRunner>(
+  (ref) => DriftTransactionRunnerImpl(ref.watch(databaseProvider)),
 );

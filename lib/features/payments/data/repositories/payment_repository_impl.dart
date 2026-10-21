@@ -139,6 +139,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
   @override
   Future<Payment> recordPayment({
+    String? id,
     required String debtId,
     required Money amount,
     required DateTime paymentDate,
@@ -154,7 +155,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       throw const ValidationException('Payment method is required.');
     }
 
-    final paymentId = _uuid.v4();
+    final paymentId = id ?? _uuid.v4();
     final savedAt = _now();
     final now = savedAt.toUtc();
     final savedPaymentDate = combineLocalDateAndTime(

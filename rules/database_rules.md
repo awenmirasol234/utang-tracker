@@ -11,6 +11,7 @@ The application uses Drift with SQLite. The current schema version is `5`.
 - Debt transaction and payment timestamps combine the user-selected local calendar day with the local clock time at save before UTC normalization. Due dates remain date-only selections and do not receive the save time.
 - A row is active when `deleted_at IS NULL`.
 - Unless noted otherwise, validation and derived-value rules are enforced by the repositories rather than by SQLite `CHECK` or `UNIQUE` constraints.
+- An imported record keeps the id it was exported with. `CustomerRepository.create`, `DebtRepository.create` and `PaymentRepository.recordPayment` accept an optional `id`; without one they generate a new UUID v4.
 
 ## Tables
 
@@ -136,6 +137,16 @@ Fresh databases create these indexes:
   - `UNPAID` when `paid_amount <= 0`
   - `PARTIAL` when `0 < paid_amount < total_amount`
   - `PAID` when `paid_amount >= total_amount`
+
+## CSV Import
+
+- An import accepts the CSV files the app exports; each file is recognised by its header row.
+- Every row is validated before anything is written. A single invalid row blocks the whole import.
+- The write runs in one transaction, so a failure leaves no partial records behind.
+- A customer is matched by name (case-insensitive) against active customers; an existing customer is reused instead of duplicated.
+- A debt is matched by its id; a row whose id is already present is skipped.
+- Payments are replayed oldest first, so the balance of a debt is never exceeded while it is being restored.
+- Imported rows keep their calendar day but are stamped with the import time, like any other write.
 
 ## Active-Record Query Behavior
 

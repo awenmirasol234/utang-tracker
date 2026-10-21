@@ -28,6 +28,8 @@ class AppConstants {
 
   static const String exportChannel = 'com.example.utang_tracker/export';
 
+  static const String importChannel = 'com.example.utang_tracker/import';
+
   /// How often the app polls for updates while it is in the foreground.
   static const Duration updateCheckInterval = Duration(hours: 6);
 

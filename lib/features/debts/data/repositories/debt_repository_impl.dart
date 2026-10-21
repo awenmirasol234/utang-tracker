@@ -161,6 +161,7 @@ class DebtRepositoryImpl implements DebtRepository {
 
   @override
   Future<Debt> create({
+    String? id,
     required String customerId,
     required DateTime transactionDate,
     DateTime? dueDate,
@@ -189,7 +190,7 @@ class DebtRepositoryImpl implements DebtRepository {
       transactionDate,
       savedAt,
     ).toUtc();
-    final debtId = _uuid.v4();
+    final debtId = id ?? _uuid.v4();
 
     await _db.transaction(() async {
       await _db

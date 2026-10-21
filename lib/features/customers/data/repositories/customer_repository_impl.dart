@@ -49,6 +49,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
   @override
   Future<Customer> create({
+    String? id,
     required String name,
     String? phone,
     String? notes,
@@ -60,7 +61,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     await _ensureUniqueName(trimmed);
 
     final now = DateTime.now().toUtc();
-    final customerId = _uuid.v4();
+    final customerId = id ?? _uuid.v4();
     await _db
         .into(_db.customers)
         .insert(

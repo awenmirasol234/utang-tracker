@@ -13,6 +13,7 @@ void main() {
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and updates'), findsOneWidget);
     expect(find.text('Export data'), findsOneWidget);
+    expect(find.text('Import data'), findsOneWidget);
 
     final listView = tester.widget<ListView>(find.byType(ListView));
     expect(

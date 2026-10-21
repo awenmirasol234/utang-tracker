@@ -28,6 +28,12 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => _export(context, ref),
           ),
           _MenuItem(
+            icon: Icons.file_upload_outlined,
+            title: 'Import data',
+            subtitle: 'Restore customers, debts and payments from CSV',
+            onTap: () => context.push('/import'),
+          ),
+          _MenuItem(
             icon: Icons.info_outline_rounded,
             title: 'About',
             subtitle: 'App version and updates',

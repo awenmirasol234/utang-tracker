@@ -9,6 +9,7 @@ import 'package:utang_tracker/features/dashboard/presentation/pages/dashboard_pa
 import 'package:utang_tracker/features/debts/presentation/pages/debt_detail_page.dart';
 import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.dart';
 import 'package:utang_tracker/features/debts/presentation/pages/debts_list_page.dart';
+import 'package:utang_tracker/features/import/presentation/pages/import_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
 import 'package:utang_tracker/features/updater/presentation/pages/about_page.dart';
@@ -134,6 +135,11 @@ GoRouter createAppRouter() {
         path: '/about',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AboutPage(),
+      ),
+      GoRoute(
+        path: '/import',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ImportPage(),
       ),
     ],
   );

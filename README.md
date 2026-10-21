@@ -12,6 +12,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
 - **Overdue & notifications** - due-date aware
 - **Export** - Settings > Export data writes customers, debts and payments as CSV and shares them via the Android share sheet
+- **Import** - Settings > Import data restores those CSV files; every row is validated first and nothing is written unless all rows are valid
 - **Updater** - GitHub Releases check, in-app update sheet + About page
 
 ## Tech Stack
@@ -54,11 +55,11 @@ lib/
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
   features/
-    customers|debts|payments|dashboard|notifications|updater|export|settings  # 8 feature dirs
+    customers|debts|payments|dashboard|notifications|updater|export|import|settings  # 9 feature dirs
       domain/entities + domain/repositories (interface) + domain/usecases
       data/repositories (impl - enforces business rules) + data/datasources + data/services
       presentation/pages + presentation/providers + presentation/widgets
-  android/app/src/main/kotlin/.../MainActivity.kt  # updater channel (com.example.utang_tracker/updater) + export channel (com.example.utang_tracker/export)
+  android/app/src/main/kotlin/.../MainActivity.kt  # updater channel (com.example.utang_tracker/updater) + export channel (com.example.utang_tracker/export) + import channel (com.example.utang_tracker/import)
   assets/images/ + assets/release_notes/current.json
   rules/database_rules.md              # authoritative data spec (schema v5)
   test/                                # repo + migration tests (in-memory DB)
@@ -102,7 +103,7 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 - **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart` — register new `FutureProvider`s there.
 - **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`.
 - **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL.
-- **Method channels:** `MainActivity.kt` holds the updater channel and the export channel (shares CSV files via the Android share sheet); the updater install-permission flow uses deprecated `onActivityResult`.
+- **Method channels:** `MainActivity.kt` holds the updater channel, the export channel (shares CSV files via the Android share sheet) and the import channel (picks CSV files to restore); the updater install-permission flow uses deprecated `onActivityResult`.
 - **Signing:** `android/key.properties` + keystores gitignored; CI signs from `SIGNING_*` secrets.
 
 ## Routes
