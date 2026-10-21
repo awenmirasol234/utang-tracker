@@ -10,7 +10,6 @@ import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
-import 'package:utang_tracker/core/widgets/app_dropdown.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
@@ -41,7 +40,6 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   Debt? _selectedDebt;
   final _amountController = TextEditingController();
   DateTime _paymentDate = DateTime.now();
-  String _method = AppConstants.paymentMethods.first;
   final _notesController = TextEditingController();
   bool _notesExpanded = false;
   bool _saving = false;
@@ -180,7 +178,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         debtId: _debtId!,
         amount: amount!,
         paymentDate: _paymentDate,
-        paymentMethod: _method,
+        paymentMethod: AppConstants.defaultPaymentMethod,
         notes: _notesController.text,
       );
       invalidateBusinessData(
@@ -293,21 +291,6 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                   style: AppTextField.inputStyle(context),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppTextField.buildLabel(context, 'Payment method *'),
-            const SizedBox(height: AppSpacing.sm),
-            AppDropdown<String>(
-              initialValue: _method,
-              items: AppConstants.paymentMethods
-                  .map((method) => DropdownMenuItem(value: method, child: Text(method)))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _method = value);
-                  _markDirty();
-                }
-              },
             ),
             const SizedBox(height: AppSpacing.lg),
             Row(

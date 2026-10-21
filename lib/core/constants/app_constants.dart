@@ -4,12 +4,7 @@ class AppConstants {
   static const String appName = 'Utang Tracker';
   static const String logoAsset = 'assets/images/new-logo.png';
 
-  static const List<String> paymentMethods = [
-    'Cash',
-    'GCash',
-    'Bank Transfer',
-    'Other',
-  ];
+  static const String defaultPaymentMethod = 'Cash';
 
   static const int recentItemsLimit = 5;
 
