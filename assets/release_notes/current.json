@@ -4,7 +4,8 @@
   "notes": {
     "added": [],
     "changed": [
-      "Removed the button drop shadows and press elevation, restoring the flat button look"
+      "Removed the button drop shadows and press elevation, restoring the flat button look",
+      "Payment method is now always Cash and the field is hidden from the record payment form"
     ],
     "fixed": []
   }
