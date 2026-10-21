@@ -1,9 +1,18 @@
 {
   "version": "1.0.48",
-  "date": "2026-09-09",
+  "date": "2026-10-21",
   "notes": {
-    "added": [],
-    "changed": [],
-    "fixed": []
+    "added": [
+      "Added tactile depth to buttons for a more physical press feel"
+    ],
+    "changed": [
+      "Removed the Google Drive backup and restore feature",
+      "Hardened updater APK downloads and device ABI selection",
+      "Simplified the release workflow and validation scripts"
+    ],
+    "fixed": [
+      "Updated updater endpoints to the awenmirasol234/utang-tracker repository",
+      "Hardened debt and payment data visibility"
+    ]
   }
 }

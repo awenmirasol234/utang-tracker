@@ -145,7 +145,7 @@ State and navigation details are in §4.
 
 Version is triple-locked — CI fails if any drift:
 
-1. Bump `version: 1.0.47+43` in `pubspec.yaml` (semver + build number).
+1. Bump `version: 1.0.48+47` in `pubspec.yaml` (semver + build number).
 2. Bump `version: "1.0.47"` in `assets/release_notes/current.json` (same semver, no `+build`).
 3. Tag `v<version>` where `<version>` is the semver from `pubspec.yaml` (e.g. `v1.0.47`):
    ```sh
