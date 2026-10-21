@@ -25,4 +25,11 @@ class AppConstants {
   static const String universalAbiName = 'universal';
 
   static const String updaterChannel = 'com.example.utang_tracker/updater';
+
+  /// How often the app polls for updates while it is in the foreground.
+  static const Duration updateCheckInterval = Duration(hours: 6);
+
+  /// Grace period before the first automatic check, so that the update
+  /// repository is never read while the app is still starting up.
+  static const Duration updateCheckStartupGrace = Duration(minutes: 1);
 }
