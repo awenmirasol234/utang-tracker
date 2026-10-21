@@ -1,12 +1,12 @@
 {
-  "version": "1.0.49",
+  "version": "1.0.50",
   "date": "2026-10-21",
   "notes": {
-    "added": [],
-    "changed": [
-      "Removed the button drop shadows and press elevation, restoring the flat button look",
-      "Payment method is now always Cash and the field is hidden from the record payment form"
+    "added": [
+      "Added CSV export of customers, debts and payments from Settings > Export data",
+      "Added CSV import with per-row validation from Settings > Import data"
     ],
+    "changed": [],
     "fixed": []
   }
 }
