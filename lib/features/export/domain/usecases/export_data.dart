@@ -11,8 +11,8 @@ import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 
 /// Builds CSV exports of the active customers, debts and payments.
-class ExportDataUseCase {
-  ExportDataUseCase({
+class ExportData {
+  ExportData({
     required CustomerRepository customers,
     required DebtRepository debts,
     required PaymentRepository payments,
@@ -154,7 +154,7 @@ class ExportDataUseCase {
     return parts.join('; ');
   }
 
-  String _amount(Money money) => (money.centavos / 100).toStringAsFixed(2);
+  String _amount(Money money) => money.pesos.toStringAsFixed(2);
 
   String _quantity(double quantity) {
     if (quantity == quantity.roundToDouble()) {

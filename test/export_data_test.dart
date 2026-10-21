@@ -25,7 +25,7 @@ void main() {
   late DebtRepositoryImpl debts;
   late PaymentRepositoryImpl payments;
   late _RecordingFileShareRepository fileShare;
-  late ExportDataUseCase exportData;
+  late ExportData exportData;
 
   setUp(() {
     appDatabase = AppDatabase.forTesting();
@@ -33,7 +33,7 @@ void main() {
     debts = DebtRepositoryImpl(appDatabase);
     payments = PaymentRepositoryImpl(appDatabase);
     fileShare = _RecordingFileShareRepository();
-    exportData = ExportDataUseCase(
+    exportData = ExportData(
       customers: customers,
       debts: debts,
       payments: payments,

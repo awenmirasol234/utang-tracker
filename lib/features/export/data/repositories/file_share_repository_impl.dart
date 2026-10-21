@@ -13,7 +13,7 @@ class FileShareRepositoryImpl implements FileShareRepository {
   @override
   Future<void> shareFiles(List<ExportFile> files) async {
     if (files.isEmpty) {
-      throw const ValidationException('Nothing to export.');
+      throw const AppException('Nothing to export.');
     }
 
     final storage = await getExternalStorageDirectory();
