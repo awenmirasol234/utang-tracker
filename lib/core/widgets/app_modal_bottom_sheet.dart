@@ -39,6 +39,12 @@ class AppModalBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    CrossAxisAlignment titleAlignment;
+    if (subtitle == null) {
+      titleAlignment = CrossAxisAlignment.center;
+    } else {
+      titleAlignment = CrossAxisAlignment.start;
+    }
 
     return SizedBox(
       key: const Key('app-modal-bottom-sheet'),
@@ -57,9 +63,7 @@ class AppModalBottomSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
-                  crossAxisAlignment: subtitle == null
-                      ? CrossAxisAlignment.center
-                      : CrossAxisAlignment.start,
+                  crossAxisAlignment: titleAlignment,
                   children: [
                     Expanded(
                       child: Column(

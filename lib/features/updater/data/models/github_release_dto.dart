@@ -3,7 +3,10 @@ import 'package:utang_tracker/features/updater/domain/entities/app_release.dart'
 class GithubReleaseDto {
   static AppRelease fromJson(Map<String, dynamic> json) {
     final tagName = json['tag_name'] as String? ?? '';
-    final version = tagName.startsWith('v') ? tagName.substring(1) : tagName;
+    var version = tagName;
+    if (tagName.startsWith('v')) {
+      version = tagName.substring(1);
+    }
     final assets = (json['assets'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>()
         .map(_assetFromJson)

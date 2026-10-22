@@ -15,6 +15,16 @@ class AppFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color labelColor;
+    Color borderColor;
+    if (selected) {
+      labelColor = AppColors.textOnPrimary;
+      borderColor = AppColors.primaryDark;
+    } else {
+      labelColor = AppColors.textPrimary;
+      borderColor = AppColors.outline;
+    }
+
     return FilterChip(
       label: Text(label),
       selected: selected,
@@ -22,12 +32,10 @@ class AppFilterChip extends StatelessWidget {
       showCheckmark: false,
       selectedColor: AppColors.primaryDark,
       labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-        color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
+        color: labelColor,
       ),
       backgroundColor: AppColors.surfaceCard,
-      side: BorderSide(
-        color: selected ? AppColors.primaryDark : AppColors.outline,
-      ),
+      side: BorderSide(color: borderColor),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }

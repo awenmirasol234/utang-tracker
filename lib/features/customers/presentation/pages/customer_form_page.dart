@@ -103,9 +103,15 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
 
       if (!mounted) return;
       _isDirty = false;
+      String successMessage;
+      if (widget.isEditing) {
+        successMessage = 'Customer updated';
+      } else {
+        successMessage = 'Customer added';
+      }
       AppSnackBar.success(
         context,
-        widget.isEditing ? 'Customer updated' : 'Customer added',
+        successMessage,
       );
       context.pop();
     } on ConflictException catch (conflictException) {
@@ -156,6 +162,26 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
   }
 
   Widget _buildForm() {
+    String title;
+    String notesTooltip;
+    IconData notesIcon;
+    String saveLabel;
+    if (widget.isEditing) {
+      title = 'Edit customer';
+      saveLabel = 'Save changes';
+    } else {
+      title = 'Add customer';
+      saveLabel = 'Add customer';
+    }
+
+    if (_notesExpanded) {
+      notesTooltip = 'Hide note';
+      notesIcon = Icons.close;
+    } else {
+      notesTooltip = 'Add note';
+      notesIcon = Icons.add;
+    }
+
     return PopScope(
       canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) {
@@ -163,7 +189,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Edit customer' : 'Add customer'),
+          title: Text(title),
           actions: [
             if (widget.isEditing)
               IconButton(
@@ -225,10 +251,10 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               children: [
                 AppTextField.buildLabel(context, 'Notes'),
                 IconButton(
-                  tooltip: _notesExpanded ? 'Hide note' : 'Add note',
+                  tooltip: notesTooltip,
                   onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
                   icon: Icon(
-                    _notesExpanded ? Icons.close : Icons.add,
+                    notesIcon,
                     size: 20,
                     color: AppColors.textMuted,
                   ),
@@ -254,7 +280,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
             ],
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: widget.isEditing ? 'Save changes' : 'Add customer',
+              label: saveLabel,
               onPressed: _save,
               isLoading: _saving,
             ),

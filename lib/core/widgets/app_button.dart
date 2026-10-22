@@ -24,30 +24,40 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = isLoading
-        ? SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: variant == AppButtonVariant.secondary
-                  ? AppColors.primaryDark
-                  : AppColors.textOnPrimary,
-            ),
-          )
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 20),
-                const SizedBox(width: AppSpacing.sm),
-              ],
-              Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-            ],
-          );
+    Widget child;
+    if (isLoading) {
+      Color progressColor;
+      if (variant == AppButtonVariant.secondary) {
+        progressColor = AppColors.primaryDark;
+      } else {
+        progressColor = AppColors.textOnPrimary;
+      }
+      child = SizedBox(
+        width: 22,
+        height: 22,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: progressColor,
+        ),
+      );
+    } else {
+      child = Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 20),
+            const SizedBox(width: AppSpacing.sm),
+          ],
+          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+        ],
+      );
+    }
 
-    final effectiveOnPressed = isLoading ? null : onPressed;
+    VoidCallback? effectiveOnPressed;
+    if (!isLoading) {
+      effectiveOnPressed = onPressed;
+    }
 
     Widget button;
     switch (variant) {

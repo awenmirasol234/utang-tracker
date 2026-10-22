@@ -54,11 +54,20 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
     _productController = TextEditingController(
       text: existing?.productName ?? '',
     );
+    String quantityText;
+    String priceText;
+    if (existing != null) {
+      quantityText = _formatQuantity(existing.quantity);
+      priceText = existing.price.pesos.toStringAsFixed(2);
+    } else {
+      quantityText = '1';
+      priceText = '';
+    }
     _quantityController = TextEditingController(
-      text: existing != null ? _formatQuantity(existing.quantity) : '1',
+      text: quantityText,
     );
     _priceController = TextEditingController(
-      text: existing != null ? existing.price.pesos.toStringAsFixed(2) : '',
+      text: priceText,
     );
     _unit = existing?.unit ?? DebtItemUnits.piece;
   }
@@ -72,7 +81,8 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
   }
 
   String _formatQuantity(double quantity) {
-    return quantity % 1 == 0 ? quantity.toInt().toString() : quantity.toString();
+    if (quantity % 1 == 0) return quantity.toInt().toString();
+    return quantity.toString();
   }
 
   Future<void> _pickUnit() async {
@@ -139,8 +149,18 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
 
   @override
   Widget build(BuildContext context) {
+    String title;
+    String saveLabel;
+    if (_isEditing) {
+      title = 'Edit item';
+      saveLabel = 'Update';
+    } else {
+      title = 'Add item';
+      saveLabel = 'Save';
+    }
+
     return AppModalBottomSheet(
-      title: _isEditing ? 'Edit item' : 'Add item',
+      title: title,
       footer: Row(
         children: [
           if (_isEditing)
@@ -158,7 +178,7 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
           const SizedBox(width: AppSpacing.sm),
           FilledButton(
             onPressed: _save,
-            child: Text(_isEditing ? 'Update' : 'Save'),
+            child: Text(saveLabel),
           ),
         ],
       ),
@@ -295,6 +315,34 @@ class _UnitPickerSheet extends StatelessWidget {
         ),
         itemBuilder: (context, index) {
           if (index == DebtItemUnits.common.length) {
+            Widget customSubtitle;
+            Widget customTrailing;
+            String initialValue;
+            if (selectedIsCustom) {
+              customSubtitle = Text(
+                DebtItemUnits.displayName(selectedUnit),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                ),
+              );
+              customTrailing = const Icon(
+                Icons.check,
+                color: AppColors.primaryDark,
+              );
+              initialValue = selectedUnit;
+            } else {
+              customSubtitle = Text(
+                'Use another selling unit',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                ),
+              );
+              customTrailing = const Icon(Icons.chevron_right);
+              initialValue = '';
+            }
+
             return ListTile(
               leading: const Icon(Icons.edit_outlined),
               title: Text(
@@ -304,29 +352,13 @@ class _UnitPickerSheet extends StatelessWidget {
                   color: AppColors.textPrimary,
                 ),
               ),
-              subtitle: selectedIsCustom
-                  ? Text(
-                      DebtItemUnits.displayName(selectedUnit),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
-                      ),
-                    )
-                  : Text(
-                      'Use another selling unit',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-              trailing: selectedIsCustom
-                  ? const Icon(Icons.check, color: AppColors.primaryDark)
-                  : const Icon(Icons.chevron_right),
+              subtitle: customSubtitle,
+              trailing: customTrailing,
               onTap: () async {
                 final custom = await showDialog<String>(
                   context: context,
                   builder: (context) => _CustomUnitDialog(
-                    initialValue: selectedIsCustom ? selectedUnit : '',
+                    initialValue: initialValue,
                   ),
                 );
                 if (custom == null || !context.mounted) return;
@@ -337,6 +369,10 @@ class _UnitPickerSheet extends StatelessWidget {
 
           final option = DebtItemUnits.common[index];
           final selected = option.value == selectedUnit;
+          Widget? trailing;
+          if (selected) {
+            trailing = const Icon(Icons.check, color: AppColors.primaryDark);
+          }
           return ListTile(
             title: Text(
               option.label,
@@ -345,9 +381,7 @@ class _UnitPickerSheet extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
             ),
-            trailing: selected
-                ? const Icon(Icons.check, color: AppColors.primaryDark)
-                : null,
+            trailing: trailing,
             onTap: () => Navigator.of(context).pop(option.value),
           );
         },

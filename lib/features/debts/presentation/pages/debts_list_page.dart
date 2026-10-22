@@ -87,20 +87,19 @@ class DebtsListPage extends ConsumerWidget {
                   },
                   itemBuilder: (context) {
                     return DebtSortOrder.values.map((order) {
+                      Widget? checkIcon;
+                      if (sort == order) {
+                        checkIcon = const Icon(
+                          Icons.check,
+                          size: 18,
+                          color: AppColors.primaryDark,
+                        );
+                      }
                       return PopupMenuItem<DebtSortOrder>(
                         value: order,
                         child: Row(
                           children: [
-                            SizedBox(
-                              width: 28,
-                              child: sort == order
-                                  ? const Icon(
-                                      Icons.check,
-                                      size: 18,
-                                      color: AppColors.primaryDark,
-                                    )
-                                  : null,
-                            ),
+                            SizedBox(width: 28, child: checkIcon),
                             Expanded(child: Text(order.label)),
                           ],
                         ),
@@ -134,12 +133,16 @@ class DebtsListPage extends ConsumerWidget {
               ),
               data: (debts) {
                 if (debts.isEmpty) {
+                  String emptyMessage;
+                  if (filter == DebtListFilter.all) {
+                    emptyMessage = 'Tap + New utang to add.';
+                  } else {
+                    emptyMessage = 'No ${filter.label.toLowerCase()} utang.';
+                  }
                   return EmptyState(
                     icon: Icons.receipt_long_outlined,
                     title: 'Walay utang',
-                    message: filter == DebtListFilter.all
-                        ? 'Tap + New utang to add.'
-                        : 'No ${filter.label.toLowerCase()} utang.',
+                    message: emptyMessage,
                   );
                 }
 

@@ -133,9 +133,13 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 
   Future<void> _save() async {
     Money? amount;
+    String? debtError;
+    if (_debtId == null) {
+      debtError = 'Select utang';
+    }
     setState(() {
       _error = null;
-      _debtError = _debtId == null ? 'Select utang' : null;
+      _debtError = debtError;
 
       final amountText = _amountController.text.trim();
       if (amountText.isEmpty) {
@@ -212,7 +216,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     if (!_confirmed) return 'Save';
     try {
       final amt = Money.fromPesoString(_amountController.text);
-      return amt.isPositive ? 'Save ${amt.format()}' : 'Save';
+      if (amt.isPositive) return 'Save ${amt.format()}';
+      return 'Save';
     } catch (_) {
       return 'Save';
     }
@@ -228,6 +233,19 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     }
 
     final selected = _selectedDebt;
+    String notesTooltip;
+    IconData notesIcon;
+    if (_notesExpanded) {
+      notesTooltip = 'Hide note';
+      notesIcon = Icons.close;
+    } else {
+      notesTooltip = 'Add note';
+      notesIcon = Icons.add;
+    }
+    VoidCallback? saveHandler;
+    if (_confirmed) {
+      saveHandler = _save;
+    }
 
     return PopScope(
       canPop: !_isDirty && !_saving,
@@ -298,10 +316,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               children: [
                 AppTextField.buildLabel(context, 'Notes'),
                 IconButton(
-                  tooltip: _notesExpanded ? 'Hide note' : 'Add note',
+                  tooltip: notesTooltip,
                   onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
                   icon: Icon(
-                    _notesExpanded ? Icons.close : Icons.add,
+                    notesIcon,
                     size: 20,
                     color: AppColors.textMuted,
                   ),
@@ -340,8 +358,14 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                           _amountController.text,
                         );
                         final after = selected.balance - amt;
+                        Money displayedBalance;
+                        if (after.isNegative) {
+                          displayedBalance = Money.zero();
+                        } else {
+                          displayedBalance = after;
+                        }
                         return MoneyText(
-                          after.isNegative ? Money.zero() : after,
+                          displayedBalance,
                         );
                       } catch (_) {
                         return MoneyText(selected.balance);
@@ -382,7 +406,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             const SizedBox(height: AppSpacing.xl),
             AppButton(
               label: _saveLabel,
-              onPressed: _confirmed ? _save : null,
+              onPressed: saveHandler,
               isLoading: _saving,
             ),
           ],
@@ -407,8 +431,18 @@ class _DebtField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasLabel = label != null && label!.isNotEmpty;
+    VoidCallback? tapHandler = onTap;
+    String displayLabel;
+    Color displayColor;
+    if (hasLabel) {
+      displayLabel = label!;
+      displayColor = AppColors.textPrimary;
+    } else {
+      displayLabel = 'Select utang';
+      displayColor = AppColors.textMuted;
+    }
     return InkWell(
-      onTap: onTap,
+      onTap: tapHandler,
       borderRadius: BorderRadius.circular(10),
       child: InputDecorator(
         decoration: InputDecoration(
@@ -420,10 +454,10 @@ class _DebtField extends StatelessWidget {
           ),
         ),
         child: Text(
-          hasLabel ? label! : 'Select utang',
+          displayLabel,
           style: AppTextField.inputStyle(
             context,
-            color: hasLabel ? AppColors.textPrimary : AppColors.textMuted,
+            color: displayColor,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -465,13 +499,16 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
         ..sort((first, second) => second.transactionDate.compareTo(first.transactionDate));
 
       final trimmed = query.trim().toLowerCase();
-      final filtered = trimmed.isEmpty
-          ? open
-          : open
-                .where(
-                  (debt) => (debt.customerName ?? '').toLowerCase().contains(trimmed),
-                )
-                .toList();
+      List<Debt> filtered;
+      if (trimmed.isEmpty) {
+        filtered = open;
+      } else {
+        filtered = open
+            .where(
+              (debt) => (debt.customerName ?? '').toLowerCase().contains(trimmed),
+            )
+            .toList();
+      }
 
       if (!mounted) return;
       setState(() {
@@ -524,11 +561,17 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
     }
     if (debts == null || debts.isEmpty) {
       final searching = _query.trim().isNotEmpty;
+      String emptyMessage;
+      if (searching) {
+        emptyMessage = 'Walay utang match your search.';
+      } else {
+        emptyMessage = 'Wala pay utang';
+      }
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Text(
-            searching ? 'Walay utang match your search.' : 'Wala pay utang',
+            emptyMessage,
             textAlign: TextAlign.center,
             style: Theme.of(
               context,

@@ -113,6 +113,12 @@ class _CustomerSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final customer = data.customer;
+    Color balanceColor;
+    if (data.outstandingBalance.isZero) {
+      balanceColor = AppColors.paid;
+    } else {
+      balanceColor = AppColors.unpaid;
+    }
 
     return AppCard(
       child: Column(
@@ -129,9 +135,7 @@ class _CustomerSummaryCard extends StatelessWidget {
           MoneyText(
             data.outstandingBalance,
             style: Theme.of(context).textTheme.headlineSmall,
-            color: data.outstandingBalance.isZero
-                ? AppColors.paid
-                : AppColors.unpaid,
+            color: balanceColor,
           ),
           if (customer.phone != null) ...[
             const SizedBox(height: AppSpacing.md),

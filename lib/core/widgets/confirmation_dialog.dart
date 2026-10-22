@@ -22,9 +22,7 @@ Future<bool> showConfirmationDialog({
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: isDestructive
-                ? TextButton.styleFrom(foregroundColor: AppColors.danger)
-                : null,
+            style: _confirmationButtonStyle(isDestructive),
             child: Text(confirmLabel),
           ),
         ],
@@ -32,6 +30,13 @@ Future<bool> showConfirmationDialog({
     },
   );
   return result ?? false;
+}
+
+ButtonStyle? _confirmationButtonStyle(bool isDestructive) {
+  if (isDestructive) {
+    return TextButton.styleFrom(foregroundColor: AppColors.danger);
+  }
+  return null;
 }
 
 Future<bool> confirmDiscardChanges(BuildContext context) {

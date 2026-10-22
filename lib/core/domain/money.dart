@@ -18,9 +18,10 @@ class Money {
     }
     final pesos = int.tryParse(match.group(1) ?? '') ?? 0;
     final centavosText = match.group(2) ?? match.group(3);
-    final centavos =
-        pesos * 100 +
-        (centavosText == null ? 0 : int.parse(centavosText.padRight(2, '0')));
+    var centavos = pesos * 100;
+    if (centavosText != null) {
+      centavos += int.parse(centavosText.padRight(2, '0'));
+    }
     return Money._(centavos);
   }
 

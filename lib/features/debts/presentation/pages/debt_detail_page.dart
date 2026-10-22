@@ -292,6 +292,13 @@ class DebtDetailPage extends ConsumerWidget {
     String value, {
     bool valueAlignRight = false,
   }) {
+    TextAlign valueAlignment;
+    if (valueAlignRight) {
+      valueAlignment = TextAlign.right;
+    } else {
+      valueAlignment = TextAlign.left;
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -309,7 +316,7 @@ class DebtDetailPage extends ConsumerWidget {
           Expanded(
             child: Text(
               value,
-              textAlign: valueAlignRight ? TextAlign.right : TextAlign.left,
+              textAlign: valueAlignment,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.4,
@@ -327,6 +334,12 @@ class DebtDetailPage extends ConsumerWidget {
     Money money, {
     bool emphasize = false,
   }) {
+    TextStyle? amountStyle;
+    if (emphasize) {
+      amountStyle = Theme.of(context).textTheme.titleMedium;
+    } else {
+      amountStyle = Theme.of(context).textTheme.bodyLarge;
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -342,9 +355,7 @@ class DebtDetailPage extends ConsumerWidget {
           ),
           MoneyText(
             money,
-            style: emphasize
-                ? Theme.of(context).textTheme.titleMedium
-                : Theme.of(context).textTheme.bodyLarge,
+            style: amountStyle,
           ),
         ],
       ),

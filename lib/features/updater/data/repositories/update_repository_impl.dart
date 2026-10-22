@@ -39,12 +39,19 @@ class UpdateRepositoryImpl implements UpdateRepository {
       if (streamed.statusCode >= 300 &&
           streamed.statusCode < 400 &&
           location != null) {
-        final normalizedLocation = location.startsWith('/')
-            ? 'https://github.com$location'
-            : location;
+        String normalizedLocation;
+        if (location.startsWith('/')) {
+          normalizedLocation = 'https://github.com$location';
+        } else {
+          normalizedLocation = location;
+        }
         final locUri = Uri.parse(normalizedLocation);
         final segments = locUri.pathSegments;
-        tag = segments.isNotEmpty ? segments.last : '';
+        if (segments.isNotEmpty) {
+          tag = segments.last;
+        } else {
+          tag = '';
+        }
         await streamed.stream.drain();
       } else if (streamed.statusCode == 200) {
         await streamed.stream.drain();
@@ -68,7 +75,10 @@ class UpdateRepositoryImpl implements UpdateRepository {
       return _fetchFromRawMain();
     }
 
-    final version = tag.startsWith('v') ? tag.substring(1) : tag;
+    var version = tag;
+    if (tag.startsWith('v')) {
+      version = tag.substring(1);
+    }
     if (version.isEmpty) return null;
 
     final rawTagUri = Uri.parse(
@@ -339,7 +349,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
   Future<DateTime?> loadLastCheckTime() async {
     final prefs = await SharedPreferences.getInstance();
     final milliseconds = prefs.getInt(_keyLastCheck);
-    return milliseconds == null ? null : DateTime.fromMillisecondsSinceEpoch(milliseconds);
+    if (milliseconds == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(milliseconds);
   }
 
   @override

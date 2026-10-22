@@ -21,22 +21,31 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ShapeBorder? cardShape;
+    if (borderColor != null) {
+      cardShape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: borderColor!),
+      );
+    }
+    Clip? clipBehavior;
+    Widget cardChild;
+    if (onTap == null) {
+      cardChild = Padding(padding: padding, child: child);
+    } else {
+      clipBehavior = Clip.antiAlias;
+      cardChild = InkWell(
+        onTap: onTap,
+        child: Padding(padding: padding, child: child),
+      );
+    }
+
     return Card(
       margin: margin ?? EdgeInsets.zero,
       color: color,
-      shape: borderColor == null
-          ? null
-          : RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: borderColor!),
-            ),
-      clipBehavior: onTap == null ? null : Clip.antiAlias,
-      child: onTap == null
-          ? Padding(padding: padding, child: child)
-          : InkWell(
-              onTap: onTap,
-              child: Padding(padding: padding, child: child),
-            ),
+      shape: cardShape,
+      clipBehavior: clipBehavior,
+      child: cardChild,
     );
   }
 }

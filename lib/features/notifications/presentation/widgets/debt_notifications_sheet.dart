@@ -84,24 +84,38 @@ class _AttentionSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final urgent = feed.urgentCount;
+    Color backgroundColor;
+    Color iconColor;
+    IconData icon;
+    String message;
+    if (urgent > 0) {
+      backgroundColor = AppColors.unpaidBg;
+      iconColor = AppColors.unpaid;
+      icon = Icons.notification_important_outlined;
+      message = '$urgent due now';
+    } else {
+      backgroundColor = AppColors.primaryLight;
+      iconColor = AppColors.primaryDark;
+      icon = Icons.event_available_outlined;
+      message = '${feed.items.length} due soon';
+    }
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: urgent > 0 ? AppColors.unpaidBg : AppColors.primaryLight,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
           Icon(
-            urgent > 0
-                ? Icons.notification_important_outlined
-                : Icons.event_available_outlined,
-            color: urgent > 0 ? AppColors.unpaid : AppColors.primaryDark,
+            icon,
+            color: iconColor,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              urgent > 0 ? '$urgent due now' : '${feed.items.length} due soon',
+              message,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -183,9 +197,12 @@ class _NotificationRow extends StatelessWidget {
     final kind = notification.kind;
     final timingLabel = _timingLabel(notification);
     final dueDateLabel = context.smartDate(notification.dueDate);
-    final dateDescription = timingLabel == dueDateLabel
-        ? dueDateLabel
-        : '$timingLabel · $dueDateLabel';
+    String dateDescription;
+    if (timingLabel == dueDateLabel) {
+      dateDescription = dueDateLabel;
+    } else {
+      dateDescription = '$timingLabel · $dueDateLabel';
+    }
     return InkWell(
       onTap: () => Navigator.pop(context, notification.debt.id),
       child: Padding(
@@ -298,14 +315,15 @@ String _sectionLabel(DebtNotificationKind kind) => switch (kind) {
 };
 
 String _timingLabel(DebtNotification notification) {
-  return switch (notification.kind) {
-    DebtNotificationKind.overdue => '${notification.daysFromToday.abs()}d late',
-    DebtNotificationKind.dueToday => 'Today',
-    DebtNotificationKind.dueSoon =>
-      notification.daysFromToday == 1
-          ? 'Tomorrow'
-          : 'In ${notification.daysFromToday}d',
-  };
+  switch (notification.kind) {
+    case DebtNotificationKind.overdue:
+      return '${notification.daysFromToday.abs()}d late';
+    case DebtNotificationKind.dueToday:
+      return 'Today';
+    case DebtNotificationKind.dueSoon:
+      if (notification.daysFromToday == 1) return 'Tomorrow';
+      return 'In ${notification.daysFromToday}d';
+  }
 }
 
 IconData _icon(DebtNotificationKind kind) => switch (kind) {

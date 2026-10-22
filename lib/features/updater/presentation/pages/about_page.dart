@@ -50,6 +50,10 @@ class _AboutPageState extends ConsumerState<AboutPage> {
   Widget build(BuildContext context) {
     final updateState = ref.watch(updateNotifierProvider);
     final isChecking = updateState is UpdateChecking;
+    VoidCallback? updateHandler;
+    if (!isChecking) {
+      updateHandler = _checkForUpdates;
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('About')),
@@ -67,7 +71,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
             children: [
               _CheckForUpdatesRow(
                 isChecking: isChecking,
-                onTap: isChecking ? null : _checkForUpdates,
+                onTap: updateHandler,
               ),
             ],
           ),
@@ -199,6 +203,13 @@ class _AppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String versionLabel;
+    if (version != null) {
+      versionLabel = 'v$version';
+    } else {
+      versionLabel = '—';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -211,7 +222,7 @@ class _AppHeader extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          version != null ? 'v$version' : '—',
+          versionLabel,
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),

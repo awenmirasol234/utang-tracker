@@ -86,9 +86,12 @@ class _NotificationAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final urgentCount = notifications.value?.urgentCount ?? 0;
-    final label = urgentCount > 0
-        ? 'Due reminders, $urgentCount urgent'
-        : 'Due reminders';
+    String label;
+    if (urgentCount > 0) {
+      label = 'Due reminders, $urgentCount urgent';
+    } else {
+      label = 'Due reminders';
+    }
     return Semantics(
       button: true,
       label: label,
@@ -117,7 +120,7 @@ class _NotificationAction extends StatelessWidget {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    urgentCount > 99 ? '99+' : '$urgentCount',
+                    _urgentCountLabel(urgentCount),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: AppColors.textOnPrimary,
                       height: 1,
@@ -320,8 +323,18 @@ class _ActivityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPayment = item.type == RecentActivityType.payment;
-    final color = isPayment ? AppColors.paid : AppColors.unpaid;
-    final background = isPayment ? AppColors.paidBg : AppColors.unpaidBg;
+    Color color;
+    Color background;
+    IconData icon;
+    if (isPayment) {
+      color = AppColors.paid;
+      background = AppColors.paidBg;
+      icon = Icons.arrow_downward_rounded;
+    } else {
+      color = AppColors.unpaid;
+      background = AppColors.unpaidBg;
+      icon = Icons.receipt_long_outlined;
+    }
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -339,9 +352,7 @@ class _ActivityRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(11),
               ),
               child: Icon(
-                isPayment
-                    ? Icons.arrow_downward_rounded
-                    : Icons.receipt_long_outlined,
+                icon,
                 size: 19,
                 color: color,
               ),
@@ -400,6 +411,11 @@ class _ActivityRow extends StatelessWidget {
       ),
     );
   }
+}
+
+String _urgentCountLabel(int count) {
+  if (count > 99) return '99+';
+  return '$count';
 }
 
 class _EmptyActivity extends StatelessWidget {

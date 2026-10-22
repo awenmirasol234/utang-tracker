@@ -78,16 +78,22 @@ class PaymentsListPage extends ConsumerWidget {
               ),
               data: (payments) {
                 if (payments.isEmpty) {
+                  IconData emptyIcon;
+                  String emptyTitle;
+                  String emptyMessage;
+                  if (filters.hasActiveFilters) {
+                    emptyIcon = Icons.filter_alt_off_outlined;
+                    emptyTitle = 'Walay bayad';
+                    emptyMessage = 'No results for filter.';
+                  } else {
+                    emptyIcon = Icons.payments_outlined;
+                    emptyTitle = 'Wala pay nibayad';
+                    emptyMessage = 'Tap + Record bayad to add.';
+                  }
                   return EmptyState(
-                    icon: filters.hasActiveFilters
-                        ? Icons.filter_alt_off_outlined
-                        : Icons.payments_outlined,
-                    title: filters.hasActiveFilters
-                        ? 'Walay bayad'
-                        : 'Wala pay nibayad',
-                    message: filters.hasActiveFilters
-                        ? 'No results for filter.'
-                        : 'Tap + Record bayad to add.',
+                    icon: emptyIcon,
+                    title: emptyTitle,
+                    message: emptyMessage,
                   );
                 }
 
@@ -338,21 +344,32 @@ class _DateFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color foregroundColor;
+    Color backgroundColor;
+    Color borderColor;
+    if (selected) {
+      foregroundColor = AppColors.textOnPrimary;
+      backgroundColor = AppColors.primaryDark;
+      borderColor = AppColors.primaryDark;
+    } else {
+      foregroundColor = AppColors.textPrimary;
+      backgroundColor = AppColors.surfaceCard;
+      borderColor = AppColors.outline;
+    }
+
     return ActionChip(
       avatar: Icon(
         Icons.calendar_month_outlined,
         size: 18,
-        color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
+        color: foregroundColor,
       ),
       label: Text(label),
       onPressed: onSelected,
-      backgroundColor: selected ? AppColors.primaryDark : AppColors.surfaceCard,
+      backgroundColor: backgroundColor,
       labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-        color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
+        color: foregroundColor,
       ),
-      side: BorderSide(
-        color: selected ? AppColors.primaryDark : AppColors.outline,
-      ),
+      side: BorderSide(color: borderColor),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }

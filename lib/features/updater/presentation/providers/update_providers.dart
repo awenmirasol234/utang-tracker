@@ -107,7 +107,11 @@ class UpdateNotifier extends Notifier<UpdateState> {
         if (result.error != null) {
           state = UpdateError(message: result.error!);
         } else {
-          state = silent ? const UpdateIdle() : const UpdateNotAvailable();
+          if (silent) {
+            state = const UpdateIdle();
+          } else {
+            state = const UpdateNotAvailable();
+          }
         }
         return;
       }
@@ -166,10 +170,14 @@ class UpdateNotifier extends Notifier<UpdateState> {
       final canInstall =
           await _channel.invokeMethod<bool>('canInstallUnknownApps') ?? false;
       if (!canInstall) {
+        AppRelease release;
+        if (current is UpdateDownloaded) {
+          release = current.release;
+        } else {
+          release = (current as UpdatePermissionRequired).release;
+        }
         state = UpdatePermissionRequired(
-          release: current is UpdateDownloaded
-              ? current.release
-              : (current as UpdatePermissionRequired).release,
+          release: release,
           apkPath: apkPath,
         );
         return;

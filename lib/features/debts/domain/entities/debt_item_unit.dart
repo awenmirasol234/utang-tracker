@@ -50,7 +50,8 @@ class DebtItemUnits {
     final normalized = normalize(value);
     for (final option in common) {
       if (option.value == normalized) {
-        return quantity == 1 ? option.label : option.pluralLabel;
+        if (quantity == 1) return option.label;
+        return option.pluralLabel;
       }
     }
     return value.trim();

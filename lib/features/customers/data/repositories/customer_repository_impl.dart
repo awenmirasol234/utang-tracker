@@ -44,7 +44,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final row = await (_db.select(
       _db.customers,
     )..where((table) => table.id.equals(customerId) & table.deletedAt.isNull())).getSingleOrNull();
-    return row == null ? null : mapCustomer(row);
+    if (row == null) return null;
+    return mapCustomer(row);
   }
 
   @override

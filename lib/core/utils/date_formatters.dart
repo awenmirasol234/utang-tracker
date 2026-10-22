@@ -20,9 +20,12 @@ class DateFormatters {
       locale: locale,
     );
     final canonicalLocale = Intl.canonicalizedLocale(locale);
-    final localizedTime = use24HourFormat
-        ? DateFormat.Hm(canonicalLocale).format(localValue)
-        : DateFormat.jm(canonicalLocale).format(localValue);
+    String localizedTime;
+    if (use24HourFormat) {
+      localizedTime = DateFormat.Hm(canonicalLocale).format(localValue);
+    } else {
+      localizedTime = DateFormat.jm(canonicalLocale).format(localValue);
+    }
     final time = localizedTime
         .replaceAll('\u00a0', ' ')
         .replaceAll('\u202f', ' ');

@@ -106,12 +106,23 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   Future<void> _pickDate({required bool due}) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final initialRaw = due ? (_dueDate ?? _transactionDate) : _transactionDate;
-    final initial = due && initialRaw.isBefore(today) ? today : initialRaw;
+    DateTime initialRaw;
+    DateTime firstDate;
+    if (due) {
+      initialRaw = _dueDate ?? _transactionDate;
+      firstDate = today;
+    } else {
+      initialRaw = _transactionDate;
+      firstDate = DateTime(2020);
+    }
+    var initial = initialRaw;
+    if (due && initialRaw.isBefore(today)) {
+      initial = today;
+    }
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: due ? today : DateTime(2020),
+      firstDate: firstDate,
       lastDate: DateTime(2100),
     );
     if (picked == null) return;
@@ -126,7 +137,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _showItemDialog({int? index}) async {
-    final existing = index != null ? _items[index] : null;
+    DebtItemInput? existing;
+    if (index != null) {
+      existing = _items[index];
+    }
     final result = await showDebtItemSheet(context, existing: existing);
     if (result == null) return;
     if (!mounted) return;
@@ -153,9 +167,13 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _save() async {
+    String? customerError;
+    if (_customerId == null) {
+      customerError = 'Select a customer.';
+    }
     setState(() {
       _error = null;
-      _customerError = _customerId == null ? 'Select a customer.' : null;
+      _customerError = customerError;
     });
     if (_customerError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -180,12 +198,32 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
     final customerLabel = _customerName ?? 'No customer';
     final dateLabel = context.smartDate(_transactionDate);
-    final dueLabel = _dueDate == null
-        ? 'No due date'
-        : context.smartDate(_dueDate!);
+    String dueLabel;
+    if (_dueDate == null) {
+      dueLabel = 'No due date';
+    } else {
+      dueLabel = context.smartDate(_dueDate!);
+    }
     final totalLabel = _total.format();
     final notesText = _notesController.text.trim();
-    final notesLabel = notesText.isEmpty ? 'No notes' : notesText;
+    String notesLabel;
+    Color notesColor;
+    if (notesText.isEmpty) {
+      notesLabel = 'No notes';
+      notesColor = AppColors.textMuted;
+    } else {
+      notesLabel = notesText;
+      notesColor = AppColors.textPrimary;
+    }
+    String confirmationTitle;
+    String confirmationAction;
+    if (widget.isEditing) {
+      confirmationTitle = 'Confirm changes?';
+      confirmationAction = 'Save';
+    } else {
+      confirmationTitle = 'Confirm utang?';
+      confirmationAction = 'Confirm';
+    }
     final confirmedItems = items;
 
     final confirmed = await showDialog<bool>(
@@ -193,7 +231,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       builder: (dialogContext) => AlertDialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
         contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-        title: Text(widget.isEditing ? 'Confirm changes?' : 'Confirm utang?'),
+        title: Text(confirmationTitle),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,9 +312,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               Text(
                 notesLabel,
                 style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
-                  color: notesText.isEmpty
-                      ? AppColors.textMuted
-                      : AppColors.textPrimary,
+                  color: notesColor,
                 ),
               ),
             ],
@@ -289,7 +325,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(widget.isEditing ? 'Save' : 'Confirm'),
+            child: Text(confirmationAction),
           ),
         ],
       ),
@@ -326,9 +362,15 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
       if (!mounted) return;
       _isDirty = false;
+      String successMessage;
+      if (widget.isEditing) {
+        successMessage = 'Utang updated';
+      } else {
+        successMessage = 'Utang recorded';
+      }
       AppSnackBar.success(
         context,
-        widget.isEditing ? 'Utang updated' : 'Utang recorded',
+        successMessage,
       );
       context.pop();
     } on AppException catch (appException) {
@@ -343,9 +385,14 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   String _formatQuantity(double quantity) {
-    return quantity % 1 == 0
-        ? quantity.toInt().toString()
-        : quantity.toString();
+    if (quantity % 1 == 0) return quantity.toInt().toString();
+    return quantity.toString();
+  }
+
+  String _dueDateValue(BuildContext context) {
+    final dueDate = _dueDate;
+    if (dueDate == null) return 'Optional';
+    return context.smartDate(dueDate);
   }
 
   Widget _buildSummaryRow(
@@ -464,6 +511,22 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Widget _buildForm() {
+    String title;
+    String notesTooltip;
+    IconData notesIcon;
+    if (widget.isEditing) {
+      title = 'Edit utang';
+    } else {
+      title = 'New utang';
+    }
+    if (_notesExpanded) {
+      notesTooltip = 'Hide note';
+      notesIcon = Icons.close;
+    } else {
+      notesTooltip = 'Add note';
+      notesIcon = Icons.add;
+    }
+
     return PopScope(
       canPop: !_isDirty && !_saving,
       onPopInvokedWithResult: (didPop, _) {
@@ -471,7 +534,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Edit utang' : 'New utang'),
+          title: Text(title),
         ),
         bottomNavigationBar: _buildBottomBar(),
         body: ListView(
@@ -501,9 +564,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 Expanded(
                   child: _DateField(
                     label: 'Due date',
-                    value: _dueDate == null
-                        ? 'Optional'
-                        : context.smartDate(_dueDate!),
+                    value: _dueDateValue(context),
                     onTap: () => _pickDate(due: true),
                     onClear: _dueDate == null
                         ? null
@@ -633,11 +694,11 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               children: [
                 AppTextField.buildLabel(context, 'Notes'),
                 IconButton(
-                  tooltip: _notesExpanded ? 'Hide note' : 'Add note',
+                  tooltip: notesTooltip,
                   onPressed: () =>
                       setState(() => _notesExpanded = !_notesExpanded),
                   icon: Icon(
-                    _notesExpanded ? Icons.close : Icons.add,
+                    notesIcon,
                     size: 20,
                     color: AppColors.textMuted,
                   ),
@@ -668,6 +729,13 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Widget _buildBottomBar() {
+    String saveLabel;
+    if (widget.isEditing) {
+      saveLabel = 'Save changes';
+    } else {
+      saveLabel = 'Save';
+    }
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -704,7 +772,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppButton(
-              label: widget.isEditing ? 'Save changes' : 'Save',
+              label: saveLabel,
               onPressed: _save,
               isLoading: _saving,
             ),
@@ -732,23 +800,41 @@ class _CustomerField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasName = name != null && name!.isNotEmpty;
+    VoidCallback? tapHandler;
+    IconData suffixIcon;
+    String displayName;
+    Color displayColor;
+    if (enabled) {
+      tapHandler = onTap;
+      suffixIcon = Icons.person_search_outlined;
+    } else {
+      suffixIcon = Icons.lock_outline;
+    }
+    if (hasName) {
+      displayName = name!;
+      displayColor = AppColors.textPrimary;
+    } else {
+      displayName = 'Select customer';
+      displayColor = AppColors.textMuted;
+    }
+
     return InkWell(
-      onTap: enabled ? onTap : null,
+      onTap: tapHandler,
       borderRadius: BorderRadius.circular(10),
       child: InputDecorator(
         decoration: InputDecoration(
           errorText: errorText,
           suffixIcon: Icon(
-            enabled ? Icons.person_search_outlined : Icons.lock_outline,
+            suffixIcon,
             size: 20,
             color: AppColors.textMuted,
           ),
         ),
         child: Text(
-          hasName ? name! : 'Select customer',
+          displayName,
           style: AppTextField.inputStyle(
             context,
-            color: hasName ? AppColors.textPrimary : AppColors.textMuted,
+            color: displayColor,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -788,9 +874,12 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
     try {
       final trimmed = query.trim();
       final repo = ref.read(customerRepositoryProvider);
-      final results = trimmed.isEmpty
-          ? await repo.getAll()
-          : await repo.search(trimmed);
+      List<Customer> results;
+      if (trimmed.isEmpty) {
+        results = await repo.getAll();
+      } else {
+        results = await repo.search(trimmed);
+      }
       if (!mounted) return;
       setState(() {
         _customers = results;
@@ -851,13 +940,17 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
     }
     if (customers == null || customers.isEmpty) {
       final searching = _query.trim().isNotEmpty;
+      String emptyMessage;
+      if (searching) {
+        emptyMessage = 'No customers match your search.';
+      } else {
+        emptyMessage = 'No customers yet. Add one to continue.';
+      }
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Text(
-            searching
-                ? 'No customers match your search.'
-                : 'No customers yet. Add one to continue.',
+            emptyMessage,
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
@@ -880,14 +973,18 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
       itemBuilder: (context, index) {
         final customer = customers[index];
         final selected = customer.id == widget.selectedCustomerId;
+        Widget? subtitle;
+        if (customer.phone != null && customer.phone!.isNotEmpty) {
+          subtitle = Text(customer.phone!);
+        }
+        Widget? trailing;
+        if (selected) {
+          trailing = const Icon(Icons.check, color: AppColors.primaryDark);
+        }
         return ListTile(
           title: Text(customer.name),
-          subtitle: customer.phone == null || customer.phone!.isEmpty
-              ? null
-              : Text(customer.phone!),
-          trailing: selected
-              ? const Icon(Icons.check, color: AppColors.primaryDark)
-              : null,
+          subtitle: subtitle,
+          trailing: trailing,
           onTap: () => Navigator.of(context).pop(customer),
         );
       },
@@ -912,22 +1009,33 @@ class _DateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String fieldLabel;
+    if (required) {
+      fieldLabel = '$label *';
+    } else {
+      fieldLabel = label;
+    }
+    Widget suffixIcon;
+    if (onClear != null) {
+      suffixIcon = IconButton(
+        icon: const Icon(Icons.clear, size: 18),
+        onPressed: onClear,
+      );
+    } else {
+      suffixIcon = const Icon(Icons.calendar_today_outlined, size: 18);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AppTextField.buildLabel(context, required ? '$label *' : label),
+        AppTextField.buildLabel(context, fieldLabel),
         const SizedBox(height: AppSpacing.sm),
         InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(10),
           child: InputDecorator(
             decoration: InputDecoration(
-              suffixIcon: onClear != null
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: onClear,
-                    )
-                  : const Icon(Icons.calendar_today_outlined, size: 18),
+              suffixIcon: suffixIcon,
             ),
             child: Text(
               value,

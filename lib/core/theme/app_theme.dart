@@ -263,22 +263,33 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
         iconTheme: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          Color iconColor;
+          if (isSelected) {
+            iconColor = AppColors.primaryDark;
+          } else {
+            iconColor = AppColors.textMuted;
+          }
           return IconThemeData(
-            color: states.contains(WidgetState.selected)
-                ? AppColors.primaryDark
-                : AppColors.textMuted,
+            color: iconColor,
             size: 23,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          FontWeight fontWeight;
+          Color textColor;
+          if (isSelected) {
+            fontWeight = FontWeight.w600;
+            textColor = AppColors.primaryDark;
+          } else {
+            fontWeight = FontWeight.w500;
+            textColor = AppColors.textMuted;
+          }
           return textTheme.labelSmall?.copyWith(
             letterSpacing: 0,
-            fontWeight: states.contains(WidgetState.selected)
-                ? FontWeight.w600
-                : FontWeight.w500,
-            color: states.contains(WidgetState.selected)
-                ? AppColors.primaryDark
-                : AppColors.textMuted,
+            fontWeight: fontWeight,
+            color: textColor,
           );
         }),
       ),

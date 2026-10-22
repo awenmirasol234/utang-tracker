@@ -10,7 +10,6 @@ class AppConstants {
 
   static const String githubOwner = 'awenmirasol234';
   static const String githubRepo = 'utang-tracker';
-  static const String githubApiBaseUrl = 'https://api.github.com';
 
   static const String githubLatestReleaseUrl =
       'https://github.com/awenmirasol234/utang-tracker/releases/latest';

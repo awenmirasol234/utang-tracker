@@ -24,7 +24,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
 
-Version: `1.0.49+48` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
+Version: `1.0.50+49` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
 
 ## Prerequisites
 
@@ -112,7 +112,7 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 1. Bump `version` in **both** `pubspec.yaml` and `assets/release_notes/current.json`
 2. Tag `v<version>` - CI fails if `tag != pubspec != notes`
-3. Push tag -> `.github/workflows/release.yml` runs: `verify_version.py` (tag = pubspec = notes) -> `test_release_scripts.py` (validates note generation) -> `flutter analyze` -> `flutter test` -> `configure_signing.py` (GH secrets -> keystore) -> `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` -> `prepare_release.py` + `generate_release_notes.py` -> GitHub Release with `RELEASE_NOTES.md` (6 helpers in `.github/scripts/`)
+3. Push tag -> `.github/workflows/release.yml` runs: `verify_version.py` (tag = pubspec = notes) -> `test_release_scripts.py` (validates note generation) -> `flutter analyze` -> `flutter test` -> `configure_signing.py` (GH secrets -> keystore) -> `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` -> `prepare_release.py` + `generate_release_notes.py` -> GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`)
 
 ```sh
 # example

@@ -56,20 +56,19 @@ class CustomersListPage extends ConsumerWidget {
                   },
                   itemBuilder: (context) {
                     return CustomerSortOrder.values.map((order) {
+                      Widget? checkIcon;
+                      if (sort == order) {
+                        checkIcon = const Icon(
+                          Icons.check,
+                          size: 18,
+                          color: AppColors.primaryDark,
+                        );
+                      }
                       return PopupMenuItem<CustomerSortOrder>(
                         value: order,
                         child: Row(
                           children: [
-                            SizedBox(
-                              width: 28,
-                              child: sort == order
-                                  ? const Icon(
-                                      Icons.check,
-                                      size: 18,
-                                      color: AppColors.primaryDark,
-                                    )
-                                  : null,
-                            ),
+                            SizedBox(width: 28, child: checkIcon),
                             Expanded(child: Text(order.label)),
                           ],
                         ),
@@ -125,6 +124,18 @@ class CustomersListPage extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       final customer = customers[index];
+                      Color avatarColor;
+                      if (index.isEven) {
+                        avatarColor = AppColors.primaryLight;
+                      } else {
+                        avatarColor = AppColors.accentLight;
+                      }
+                      String initial;
+                      if (customer.name.isNotEmpty) {
+                        initial = customer.name[0].toUpperCase();
+                      } else {
+                        initial = '?';
+                      }
                       return AppCard(
                         onTap: () => context.push('/customers/${customer.id}'),
                         child: Row(
@@ -134,15 +145,11 @@ class CustomersListPage extends ConsumerWidget {
                               height: 44,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: index.isEven
-                                    ? AppColors.primaryLight
-                                    : AppColors.accentLight,
+                                color: avatarColor,
                                 borderRadius: BorderRadius.circular(13),
                               ),
                               child: Text(
-                                customer.name.isNotEmpty
-                                    ? customer.name[0].toUpperCase()
-                                    : '?',
+                                initial,
                                 style: Theme.of(context).textTheme.labelLarge
                                     ?.copyWith(
                                       color: AppColors.primaryDark,

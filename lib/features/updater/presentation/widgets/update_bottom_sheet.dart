@@ -453,11 +453,14 @@ class _ErrorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final icon = isPermissionError
-        ? Icons.security_rounded
-        : isNetworkError
-        ? Icons.wifi_off_rounded
-        : Icons.error_outline_rounded;
+    IconData icon;
+    if (isPermissionError) {
+      icon = Icons.security_rounded;
+    } else if (isNetworkError) {
+      icon = Icons.wifi_off_rounded;
+    } else {
+      icon = Icons.error_outline_rounded;
+    }
 
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.pagePadding),

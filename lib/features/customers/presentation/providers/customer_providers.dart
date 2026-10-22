@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
+import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
 
 enum CustomerSortOrder {
@@ -47,9 +48,7 @@ class CustomersListNotifier extends AsyncNotifier<List<Customer>> {
     final query = ref.watch(customerSearchQueryProvider);
     final sort = ref.watch(customerSortOrderProvider);
     final repo = ref.watch(customerRepositoryProvider);
-    final customers = query.trim().isEmpty
-        ? await repo.getAll()
-        : await repo.search(query);
+    final customers = await _loadCustomers(repo, query);
     return applyCustomerSort(customers, sort);
   }
 
@@ -59,12 +58,20 @@ class CustomersListNotifier extends AsyncNotifier<List<Customer>> {
       final query = ref.read(customerSearchQueryProvider);
       final sort = ref.read(customerSortOrderProvider);
       final repo = ref.read(customerRepositoryProvider);
-      final customers = query.trim().isEmpty
-          ? await repo.getAll()
-          : await repo.search(query);
+      final customers = await _loadCustomers(repo, query);
       return applyCustomerSort(customers, sort);
     });
   }
+}
+
+Future<List<Customer>> _loadCustomers(
+  CustomerRepository repo,
+  String query,
+) async {
+  if (query.trim().isEmpty) {
+    return repo.getAll();
+  }
+  return repo.search(query);
 }
 
 List<Customer> applyCustomerSort(

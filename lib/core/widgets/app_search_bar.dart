@@ -57,6 +57,18 @@ class _AppSearchBarState extends State<AppSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    Widget? clearButton;
+    if (_controller.text.isNotEmpty) {
+      clearButton = IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          _controller.clear();
+          widget.onChanged('');
+          setState(() {});
+        },
+      );
+    }
+
     return TextField(
       controller: _controller,
       style: AppTextField.inputStyle(context),
@@ -66,16 +78,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
         fillColor: AppColors.surfaceCard,
         hintText: widget.hintText,
         prefixIcon: const Icon(Icons.search),
-        suffixIcon: _controller.text.isEmpty
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _controller.clear();
-                  widget.onChanged('');
-                  setState(() {});
-                },
-              ),
+        suffixIcon: clearButton,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
