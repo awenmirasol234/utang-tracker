@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
-import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/domain/money.dart';
+import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
 import 'package:utang_tracker/features/debts/data/repositories/debt_repository_impl.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
-import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_repository_impl.dart';
 
 void main() {

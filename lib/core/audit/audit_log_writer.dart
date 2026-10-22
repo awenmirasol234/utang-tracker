@@ -1,6 +1,6 @@
-import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:uuid/uuid.dart';
 
 /// Writes one audit row. Call this from the repository that performs the
 /// change so the log cannot miss an action the user performed.

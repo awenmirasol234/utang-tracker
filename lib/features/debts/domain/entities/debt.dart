@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:utang_tracker/core/domain/money.dart';
 
 class Debt extends Equatable {
   const Debt({

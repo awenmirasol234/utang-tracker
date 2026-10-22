@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
+import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
-import 'package:utang_tracker/core/domain/money.dart';
-import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:utang_tracker/features/dashboard/presentation/pages/dashboard_page.dart';
 

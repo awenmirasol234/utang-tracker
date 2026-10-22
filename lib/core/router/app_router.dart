@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/router/app_shell.dart';
 import 'package:utang_tracker/features/audit/presentation/pages/audit_log_page.dart';
-import 'package:utang_tracker/features/settings/presentation/pages/settings_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_detail_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customers_list_page.dart';
@@ -12,6 +11,7 @@ import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.d
 import 'package:utang_tracker/features/debts/presentation/pages/debts_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
+import 'package:utang_tracker/features/settings/presentation/pages/settings_page.dart';
 import 'package:utang_tracker/features/updater/presentation/pages/about_page.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();

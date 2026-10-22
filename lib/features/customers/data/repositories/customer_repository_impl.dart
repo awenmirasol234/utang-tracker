@@ -1,14 +1,14 @@
 import 'package:drift/drift.dart';
-import 'package:uuid/uuid.dart';
-import 'package:utang_tracker/core/database/app_database.dart';
-import 'package:utang_tracker/core/error/app_exception.dart';
-import 'package:utang_tracker/core/domain/audit_action.dart';
 import 'package:utang_tracker/core/audit/audit_log_writer.dart';
-import 'package:utang_tracker/features/customers/data/repositories/customer_mappers.dart';
+import 'package:utang_tracker/core/database/app_database.dart';
+import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';
+import 'package:utang_tracker/features/customers/data/repositories/customer_mappers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
-import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:uuid/uuid.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
   CustomerRepositoryImpl(this._db, {Uuid? uuid, DateTime Function()? now})

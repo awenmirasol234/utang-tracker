@@ -12,4 +12,5 @@ include: package:flutter_lints/flutter.yaml
 linter:
   rules:
     prefer_initializing_formals: false
+    directives_ordering: true
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/domain/debt_status.dart';
 
 class StatusBadge extends StatelessWidget {
   const StatusBadge({super.key, required this.status});

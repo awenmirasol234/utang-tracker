@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:utang_tracker/core/utils/debt_math.dart';
-import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:utang_tracker/core/domain/money.dart';
+import 'package:utang_tracker/core/utils/debt_math.dart';
 
 void main() {
   group('debt math', () {

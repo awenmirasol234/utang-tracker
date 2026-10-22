@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
-import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/features/notifications/domain/entities/debt_notification.dart';
 
 void main() {
