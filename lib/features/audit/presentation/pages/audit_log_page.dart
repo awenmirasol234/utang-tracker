@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:utang_tracker/core/audit/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_action.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
@@ -35,10 +35,8 @@ class AuditLogPage extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(auditLogEntriesProvider);
-              await ref.read(auditLogEntriesProvider.future);
-            },
+            onRefresh: () =>
+                ref.read(auditLogEntriesProvider.notifier).refresh(),
             child: ListView.separated(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.pagePadding,

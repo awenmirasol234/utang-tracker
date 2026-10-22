@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:utang_tracker/core/audit/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_action.dart';
 
 class AuditLogEntry extends Equatable {
   const AuditLogEntry({

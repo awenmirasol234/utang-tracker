@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:utang_tracker/core/audit/audit_action.dart';
-import 'package:utang_tracker/core/audit/audit_log_entry.dart';
+import 'package:utang_tracker/core/domain/audit_action.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/audit/data/repositories/audit_log_repository_impl.dart';
+import 'package:utang_tracker/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:utang_tracker/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:utang_tracker/features/audit/presentation/pages/audit_log_page.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
@@ -26,8 +26,11 @@ void main() {
 
     setUp(() {
       appDatabase = AppDatabase.forTesting();
-      customers = CustomerRepositoryImpl(appDatabase);
       tick = 0;
+      customers = CustomerRepositoryImpl(
+        appDatabase,
+        now: () => DateTime.utc(2030, 1, 1, 9, 0, tick++),
+      );
       debts = DebtRepositoryImpl(
         appDatabase,
         now: () => DateTime.utc(2030, 1, 1, 10, 0, tick++),
@@ -97,22 +100,22 @@ void main() {
 
       expect(entries.length, 6);
       expect(
-        entries.take(4).map((entry) => entry.action),
+        entries.map((entry) => entry.action),
         [
           AuditAction.paymentRecorded,
           AuditAction.debtItemsAdded,
           AuditAction.debtUpdated,
           AuditAction.debtCreated,
+          AuditAction.customerUpdated,
+          AuditAction.customerCreated,
         ],
-      );
-      expect(
-        entries.skip(4).map((entry) => entry.action).toSet(),
-        {AuditAction.customerUpdated, AuditAction.customerCreated},
       );
       expect(entries.first.summary, 'Nagbayad ni Maria Santos (₱20.00)');
       expect(entries[1].summary, 'Nag-add items sa utang ni Maria Santos');
       expect(entries[2].summary, 'Na-update ang utang ni Maria Santos');
       expect(entries[3].summary, 'Bag-ong utang ni Maria Santos');
+      expect(entries[4].summary, 'Na-update si Maria Santos');
+      expect(entries[5].summary, 'Nag-add si Maria');
     });
 
     test('a rejected write is not logged', () async {

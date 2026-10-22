@@ -45,13 +45,13 @@ Full details, env setup, and subsystem docs → [`docs/SETUP.md`](docs/SETUP.md)
 ```
 lib/
   main.dart / app.dart                 # app entry
-  app/coordination.dart                # invalidateBusinessData (31-42)
+  app/coordination.dart                # invalidateBusinessData (9-27)
   core/
     database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart (generated, committed)
-    domain/ money.dart / debt_status.dart
-    audit/ audit_action.dart / audit_log_entry.dart / audit_log_writer.dart  # shared audit pieces
+    domain/ money.dart / debt_status.dart / audit_action.dart
+    audit/ audit_log_writer.dart        # shared audit writer called by every repository write
     providers/ core_providers.dart     # plain Riverpod Providers
-    mappers: features/customers|debts|payments/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart)
+    mappers: features/customers|debts|payments|audit/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart / audit_mappers.dart)
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
   features/

@@ -14,9 +14,9 @@ enum AuditAction {
   final String label;
 
   static AuditAction fromValue(String value) {
-    for (final action in AuditAction.values) {
-      if (action.value == value) return action;
-    }
-    return AuditAction.unknown;
+    return AuditAction.values.firstWhere(
+      (action) => action.value == value,
+      orElse: () => AuditAction.unknown,
+    );
   }
 }

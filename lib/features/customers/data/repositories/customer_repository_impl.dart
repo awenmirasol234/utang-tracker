@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
-import 'package:utang_tracker/core/audit/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_action.dart';
 import 'package:utang_tracker/core/audit/audit_log_writer.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_mappers.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';
@@ -11,10 +11,13 @@ import 'package:utang_tracker/features/customers/domain/repositories/customer_re
 import 'package:utang_tracker/core/domain/debt_status.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
-  CustomerRepositoryImpl(this._db, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
+  CustomerRepositoryImpl(this._db, {Uuid? uuid, DateTime Function()? now})
+    : _uuid = uuid ?? const Uuid(),
+      _now = now ?? DateTime.now;
 
   final AppDatabase _db;
   final Uuid _uuid;
+  final DateTime Function() _now;
 
   Expression<bool> get _active => _db.customers.deletedAt.isNull();
 
@@ -62,7 +65,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     }
     await _ensureUniqueName(trimmed);
 
-    final now = DateTime.now().toUtc();
+    final now = _now().toUtc();
     final customerId = _uuid.v4();
     await _db
         .into(_db.customers)
@@ -82,6 +85,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       entityId: customerId,
       summary: 'Nag-add si $trimmed',
       createdAt: now,
+      uuid: _uuid,
     );
     final created = await getById(customerId);
     return created!;
@@ -95,7 +99,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     }
     await _ensureUniqueName(trimmed, excludeId: customer.id);
 
-    final now = DateTime.now().toUtc();
+    final now = _now().toUtc();
     final updated =
         await (_db.update(
           _db.customers,
@@ -116,6 +120,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       entityId: customer.id,
       summary: 'Na-update si $trimmed',
       createdAt: now,
+      uuid: _uuid,
     );
     final result = await getById(customer.id);
     return result!;
@@ -133,7 +138,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       );
     }
 
-    final now = DateTime.now().toUtc();
+    final now = _now().toUtc();
     final updated =
         await (_db.update(
           _db.customers,
@@ -149,6 +154,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       entityId: customerId,
       summary: 'Na-delete si ${existing.name}',
       createdAt: now,
+      uuid: _uuid,
     );
   }
 

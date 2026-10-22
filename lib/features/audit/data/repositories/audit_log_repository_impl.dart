@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:utang_tracker/core/audit/audit_action.dart';
-import 'package:utang_tracker/core/audit/audit_log_entry.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
+import 'package:utang_tracker/features/audit/data/repositories/audit_mappers.dart';
+import 'package:utang_tracker/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:utang_tracker/features/audit/domain/repositories/audit_log_repository.dart';
 
 class AuditLogRepositoryImpl implements AuditLogRepository {
@@ -16,16 +16,6 @@ class AuditLogRepositoryImpl implements AuditLogRepository {
               ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]))
             .get();
 
-    return rows
-        .map(
-          (row) => AuditLogEntry(
-            id: row.id,
-            action: AuditAction.fromValue(row.action),
-            entityId: row.entityId,
-            summary: row.summary,
-            createdAt: row.createdAt,
-          ),
-        )
-        .toList();
+    return rows.map(mapAuditLogEntry).toList();
   }
 }

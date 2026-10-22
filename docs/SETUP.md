@@ -70,20 +70,21 @@ flutter doctor      # Android toolchain must be green
 ```
 lib/
   main.dart / app.dart                 # app entry
-  app/coordination.dart                # invalidateBusinessData (31-42)
+  app/coordination.dart                # invalidateBusinessData (9-27)
   core/database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart
-  core/domain/ money.dart / debt_status.dart
+  core/domain/ money.dart / debt_status.dart / audit_action.dart
+  core/audit/ audit_log_writer.dart   # shared audit writer called by every repository write
   core/providers/ core_providers.dart  # plain Riverpod Providers
-  mappers: features/customers|debts|payments/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart)
+  mappers: features/customers|debts|payments|audit/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart / audit_mappers.dart)
   core/router/ app_router.dart / app_shell.dart   # go_router StatefulShellRoute.indexedStack (5 tabs)
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
-  features/customers|debts|payments|dashboard|notifications|updater|settings  # 7 dirs
+  features/customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 dirs
     domain/entities + domain/repositories (interface) + domain/usecases
     data/repositories (impl) + data/datasources + data/services
     presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater
 assets/images/ + assets/release_notes/current.json
-rules/database_rules.md   # authoritative schema v5 spec
+rules/database_rules.md   # authoritative schema v6 spec
 test/                     # AppDatabase.forTesting() (in-memory SQLite)
 ```
 
@@ -93,12 +94,12 @@ State and navigation details are in §4.
 
 ## 4. Subsystems Reference
 
-### 4.1 Drift SQLite — schema v5
+### 4.1 Drift SQLite — schema v6
 
-- **Files:** `lib/core/database/tables.dart`, `lib/core/database/app_database.dart`, `lib/core/database/database_location.dart`, `lib/core/database/app_database.g.dart` (generated) + `lib/features/customers/data/repositories/customer_mappers.dart`, `lib/features/debts/data/repositories/debt_mappers.dart`, `lib/features/payments/data/repositories/payment_mappers.dart` (`features/*/data/repositories/*_mappers.dart`).
-- **Schema version:** `5` (`AppDatabase.schemaVersion`). No SQL `CHECK`/`UNIQUE`/cascade — rules enforced in repository impls.
-- **Tables:** `customers`, `debts`, `debt_items`, `payments` — see `rules/database_rules.md` for columns, indexes, and business rules.
-- **Migrations:** v2 soft-delete (`deleted_at`), v3 recreate `debt_items`, v4 add `unit` default `piece`, v5 `unit_price+subtotal -> price` (custom line amount, quantity does NOT multiply price).
+- **Files:** `lib/core/database/tables.dart`, `lib/core/database/app_database.dart`, `lib/core/database/database_location.dart`, `lib/core/database/app_database.g.dart` (generated) + `lib/features/customers/data/repositories/customer_mappers.dart`, `lib/features/debts/data/repositories/debt_mappers.dart`, `lib/features/payments/data/repositories/payment_mappers.dart`, `lib/features/audit/data/repositories/audit_mappers.dart` (`features/*/data/repositories/*_mappers.dart`).
+- **Schema version:** `6` (`AppDatabase.schemaVersion`). No SQL `CHECK`/`UNIQUE`/cascade — rules enforced in repository impls.
+- **Tables:** `customers`, `debts`, `debt_items`, `payments`, `audit_logs` — see `rules/database_rules.md` for columns, indexes, and business rules.
+- **Migrations:** v2 soft-delete (`deleted_at`), v3 recreate `debt_items`, v4 add `unit` default `piece`, v5 `unit_price+subtotal -> price` (custom line amount, quantity does NOT multiply price), v6 add the append-only `audit_logs` table.
 - **Date handling:** user-selected local day + save-time clock → stored UTC (`DateTime` as `INTEGER`). `due_date` is date-only (no save-time stamping).
 - **Testing:** `AppDatabase.forTesting()` creates an in-memory DB; migration tests seed legacy schemas via raw SQL.
 - **Codegen:** `dart run build_runner build --delete-conflicting-outputs` after editing drift tables. Commit the updated `app_database.g.dart`.
@@ -129,7 +130,7 @@ State and navigation details are in §4.
 ### 4.5 Navigation (go_router)
 
 - `lib/core/router/app_router.dart` + `lib/core/router/app_shell.dart`.
-- `go_router ^17.3.0`, `StatefulShellRoute.indexedStack` with 5 tabs: `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings` (`/about`).
+- `go_router ^17.3.0`, `StatefulShellRoute.indexedStack` with 5 tabs: `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`. Top-level routes outside the shell: `/about`, `/audit-log`.
 - Add new top-level routes in `app_router.dart` and add the shell branch in `app_shell.dart`.
 
 ### 4.6 State (Riverpod) — push invalidation, not streams
@@ -139,7 +140,7 @@ State and navigation details are in §4.
   ```dart
   invalidateBusinessData(ref, customerId: ..., debtId: ...);
   ```
-  from `lib/app/coordination.dart:9-25`. New `FutureProvider`s for list/detail must be registered there.
+  from `lib/app/coordination.dart:9-27`. New list/detail providers must be registered there.
 
 ### 4.7 Release process
 

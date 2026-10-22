@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
-import 'package:utang_tracker/core/audit/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_action.dart';
 import 'package:utang_tracker/core/audit/audit_log_writer.dart';
 import 'package:utang_tracker/features/debts/data/repositories/debt_mappers.dart';
 import 'package:utang_tracker/core/utils/date_time_utils.dart';
@@ -194,6 +194,7 @@ class DebtRepositoryImpl implements DebtRepository {
         entityId: debtId,
         summary: 'Bag-ong utang ni ${customer.name}',
         createdAt: now,
+        uuid: _uuid,
       );
     });
 
@@ -277,6 +278,7 @@ class DebtRepositoryImpl implements DebtRepository {
         entityId: debtId,
         summary: 'Na-update ang utang ni ${existing.debt.customerName ?? 'Customer'}',
         createdAt: now,
+        uuid: _uuid,
       );
     });
 
@@ -346,6 +348,7 @@ class DebtRepositoryImpl implements DebtRepository {
         summary:
             'Nag-add items sa utang ni ${existing.debt.customerName ?? 'Customer'}',
         createdAt: now,
+        uuid: _uuid,
       );
     });
 
