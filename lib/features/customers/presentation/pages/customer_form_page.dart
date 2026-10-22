@@ -10,6 +10,7 @@ import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
+import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
@@ -144,7 +145,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         ),
         error: (error, stackTrace) => Scaffold(
           appBar: AppBar(title: const Text('Edit customer')),
-          body: Center(child: Text(error.toString())),
+          body: ErrorView(message: error.toString()),
         ),
         data: (data) {
           if (data == null) {
@@ -263,7 +264,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                     size: 20,
                     color: AppColors.textMuted,
                   ),
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   constraints: const BoxConstraints(
                     minWidth: 44,
                     minHeight: 44,

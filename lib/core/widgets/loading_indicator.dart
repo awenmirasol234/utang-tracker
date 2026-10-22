@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
+import 'package:utang_tracker/core/theme/app_spacing.dart';
 
 class LoadingIndicator extends StatelessWidget {
   const LoadingIndicator({super.key, this.message});
@@ -21,7 +22,7 @@ class LoadingIndicator extends StatelessWidget {
             ),
           ),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               message!,
               style: Theme.of(

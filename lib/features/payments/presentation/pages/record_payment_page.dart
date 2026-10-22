@@ -323,7 +323,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                     size: 20,
                     color: AppColors.textMuted,
                   ),
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   constraints: const BoxConstraints(
                     minWidth: 44,
                     minHeight: 44,
@@ -595,7 +595,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               MoneyText(debt.balance),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.xs),
               StatusBadge(status: debt.status),
             ],
           ),

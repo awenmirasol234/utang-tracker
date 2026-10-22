@@ -111,4 +111,39 @@ void main() {
           'formatter.\n${offenders.join('\n')}',
     );
   });
+
+  test('spacing values come from AppSpacing', () {
+    final lib = Directory('lib');
+    final offenders = <String>[];
+    // Only direct arguments are inspected, so a nested widget call inside a
+    // SizedBox cannot report a number that belongs to the child.
+    final spacingCall = RegExp(
+      r'\b(?:EdgeInsets[\.\w]*|SizedBox)\(([^()]*)\)',
+      dotAll: true,
+    );
+    final rawToken = RegExp(r'(?<![\w.])(?:4|8|12|16|18|20|24|32)(?![\w.])');
+
+    for (final entity in lib.listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      if (entity.path.endsWith('app_spacing.dart')) continue;
+
+      final source = entity.readAsStringSync();
+      for (final match in spacingCall.allMatches(source)) {
+        final arguments = match.group(1)!;
+        if (!rawToken.hasMatch(arguments)) continue;
+        final line = '\n'.allMatches(source.substring(0, match.start)).length + 1;
+        offenders.add(
+          '${entity.path}:$line: ${match.group(0)!.replaceAll('\n', ' ')}',
+        );
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          'Use the AppSpacing tokens instead of raw spacing numbers.\n'
+          '${offenders.join('\n')}',
+    );
+  });
 }

@@ -233,8 +233,16 @@ class DebtDetailPage extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xl,
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.pagePadding,
+          AppSpacing.xl,
+          0,
+        ),
         title: const Text('Add item?'),
         content: Column(
           mainAxisSize: MainAxisSize.min,

@@ -244,7 +244,10 @@ class AppTheme {
         secondaryLabelStyle: textTheme.labelMedium?.copyWith(
           color: AppColors.textOnPrimary,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         side: const BorderSide(color: AppColors.outline),
       ),

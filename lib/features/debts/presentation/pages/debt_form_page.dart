@@ -16,6 +16,7 @@ import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
+import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
@@ -220,8 +221,16 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xl,
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.pagePadding,
+          AppSpacing.xl,
+          0,
+        ),
         title: Text(confirmationTitle),
         content: SingleChildScrollView(
           child: Column(
@@ -462,7 +471,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         ),
         error: (error, stackTrace) => Scaffold(
           appBar: AppBar(title: const Text('Edit debt')),
-          body: Center(child: Text(error.toString())),
+          body: ErrorView(message: error.toString()),
         ),
         data: (data) {
           if (data == null) {
@@ -652,7 +661,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                       color: AppColors.textMuted,
                                     ),
                                     onPressed: () => _showItemDialog(index: index),
-                                    padding: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(AppSpacing.md),
                                     constraints: const BoxConstraints(
                                       minWidth: 44,
                                       minHeight: 44,
@@ -690,7 +699,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                     size: 20,
                     color: AppColors.textMuted,
                   ),
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   constraints: const BoxConstraints(
                     minWidth: 44,
                     minHeight: 44,
