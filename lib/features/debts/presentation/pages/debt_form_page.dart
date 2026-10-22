@@ -206,15 +206,6 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     }
     final totalLabel = _total.format();
     final notesText = _notesController.text.trim();
-    String notesLabel;
-    Color notesColor;
-    if (notesText.isEmpty) {
-      notesLabel = 'No notes';
-      notesColor = AppColors.textMuted;
-    } else {
-      notesLabel = notesText;
-      notesColor = AppColors.textPrimary;
-    }
     String confirmationTitle;
     String confirmationAction;
     if (widget.isEditing) {
@@ -300,21 +291,23 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Notes',
-                style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
+              if (notesText.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Notes',
+                  style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                notesLabel,
-                style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
-                  color: notesColor,
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  notesText,
+                  style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

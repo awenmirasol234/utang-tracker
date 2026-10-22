@@ -466,4 +466,110 @@ void main() {
     expect(tester.widget<Icon>(juanCheck).color, AppColors.primaryDark);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('confirmation dialog hides notes when empty and shows them when set', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final database = AppDatabase.forTesting();
+    addTearDown(database.close);
+    final customers = CustomerRepositoryImpl(database);
+    final customer = await customers.create(name: 'Test Customer');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(database)],
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: DebtFormPage(initialCustomerId: customer.id),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(TextButton, 'Add item'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Product *',
+        ),
+        matching: find.byType(TextField),
+      ),
+      'Rice',
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Quantity *',
+        ),
+        matching: find.byType(TextField),
+      ),
+      '1',
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Price *',
+        ),
+        matching: find.byType(TextField),
+      ),
+      '10.00',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Confirm debt?'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Notes'),
+      ),
+      findsNothing,
+    );
+
+    await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byTooltip('Add note'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byTooltip('Add note'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.hint == 'Optional',
+        ),
+        matching: find.byType(TextField),
+      ),
+      'Deliver on Friday',
+    );
+    await tester.pump();
+
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Notes'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Deliver on Friday'),
+      ),
+      findsOneWidget,
+    );
+  });
 }
