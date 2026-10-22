@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/router/app_shell.dart';
+import 'package:utang_tracker/features/audit/presentation/pages/audit_log_page.dart';
 import 'package:utang_tracker/features/settings/presentation/pages/settings_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_detail_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_form_page.dart';
@@ -134,6 +135,11 @@ GoRouter createAppRouter() {
         path: '/about',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AboutPage(),
+      ),
+      GoRoute(
+        path: '/audit-log',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AuditLogPage(),
       ),
     ],
   );

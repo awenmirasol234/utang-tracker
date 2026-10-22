@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
+import 'package:utang_tracker/features/audit/data/repositories/audit_log_repository_impl.dart';
+import 'package:utang_tracker/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
 import 'package:utang_tracker/features/dashboard/data/repositories/dashboard_repository_impl.dart';
@@ -40,3 +42,7 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
 final updateRepositoryProvider = Provider<UpdateRepository>(
   (_) => UpdateRepositoryImpl(),
 );
+
+final auditLogRepositoryProvider = Provider<AuditLogRepository>((ref) {
+  return AuditLogRepositoryImpl(ref.watch(databaseProvider));
+});

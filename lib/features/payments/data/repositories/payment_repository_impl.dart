@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/audit/audit_action.dart';
+import 'package:utang_tracker/core/audit/audit_log_writer.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_mappers.dart';
 import 'package:utang_tracker/core/utils/date_time_utils.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
@@ -211,6 +213,20 @@ class PaymentRepositoryImpl implements PaymentRepository {
           status: Value(newStatus.value),
           updatedAt: Value(now),
         ),
+      );
+
+      final customer =
+          await (_db.select(_db.customers)
+                ..where((table) => table.id.equals(debt.customerId)))
+              .getSingleOrNull();
+
+      await writeAuditLog(
+        _db,
+        action: AuditAction.paymentRecorded,
+        entityId: paymentId,
+        summary:
+            'Nagbayad ni ${customer?.name ?? 'Customer'} (${amount.format()})',
+        createdAt: now,
       );
     });
 

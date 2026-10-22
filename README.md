@@ -11,6 +11,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 - **Payments** - record partial/full bayad, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
 - **Overdue & notifications** - due-date aware
+- **Audit log** - Settings page lists every recorded change (customers, debts, bayad); rows are written by the repositories
 - **Updater** - GitHub Releases check, in-app update sheet + About page
 
 ## Tech Stack
@@ -19,7 +20,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 |---|---|
 | Framework | Flutter 3.44.0 (stable, Dart SDK ^3.12.0, Android only) |
 | State | `flutter_riverpod` - plain `Provider`s in `lib/core/providers/core_providers.dart` |
-| DB | `drift` 2.34.1 + `drift_flutter` 0.3.0 + `sqlite3` 3.5.0, schema v5, `AppDatabase.forTesting()` for tests |
+| DB | `drift` 2.34.1 + `drift_flutter` 0.3.0 + `sqlite3` 3.5.0, schema v6, `AppDatabase.forTesting()` for tests |
 | Nav | `go_router` `StatefulShellRoute.indexedStack` (5 tabs) |
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
@@ -48,24 +49,25 @@ lib/
   core/
     database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart (generated, committed)
     domain/ money.dart / debt_status.dart
+    audit/ audit_action.dart / audit_log_entry.dart / audit_log_writer.dart  # shared audit pieces
     providers/ core_providers.dart     # plain Riverpod Providers
     mappers: features/customers|debts|payments/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart)
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
   features/
-    customers|debts|payments|dashboard|notifications|updater|settings  # 7 feature dirs
+    customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 feature dirs
       domain/entities + domain/repositories (interface) + domain/usecases
       data/repositories (impl - enforces business rules) + data/datasources + data/services
       presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel (com.example.utang_tracker/updater)
   assets/images/ + assets/release_notes/current.json
-  rules/database_rules.md              # authoritative data spec (schema v5)
+  rules/database_rules.md              # authoritative data spec (schema v6)
   test/                                # repo + migration tests (in-memory DB)
 ```
 
 ## Data Rules
 
-Full spec -> [`rules/database_rules.md`](rules/database_rules.md) (schema v5, authoritative).
+Full spec -> [`rules/database_rules.md`](rules/database_rules.md) (schema v6, authoritative).
 
 Summary (enforced in repository impls, not SQL):
 
@@ -77,10 +79,11 @@ Summary (enforced in repository impls, not SQL):
 - Payment: `0 < amount <= balance`, only against active non-PAID debt; insert + debt update atomic
 - Dates: user-selected local day + save-time clock -> stored UTC; `due_date` is date-only
 - Customer delete blocked if active `UNPAID`/`PARTIAL` debts exist; names unique among active (case-insensitive)
+- Audit log: every customer/debt/payment write appends an immutable `audit_logs` row (written by the repository; debt + payment rows share the write transaction)
 
-Indexes: `idx_debts_customer_id/status/transaction_date`, `idx_debt_items_debt_id`, `idx_payments_debt_id/payment_date`.
+Indexes: `idx_debts_customer_id/status/transaction_date`, `idx_debt_items_debt_id`, `idx_payments_debt_id/payment_date`, `idx_audit_logs_created_at`.
 
-Migrations: v2 soft-delete, v3 recreate `debt_items`, v4 add `unit` (default `piece`), v5 `unit_price+subtotal -> price`.
+Migrations: v2 soft-delete, v3 recreate `debt_items`, v4 add `unit` (default `piece`), v5 `unit_price+subtotal -> price`, v6 add `audit_logs`.
 
 ## Setup & Commands
 
@@ -106,7 +109,7 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 ## Routes
 
-- `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`, `/about`.
+- `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`, `/about`, `/audit-log`.
 
 ## Release
 

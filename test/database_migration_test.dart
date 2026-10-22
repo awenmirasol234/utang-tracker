@@ -34,7 +34,7 @@ INSERT INTO debt_items (
 
     expect(item.unit, DebtItemUnits.piece);
     expect(item.price, 10000);
-    expect(database.schemaVersion, 5);
+    expect(database.schemaVersion, 6);
   });
 
   test('schema 4 custom units and subtotals migrate without changes', () async {
@@ -85,6 +85,80 @@ INSERT INTO debt_items (
         'idx_payments_payment_date',
       ]),
     );
+  });
+
+  test('schema 5 creates the audit log table', () async {
+    final executor = NativeDatabase.memory(
+      setup: (database) {
+        database.execute('''
+CREATE TABLE customers (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  phone TEXT NULL,
+  notes TEXT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+        database.execute('''
+CREATE TABLE debts (
+  id TEXT NOT NULL PRIMARY KEY,
+  customer_id TEXT NOT NULL,
+  total_amount INTEGER NOT NULL,
+  paid_amount INTEGER NOT NULL,
+  balance INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  transaction_date INTEGER NOT NULL,
+  due_date INTEGER NULL,
+  notes TEXT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+        database.execute('''
+CREATE TABLE debt_items (
+  id TEXT NOT NULL PRIMARY KEY,
+  debt_id TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  quantity REAL NOT NULL,
+  unit TEXT NOT NULL DEFAULT 'piece',
+  price INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+        database.execute('''
+CREATE TABLE payments (
+  id TEXT NOT NULL PRIMARY KEY,
+  debt_id TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  payment_date INTEGER NOT NULL,
+  payment_method TEXT NOT NULL,
+  notes TEXT NULL,
+  created_at INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+        database.execute('PRAGMA user_version = 5;');
+      },
+    );
+    final database = AppDatabase(executor);
+    addTearDown(database.close);
+
+    final tables = await database
+        .customSelect(
+          "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'audit_logs'",
+        )
+        .get();
+    expect(tables.length, 1);
+
+    final indexes = await database
+        .customSelect(
+          "SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_audit_logs_created_at'",
+        )
+        .get();
+    expect(indexes.length, 1);
   });
 }
 

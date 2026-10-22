@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/audit/audit_action.dart';
+import 'package:utang_tracker/core/audit/audit_log_writer.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_mappers.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
@@ -74,6 +76,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
             updatedAt: now,
           ),
         );
+    await writeAuditLog(
+      _db,
+      action: AuditAction.customerCreated,
+      entityId: customerId,
+      summary: 'Nag-add si $trimmed',
+      createdAt: now,
+    );
     final created = await getById(customerId);
     return created!;
   }
@@ -101,6 +110,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
     if (updated == 0) {
       throw const NotFoundException('Customer not found.');
     }
+    await writeAuditLog(
+      _db,
+      action: AuditAction.customerUpdated,
+      entityId: customer.id,
+      summary: 'Na-update si $trimmed',
+      createdAt: now,
+    );
     final result = await getById(customer.id);
     return result!;
   }
@@ -127,6 +143,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
     if (updated == 0) {
       throw const NotFoundException('Customer not found.');
     }
+    await writeAuditLog(
+      _db,
+      action: AuditAction.customerDeleted,
+      entityId: customerId,
+      summary: 'Na-delete si ${existing.name}',
+      createdAt: now,
+    );
   }
 
   @override

@@ -18,6 +18,12 @@ class SettingsPage extends StatelessWidget {
         ),
         children: [
           _MenuItem(
+            icon: Icons.history_rounded,
+            title: 'Audit Log',
+            subtitle: 'History of all changes',
+            onTap: () => context.push('/audit-log'),
+          ),
+          _MenuItem(
             icon: Icons.info_outline_rounded,
             title: 'About',
             subtitle: 'App version and updates',

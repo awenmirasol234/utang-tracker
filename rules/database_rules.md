@@ -1,6 +1,6 @@
 # Database Rules
 
-The application uses Drift with SQLite. The current schema version is `5`.
+The application uses Drift with SQLite. The current schema version is `6`.
 
 ## Storage Conventions
 
@@ -87,6 +87,18 @@ Common units are normalized case-insensitively to the values above. A trimmed, n
 | `created_at` | `INTEGER` | No | Drift `DateTime`, UTC |
 | `deleted_at` | `INTEGER` | Yes | Drift `DateTime`, UTC; `NULL` means active |
 
+### `audit_logs`
+
+| Column | SQLite type | Nullable | Notes |
+| --- | --- | --- | --- |
+| `id` | `TEXT` | No | Primary key; UUID v4 |
+| `action` | `TEXT` | No | `customer_created`, `customer_updated`, `customer_deleted`, `debt_created`, `debt_updated`, `debt_items_added`, or `payment_recorded` |
+| `entity_id` | `TEXT` | No | Id of the customer, debt, or payment the action belongs to |
+| `summary` | `TEXT` | No | Human-readable Taglish description of the action |
+| `created_at` | `INTEGER` | No | Drift `DateTime`, UTC |
+
+Audit rows are immutable. They are never updated, soft-deleted, or purged.
+
 ## Relationships
 
 - One customer can have many debts: `debts.customer_id` references `customers.id`.
@@ -104,6 +116,7 @@ Fresh databases create these indexes:
 - `idx_debt_items_debt_id` on `debt_items.debt_id`
 - `idx_payments_debt_id` on `payments.debt_id`
 - `idx_payments_payment_date` on `payments.payment_date`
+- `idx_audit_logs_created_at` on `audit_logs.created_at`
 
 ## Business Rules
 
@@ -146,9 +159,18 @@ Fresh databases create these indexes:
 - Collected-amount totals include active payments within the requested UTC date range.
 - The current repositories expose soft deletion for customers and use soft deletion when replacing debt items. They do not expose debt or payment deletion operations.
 
+## Audit Log
+
+- Every customer, debt, and payment write appends one `audit_logs` row. Audit rows are written by the repository that performs the change, so the log cannot miss an action.
+- Debt and payment changes are logged inside the same transaction as the change itself.
+- Customer additions, updates, and deletions are logged right after the change succeeds.
+- The audit log is append-only: rows are never updated, soft-deleted, or purged, and no retention limit is applied.
+- The log lists the newest entries first.
+
 ## Migration History
 
 - Version 2 added `deleted_at` to all four tables.
 - Version 3 recreated the legacy `debt_items` table without its earlier unit column.
 - Version 4 added the current `unit` column with a `piece` default.
 - Version 5 replaced the legacy `unit_price` and `subtotal` columns with `price`, preserving each existing item's former subtotal as its final custom line amount.
+- Version 6 added the `audit_logs` table.

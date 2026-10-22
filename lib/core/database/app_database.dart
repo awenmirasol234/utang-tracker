@@ -6,10 +6,10 @@ import 'package:utang_tracker/core/database/tables.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Customers, Debts, DebtItems, Payments])
+@DriftDatabase(tables: [Customers, Debts, DebtItems, Payments, AuditLogs])
 class AppDatabase extends _$AppDatabase {
   static const applicationId = 0x5554414e;
-  static const currentSchemaVersion = 5;
+  static const currentSchemaVersion = 6;
 
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
@@ -97,6 +97,9 @@ FROM debt_items;
           'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
         );
       }
+      if (from < 6) {
+        await m.createTable(auditLogs);
+      }
       await _createIndexes();
     },
     beforeOpen: (_) async {
@@ -123,6 +126,9 @@ FROM debt_items;
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_payments_payment_date ON payments (payment_date)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs (created_at)',
     );
   }
 }

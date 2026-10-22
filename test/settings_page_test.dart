@@ -24,4 +24,12 @@ void main() {
       ),
     );
   });
+
+  testWidgets('settings page shows Audit Log menu item', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: SettingsPage())),
+    );
+    expect(find.text('Audit Log'), findsOneWidget);
+    expect(find.text('History of all changes'), findsOneWidget);
+  });
 }

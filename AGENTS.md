@@ -3,7 +3,7 @@
 ## Repo facts
 
 - Android-only Flutter app (no ios/web/desktop): sari-sari store utang/bayad ledger. UI strings are hardcoded Taglish/Cebuano — no i18n, intentional.
-- `rules/database_rules.md` is the authoritative data spec (schema v5, business rules, migration history) - keep it in sync with any schema/repo change. `README.md` is the project overview.
+- `rules/database_rules.md` is the authoritative data spec (schema v6, business rules, migration history) - keep it in sync with any schema/repo change. `README.md` is the project overview.
 
 ## Commands
 
