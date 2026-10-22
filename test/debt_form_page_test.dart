@@ -607,7 +607,9 @@ void main() {
     await tester.enterText(
       find.descendant(
         of: find.byWidgetPredicate(
-          (widget) => widget is AppTextField && widget.hint == 'Optional',
+          (widget) =>
+              widget is AppTextField &&
+              widget.hint == 'Add any details (optional)',
         ),
         matching: find.byType(TextField),
       ),

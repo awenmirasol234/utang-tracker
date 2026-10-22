@@ -336,7 +336,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               const SizedBox(height: AppSpacing.sm),
               AppTextField(
                 controller: _notesController,
-                hint: 'Optional',
+                hint: 'Add any details (optional)',
                 minLines: 4,
                 maxLines: 6,
                 onChanged: (_) => _markDirty(),
@@ -531,7 +531,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
     return AppModalBottomSheet(
       title: 'Select debt',
       headerBottom: AppSearchBar(
-        hintText: 'Search by customer',
+        hintText: 'Search by customer name',
         onChanged: (value) {
           _query = value;
           _load(value);

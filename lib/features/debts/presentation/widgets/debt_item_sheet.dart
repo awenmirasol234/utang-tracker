@@ -224,7 +224,7 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
             AppTextField(
               controller: _priceController,
               label: 'Price *',
-              hint: '50.00',
+              hint: '50.00 (total, not per unit)',
               errorText: _priceError,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,

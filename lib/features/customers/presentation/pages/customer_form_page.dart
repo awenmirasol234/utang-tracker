@@ -234,7 +234,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               controller: _nameController,
               focusNode: _nameFocusNode,
               label: 'Name *',
-              hint: 'Customer name',
+              hint: 'Maria Santos',
               errorText: _nameError,
               textInputAction: TextInputAction.next,
               onChanged: (_) {
@@ -246,7 +246,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
             AppTextField(
               controller: _phoneController,
               label: 'Phone',
-              hint: 'Optional',
+              hint: '0917 123 4567',
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               onChanged: (_) => _markDirty(),
@@ -277,7 +277,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               const SizedBox(height: AppSpacing.sm),
               AppTextField(
                 controller: _notesController,
-                hint: 'Optional',
+                hint: 'Add any details (optional)',
                 minLines: 4,
                 maxLines: 6,
                 textInputAction: TextInputAction.done,

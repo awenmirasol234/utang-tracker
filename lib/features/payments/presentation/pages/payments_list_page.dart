@@ -239,7 +239,7 @@ class _PaymentFiltersBar extends StatelessWidget {
         children: [
           AppSearchBar(
             key: const ValueKey('payment-search'),
-            hintText: 'Search by customer',
+            hintText: 'Search by customer name',
             initialValue: filters.searchQuery,
             onChanged: onSearchChanged,
           ),

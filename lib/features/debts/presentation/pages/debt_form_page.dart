@@ -712,7 +712,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               const SizedBox(height: AppSpacing.sm),
               AppTextField(
                 controller: _notesController,
-                hint: 'Optional',
+                hint: 'Add any details (optional)',
                 minLines: 4,
                 maxLines: 6,
                 onChanged: (_) => _markDirty(),
@@ -898,7 +898,7 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
     return AppModalBottomSheet(
       title: 'Select customer',
       headerBottom: AppSearchBar(
-        hintText: 'Search customer',
+        hintText: 'Search by customer name',
         onChanged: (value) {
           _query = value;
           _load(value);

@@ -39,7 +39,7 @@ class CustomersListPage extends ConsumerWidget {
               children: [
                 Expanded(
                   child: AppSearchBar(
-                    hintText: 'Search by name',
+                    hintText: 'Search by customer name',
                     onChanged: (value) {
                       ref
                           .read(customerSearchQueryProvider.notifier)
