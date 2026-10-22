@@ -1,11 +1,15 @@
 {
-  "version": "1.0.52",
+  "version": "1.0.53",
   "date": "2026-10-22",
   "notes": {
-    "added": [
-      "Added an Audit Log in Settings that lists every change to customers, debts and payments"
+    "added": [],
+    "changed": [
+      "Translated the app screens into English",
+      "Showed the result of a manual update check on the About page",
+      "Added spacing between the tiles on the Settings page"
     ],
-    "changed": [],
-    "fixed": []
+    "fixed": [
+      "Kept the downloaded update file after the install permission is granted so it can be installed without downloading it again"
+    ]
   }
 }
