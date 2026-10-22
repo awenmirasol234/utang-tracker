@@ -24,6 +24,7 @@ class SettingsPage extends StatelessWidget {
             subtitle: 'History of all changes',
             onTap: () => context.push('/audit-log'),
           ),
+          const SizedBox(height: AppSpacing.sm),
           _MenuItem(
             icon: Icons.info_outline_rounded,
             title: 'About',
