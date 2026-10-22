@@ -77,11 +77,11 @@ lib/
   mappers: features/customers|debts|payments/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart)
   core/router/ app_router.dart / app_shell.dart   # go_router StatefulShellRoute.indexedStack (5 tabs)
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
-  features/customers|debts|payments|dashboard|notifications|updater|export|import|settings  # 9 dirs
+  features/customers|debts|payments|dashboard|notifications|updater|settings  # 7 dirs
     domain/entities + domain/repositories (interface) + domain/usecases
     data/repositories (impl) + data/datasources + data/services
     presentation/pages + presentation/providers + presentation/widgets
-  android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater + export channel com.example.utang_tracker/export + import channel com.example.utang_tracker/import
+  android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater
 assets/images/ + assets/release_notes/current.json
 rules/database_rules.md   # authoritative schema v5 spec
 test/                     # AppDatabase.forTesting() (in-memory SQLite)
@@ -141,22 +141,7 @@ State and navigation details are in §4.
   ```
   from `lib/app/coordination.dart:9-25`. New `FutureProvider`s for list/detail must be registered there.
 
-### 4.7 CSV export
-
-- **Entry point:** Settings > Export data (`lib/features/settings/presentation/pages/settings_page.dart`).
-- **Dart side:** `lib/features/export/domain/usecases/export_data.dart` builds three CSVs (customers, debts with items, payments) from the active records. Amounts are plain pesos, dates are `yyyy-MM-dd`, free text is RFC 4180 quoted (`lib/core/utils/csv.dart`).
-- **Sharing:** `lib/features/export/data/repositories/file_share_repository_impl.dart` writes the files to `<external files>/exports/` and calls the `com.example.utang_tracker/export` channel; `MainActivity.kt` shares them with `ACTION_SEND_MULTIPLE` through the existing `FileProvider`.
-
-### 4.8 CSV import
-
-- **Entry point:** Settings > Import data (`/import` route, `lib/features/import/presentation/pages/import_page.dart`).
-- **Format:** the same three files the app exports. Each file is recognised by its header row; the debts file keeps the packed items cell (`Product x2 kg @50.00`).
-- **Validation:** `lib/features/import/domain/usecases/import_parser.dart` checks every field, `lib/features/import/domain/usecases/import_data.dart` resolves customers by name and debts by id. One invalid row blocks the whole import.
-- **Ids:** imported records keep their exported id (`CustomerRepository.create`, `DebtRepository.create` and `PaymentRepository.recordPayment` take an optional `id`) so payments still match their debt and a re-import skips what already exists.
-- **Writing:** `lib/features/import/domain/repositories/transaction_runner.dart` runs the write in one Drift transaction, so a failure leaves nothing behind.
-- **Picking:** the `com.example.utang_tracker/import` channel opens `ACTION_OPEN_DOCUMENT` with multi-select and returns the file contents to `lib/features/import/data/repositories/csv_file_picker_impl.dart`.
-
-### 4.9 Release process
+### 4.7 Release process
 
 Version is triple-locked — CI fails if any drift:
 

@@ -55,16 +55,6 @@ class DateFormatters {
 
   static String dayKey(DateTime date) => _dayKey.format(date.toLocal());
 
-  /// Parses a `yyyy-MM-dd` day key into a local date, or null when the value
-  /// is not a valid day key.
-  static DateTime? parseDayKey(String value) {
-    try {
-      return _dayKey.parseStrict(value);
-    } on FormatException {
-      return null;
-    }
-  }
-
   static String fullDate(DateTime date, {required String locale}) {
     final canonicalLocale = Intl.canonicalizedLocale(locale);
     return DateFormat.yMMMMd(canonicalLocale).format(date.toLocal());

@@ -14,12 +14,8 @@ abstract class DebtRepository {
   Future<List<Debt>> getByCustomer(String customerId);
   Future<DebtDetail?> getById(String debtId);
 
-  /// Active debts together with their active items, for reporting.
-  Future<List<DebtDetail>> getAllWithItems();
   Future<List<Debt>> getRecent({int limit = 5, DebtStatus? status});
-  /// Creates a debt. [id] keeps the id of an imported record.
   Future<Debt> create({
-    String? id,
     required String customerId,
     required DateTime transactionDate,
     DateTime? dueDate,

@@ -10,9 +10,7 @@ abstract class PaymentRepository {
     required DateTime start,
     required DateTime end,
   });
-  /// Records a payment. [id] keeps the id of an imported record.
   Future<Payment> recordPayment({
-    String? id,
     required String debtId,
     required Money amount,
     required DateTime paymentDate,

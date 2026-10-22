@@ -4,9 +4,7 @@ abstract class CustomerRepository {
   Future<List<Customer>> getAll();
   Future<List<Customer>> search(String query);
   Future<Customer?> getById(String customerId);
-  /// Creates a customer. [id] keeps the id of an imported record.
   Future<Customer> create({
-    String? id,
     required String name,
     String? phone,
     String? notes,

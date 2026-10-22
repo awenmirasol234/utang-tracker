@@ -46,45 +46,6 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<List<DebtDetail>> getAllWithItems() async {
-    final query = _db.select(_db.debts).join([
-      innerJoin(
-        _db.customers,
-        _db.customers.id.equalsExp(_db.debts.customerId),
-      ),
-    ])..where(_activeDebt & _db.customers.deletedAt.isNull());
-    query.orderBy([OrderingTerm.desc(_db.debts.transactionDate)]);
-
-    final rows = await query.get();
-    if (rows.isEmpty) {
-      return [];
-    }
-
-    final debtIds = rows.map((row) => row.readTable(_db.debts).id).toList();
-    final itemRows =
-        await (_db.select(_db.debtItems)..where(
-                  (table) =>
-                      table.debtId.isIn(debtIds) & table.deletedAt.isNull(),
-                ))
-            .get();
-
-    final itemsByDebt = <String, List<DebtItem>>{};
-    for (final itemRow in itemRows) {
-      final item = mapDebtItem(itemRow);
-      itemsByDebt.putIfAbsent(item.debtId, () => []).add(item);
-    }
-
-    return rows.map((row) {
-      final debt = row.readTable(_db.debts);
-      final customer = row.readTable(_db.customers);
-      return DebtDetail(
-        debt: mapDebt(debt, customerName: customer.name),
-        items: itemsByDebt[debt.id] ?? const [],
-      );
-    }).toList();
-  }
-
-  @override
   Future<List<Debt>> getByCustomer(String customerId) async {
     final query =
         _db.select(_db.debts).join([
@@ -161,7 +122,6 @@ class DebtRepositoryImpl implements DebtRepository {
 
   @override
   Future<Debt> create({
-    String? id,
     required String customerId,
     required DateTime transactionDate,
     DateTime? dueDate,
@@ -190,7 +150,7 @@ class DebtRepositoryImpl implements DebtRepository {
       transactionDate,
       savedAt,
     ).toUtc();
-    final debtId = id ?? _uuid.v4();
+    final debtId = _uuid.v4();
 
     await _db.transaction(() async {
       await _db

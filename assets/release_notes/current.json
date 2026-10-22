@@ -2,10 +2,7 @@
   "version": "1.0.50",
   "date": "2026-10-21",
   "notes": {
-    "added": [
-      "Added CSV export of customers, debts and payments from Settings > Export data",
-      "Added CSV import with per-row validation from Settings > Import data"
-    ],
+    "added": [],
     "changed": [],
     "fixed": []
   }
