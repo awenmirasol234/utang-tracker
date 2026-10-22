@@ -22,12 +22,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
   final DateTime Function() _now;
 
   Expression<bool> get _active => _db.customers.deletedAt.isNull();
+  Expression<bool> get _activeDebt => _db.debts.deletedAt.isNull();
 
   @override
   Future<List<Customer>> getAll() async {
     final rows =
         await (_db.select(_db.customers)
-              ..where((table) => table.deletedAt.isNull())
+              ..where((table) => _active)
               ..orderBy([(table) => OrderingTerm.asc(table.name)]))
             .get();
     return rows.map(mapCustomer).toList();
@@ -40,7 +41,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
     final rows =
         await (_db.select(_db.customers)
-              ..where((table) => table.deletedAt.isNull() & table.name.lower().like('%$searchQuery%'))
+              ..where(
+                (table) =>
+                    _active & table.name.lower().like('%$searchQuery%'),
+              )
               ..orderBy([(table) => OrderingTerm.asc(table.name)]))
             .get();
     return rows.map(mapCustomer).toList();
@@ -50,7 +54,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Future<Customer?> getById(String customerId) async {
     final row = await (_db.select(
       _db.customers,
-    )..where((table) => table.id.equals(customerId) & table.deletedAt.isNull())).getSingleOrNull();
+    )..where((table) => table.id.equals(customerId) & _active)).getSingleOrNull();
     if (row == null) return null;
     return mapCustomer(row);
   }
@@ -120,7 +124,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final updated =
         await (_db.update(
           _db.customers,
-        )..where((table) => table.id.equals(customer.id) & table.deletedAt.isNull())).write(
+        )..where((table) => table.id.equals(customer.id) & _active)).write(
           CustomersCompanion(
             name: Value(trimmed),
             phone: Value(normalizedPhone),
@@ -172,7 +176,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final updated =
         await (_db.update(
           _db.customers,
-        )..where((table) => table.id.equals(customerId) & table.deletedAt.isNull())).write(
+        )..where((table) => table.id.equals(customerId) & _active)).write(
           CustomersCompanion(deletedAt: Value(now), updatedAt: Value(now)),
         );
     if (updated == 0) {
@@ -210,7 +214,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
               ..where(
                 (table) =>
                     table.customerId.equals(customerId) &
-                    table.deletedAt.isNull() &
+                    _activeDebt &
                     table.status.equals(DebtStatus.paid.value).not(),
               )
               ..limit(1))
@@ -223,8 +227,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         await (_db.select(_db.customers)
               ..where((table) {
                 var expr =
-                    table.deletedAt.isNull() &
-                    table.name.lower().equals(name.toLowerCase());
+                    _active & table.name.lower().equals(name.toLowerCase());
                 if (excludeId != null) {
                   expr = expr & table.id.equals(excludeId).not();
                 }

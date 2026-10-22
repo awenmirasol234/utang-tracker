@@ -9,15 +9,11 @@ import 'package:utang_tracker/features/debts/domain/repositories/debt_repository
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
-  DashboardRepositoryImpl({
-    required this.customers,
-    required this.debts,
-    required this.payments,
-  });
+  DashboardRepositoryImpl(this._customers, this._debts, this._payments);
 
-  final CustomerRepository customers;
-  final DebtRepository debts;
-  final PaymentRepository payments;
+  final CustomerRepository _customers;
+  final DebtRepository _debts;
+  final PaymentRepository _payments;
 
   @override
   Future<DashboardSummary> getDashboardData() async {
@@ -25,17 +21,17 @@ class DashboardRepositoryImpl implements DashboardRepository {
     final start = DateFormatters.startOfLocalDay(now);
     final end = DateFormatters.endOfLocalDay(now);
 
-    final outstandingCentavos = await debts.outstandingBalanceCentavos();
-    final collectedToday = await payments.collectedBetween(
+    final outstandingCentavos = await _debts.outstandingBalanceCentavos();
+    final collectedToday = await _payments.collectedBetween(
       start: start,
       end: end,
     );
-    final activeDebts = await debts.countActive();
-    final totalCustomers = await customers.count();
-    final recentPayments = await payments.getRecent(
+    final activeDebts = await _debts.countActive();
+    final totalCustomers = await _customers.count();
+    final recentPayments = await _payments.getRecent(
       limit: AppConstants.recentItemsLimit,
     );
-    final recentDebts = await debts.getRecent(
+    final recentDebts = await _debts.getRecent(
       limit: AppConstants.recentItemsLimit,
     );
 

@@ -33,9 +33,9 @@ final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
   return DashboardRepositoryImpl(
-    customers: ref.watch(customerRepositoryProvider),
-    debts: ref.watch(debtRepositoryProvider),
-    payments: ref.watch(paymentRepositoryProvider),
+    ref.watch(customerRepositoryProvider),
+    ref.watch(debtRepositoryProvider),
+    ref.watch(paymentRepositoryProvider),
   );
 });
 

@@ -5,25 +5,25 @@ import 'package:utang_tracker/features/updater/domain/entities/app_release.dart'
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 
 class CheckForUpdates {
-  const CheckForUpdates(this._repo);
+  const CheckForUpdates(this._repository);
 
-  final UpdateRepository _repo;
+  final UpdateRepository _repository;
 
   Future<CheckResult> call({bool silent = false}) async {
-    final currentVersion = await _repo.getCurrentVersion();
-    final release = await _repo.fetchLatestRelease();
-    await _repo.saveLastCheckTime(DateTime.now());
+    final currentVersion = await _repository.getCurrentVersion();
+    final release = await _repository.fetchLatestRelease();
+    await _repository.saveLastCheckTime(DateTime.now());
 
     if (release == null || !isNewerVersion(currentVersion, release.version)) {
       return const CheckResult(updateAvailable: false);
     }
 
-    final dismissed = await _repo.loadDismissedVersion();
+    final dismissed = await _repository.loadDismissedVersion();
     if (silent && dismissed == release.version) {
       return const CheckResult(updateAvailable: false);
     }
 
-    final deviceAbis = await _repo.getSupportedAbis();
+    final deviceAbis = await _repository.getSupportedAbis();
     final asset = selectApkAsset(release.assets, deviceAbis);
     if (asset == null) {
       return CheckResult(
@@ -33,7 +33,7 @@ class CheckForUpdates {
     }
 
     try {
-      final available = await _repo.isAssetAvailable(asset);
+      final available = await _repository.isAssetAvailable(asset);
       if (!available) {
         return const CheckResult(
           updateAvailable: false,
@@ -50,7 +50,7 @@ class CheckForUpdates {
       release: release,
       asset: asset,
       currentVersion: currentVersion,
-      apkPath: await _repo.findDownloadedApk(asset),
+      apkPath: await _repository.findDownloadedApk(asset),
     );
   }
 }

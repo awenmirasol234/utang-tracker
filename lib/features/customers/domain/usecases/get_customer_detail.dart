@@ -22,21 +22,23 @@ class CustomerDetailData {
 
 class GetCustomerDetail {
   const GetCustomerDetail({
-    required this.customers,
-    required this.debts,
-    required this.payments,
-  });
+    required CustomerRepository customers,
+    required DebtRepository debts,
+    required PaymentRepository payments,
+  }) : _customers = customers,
+       _debts = debts,
+       _payments = payments;
 
-  final CustomerRepository customers;
-  final DebtRepository debts;
-  final PaymentRepository payments;
+  final CustomerRepository _customers;
+  final DebtRepository _debts;
+  final PaymentRepository _payments;
 
   Future<CustomerDetailData?> call(String customerId) async {
-    final customer = await customers.getById(customerId);
+    final customer = await _customers.getById(customerId);
     if (customer == null) return null;
 
-    final debtList = await debts.getByCustomer(customerId);
-    final paymentList = await payments.getByCustomer(customerId);
+    final debtList = await _debts.getByCustomer(customerId);
+    final paymentList = await _payments.getByCustomer(customerId);
 
     var outstanding = Money.zero();
     for (final debt in debtList) {

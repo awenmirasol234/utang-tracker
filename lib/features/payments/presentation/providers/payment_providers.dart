@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
-import 'package:utang_tracker/features/payments/domain/usecases/payment_usecases.dart';
+import 'package:utang_tracker/features/payments/domain/usecases/record_payment.dart';
 
 final recordPaymentUseCaseProvider = Provider((ref) {
   return RecordPayment(ref.watch(paymentRepositoryProvider));

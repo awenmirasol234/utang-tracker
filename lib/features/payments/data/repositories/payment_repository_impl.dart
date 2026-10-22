@@ -59,7 +59,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<List<Payment>> getByDebt(String debtId) async {
     final rows =
         await (_db.select(_db.payments)
-              ..where((table) => table.debtId.equals(debtId) & table.deletedAt.isNull())
+              ..where((table) => table.debtId.equals(debtId) & _activePayment)
               ..orderBy([(table) => OrderingTerm.desc(table.paymentDate)]))
             .get();
     return rows.map(mapPayment).toList();
@@ -171,7 +171,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     await _db.transaction(() async {
       final debt =
           await (_db.select(_db.debts)
-                ..where((table) => table.id.equals(debtId) & table.deletedAt.isNull()))
+                ..where((table) => table.id.equals(debtId) & _activeDebt))
               .getSingleOrNull();
       if (debt == null) {
         throw const NotFoundException('Debt not found.');
@@ -210,7 +210,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
       await (_db.update(
         _db.debts,
-      )..where((table) => table.id.equals(debtId) & table.deletedAt.isNull())).write(
+      )..where((table) => table.id.equals(debtId) & _activeDebt)).write(
         DebtsCompanion(
           paidAmount: Value(newPaid.centavos),
           balance: Value(newBalance.centavos),
@@ -252,7 +252,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
     final row = await (_db.select(
       _db.payments,
-    )..where((table) => table.id.equals(paymentId) & table.deletedAt.isNull())).getSingle();
+    )..where((table) => table.id.equals(paymentId) & _activePayment)).getSingle();
     return mapPayment(row);
   }
 }
