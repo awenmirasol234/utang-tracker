@@ -115,7 +115,8 @@ class _UpdateAutoCheckerState extends ConsumerState<UpdateAutoChecker>
           .read(updateNotifierProvider.notifier)
           .checkForUpdates(silent: true);
       if (!mounted) return;
-      if (ref.read(updateNotifierProvider) is! UpdateAvailable) return;
+      final state = ref.read(updateNotifierProvider);
+      if (state is! UpdateAvailable && state is! UpdateDownloaded) return;
 
       _sheetOpen = true;
       try {

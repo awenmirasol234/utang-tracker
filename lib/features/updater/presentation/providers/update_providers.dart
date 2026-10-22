@@ -116,6 +116,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
         return;
       }
 
+      final apkPath = result.apkPath;
+      if (apkPath != null) {
+        state = UpdateDownloaded(release: result.release!, apkPath: apkPath);
+        return;
+      }
+
       state = UpdateAvailable(
         release: result.release!,
         asset: result.asset!,
@@ -166,16 +172,17 @@ class UpdateNotifier extends Notifier<UpdateState> {
     };
     if (apkPath == null) return;
 
+    AppRelease release;
+    if (current is UpdateDownloaded) {
+      release = current.release;
+    } else {
+      release = (current as UpdatePermissionRequired).release;
+    }
+
     try {
       final canInstall =
           await _channel.invokeMethod<bool>('canInstallUnknownApps') ?? false;
       if (!canInstall) {
-        AppRelease release;
-        if (current is UpdateDownloaded) {
-          release = current.release;
-        } else {
-          release = (current as UpdatePermissionRequired).release;
-        }
         state = UpdatePermissionRequired(
           release: release,
           apkPath: apkPath,
@@ -185,7 +192,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
       state = const UpdateInstalling();
       await _channel.invokeMethod<void>('installApk', {'path': apkPath});
-      state = const UpdateIdle();
+      // The installer can be cancelled, so the downloaded APK stays offerable.
+      state = UpdateDownloaded(release: release, apkPath: apkPath);
     } on PlatformException catch (platformException) {
       state = UpdateError(message: platformException.message ?? 'Installation failed.');
     }

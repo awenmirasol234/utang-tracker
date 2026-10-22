@@ -340,6 +340,23 @@ class UpdateRepositoryImpl implements UpdateRepository {
   }
 
   @override
+  Future<String?> findDownloadedApk(ReleaseAsset asset) async {
+    _validateAsset(asset);
+
+    final Directory dir;
+    try {
+      dir = await _updateDir();
+    } on AppException {
+      return null;
+    }
+
+    final file = File('${dir.path}/${asset.name}');
+    if (!await file.exists()) return null;
+    if (!await _isValidApk(file)) return null;
+    return file.path;
+  }
+
+  @override
   Future<void> saveLastCheckTime(DateTime time) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_keyLastCheck, time.millisecondsSinceEpoch);
@@ -394,17 +411,20 @@ class UpdateRepositoryImpl implements UpdateRepository {
     if (!file.path.endsWith('.apk')) {
       throw const AppException('Downloaded file is not a valid APK.');
     }
+    if (await _isValidApk(file)) return;
+    await file.delete();
+    throw const AppException(
+      'Downloaded file is not a valid APK (bad magic bytes).',
+    );
+  }
+
+  Future<bool> _isValidApk(File file) async {
     final bytes = await file.openRead(0, 4).expand((byte) => byte).toList();
-    if (bytes.length < 4 ||
-        bytes[0] != 0x50 ||
-        bytes[1] != 0x4B ||
-        bytes[2] != 0x03 ||
-        bytes[3] != 0x04) {
-      await file.delete();
-      throw const AppException(
-        'Downloaded file is not a valid APK (bad magic bytes).',
-      );
-    }
+    if (bytes.length < 4) return false;
+    return bytes[0] == 0x50 &&
+        bytes[1] == 0x4B &&
+        bytes[2] == 0x03 &&
+        bytes[3] == 0x04;
   }
 
   void _validateAsset(ReleaseAsset asset) {

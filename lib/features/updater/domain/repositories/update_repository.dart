@@ -8,6 +8,8 @@ abstract interface class UpdateRepository {
     void Function(double progress) onProgress,
   );
 
+  Future<String?> findDownloadedApk(ReleaseAsset asset);
+
   Future<void> saveLastCheckTime(DateTime time);
   Future<DateTime?> loadLastCheckTime();
 

@@ -493,7 +493,7 @@ Release date: 2026-08-10
       expect(installCall.arguments, {
         'path': '/updates/utang-tracker-v1.1.0.apk',
       });
-      expect(container.read(updateNotifierProvider), isA<UpdateIdle>());
+      expect(container.read(updateNotifierProvider), isA<UpdateDownloaded>());
     });
 
     test('denied permission retains the downloaded APK state', () async {
@@ -556,6 +556,123 @@ Release date: 2026-08-10
       expect(settingsCalls, 1);
       settingsReturned.complete();
       await first;
+    });
+  });
+
+  group('downloaded APK preservation', () {
+    const channel = MethodChannel(AppConstants.updaterChannel);
+    const asset = ReleaseAsset(
+      name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+      browserDownloadUrl: 'https://example.com/update.apk',
+      sizeBytes: 1000,
+    );
+    const apkPath = '/updates/utang-tracker-v1.1.0.apk';
+
+    ProviderContainer buildContainer(_FakeUpdateRepository repository) {
+      final container = ProviderContainer(
+        overrides: [updateRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test('an already-downloaded APK is offered without downloading again', () async {
+      final repository = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        release: _releaseWithAssets(const [asset]),
+        downloadPath: apkPath,
+        downloadedApkPath: apkPath,
+      );
+      final container = buildContainer(repository);
+
+      await container.read(updateNotifierProvider.notifier).checkForUpdates();
+
+      final state = container.read(updateNotifierProvider);
+      expect(state, isA<UpdateDownloaded>());
+      expect((state as UpdateDownloaded).apkPath, apkPath);
+      expect(repository.downloadCount, 0);
+    });
+
+    test('the downloaded APK stays available after the installer is launched', () async {
+      final calls = <MethodCall>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'canInstallUnknownApps') return true;
+            return null;
+          });
+      addTearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null);
+      });
+      final repository = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        release: _releaseWithAssets(const [asset]),
+        downloadPath: apkPath,
+        downloadedApkPath: apkPath,
+      );
+      final container = buildContainer(repository);
+      final notifier = container.read(updateNotifierProvider.notifier);
+
+      await notifier.checkForUpdates();
+      await notifier.install();
+
+      final installCall = calls.singleWhere(
+        (call) => call.method == 'installApk',
+      );
+      expect(installCall.arguments, {'path': apkPath});
+      final state = container.read(updateNotifierProvider);
+      expect(state, isA<UpdateDownloaded>());
+      expect((state as UpdateDownloaded).apkPath, apkPath);
+    });
+  });
+
+  group('findDownloadedApk', () {
+    const asset = ReleaseAsset(
+      name: 'utang-tracker-universal-v1.1.0.apk',
+      browserDownloadUrl:
+          'https://github.com/awenmirasol234/utang-tracker/releases/download/v1.1.0/update.apk',
+      sizeBytes: 8,
+    );
+
+    Future<Directory> tempDir() async {
+      final directory = await Directory.systemTemp.createTemp(
+        'utang-updater-test-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      return directory;
+    }
+
+    test('returns the path of a valid downloaded APK', () async {
+      final directory = await tempDir();
+      final file = File('${directory.path}/${asset.name}');
+      await file.writeAsBytes([0x50, 0x4B, 0x03, 0x04, 1, 2, 3, 4]);
+      final repository = UpdateRepositoryImpl(
+        updateDirectory: () async => directory,
+      );
+
+      expect(await repository.findDownloadedApk(asset), file.path);
+    });
+
+    test('returns null when the APK is missing', () async {
+      final directory = await tempDir();
+      final repository = UpdateRepositoryImpl(
+        updateDirectory: () async => directory,
+      );
+
+      expect(await repository.findDownloadedApk(asset), isNull);
+    });
+
+    test('returns null when the file is not an APK', () async {
+      final directory = await tempDir();
+      final file = File('${directory.path}/${asset.name}');
+      await file.writeAsBytes(List<int>.filled(asset.sizeBytes, 0));
+      final repository = UpdateRepositoryImpl(
+        updateDirectory: () async => directory,
+      );
+
+      expect(await repository.findDownloadedApk(asset), isNull);
+      expect(await file.exists(), isTrue);
     });
   });
 
@@ -735,6 +852,7 @@ class _FakeUpdateRepository implements UpdateRepository {
     this.release,
     this.fetchError,
     this.downloadPath,
+    this.downloadedApkPath,
   });
 
   final String currentVersion;
@@ -742,10 +860,12 @@ class _FakeUpdateRepository implements UpdateRepository {
   final AppRelease? release;
   final AppException? fetchError;
   final String? downloadPath;
+  final String? downloadedApkPath;
   DateTime? savedCheckTime;
   String? dismissedVersion;
   int fetchCount = 0;
   int lastCheckReads = 0;
+  int downloadCount = 0;
 
   @override
   Future<AppRelease?> fetchLatestRelease() async {
@@ -783,12 +903,17 @@ class _FakeUpdateRepository implements UpdateRepository {
   Future<void> cleanupOldApks() async {}
 
   @override
+  Future<String?> findDownloadedApk(ReleaseAsset asset) async =>
+      downloadedApkPath;
+
+  @override
   Future<String> downloadApk(
     ReleaseAsset asset,
     void Function(double progress) onProgress,
   ) async {
     final path = downloadPath;
     if (path == null) throw UnimplementedError();
+    downloadCount++;
     onProgress(1);
     return path;
   }

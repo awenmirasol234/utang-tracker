@@ -45,7 +45,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
     if (!mounted) return;
 
     final state = ref.read(updateNotifierProvider);
-    if (state is UpdateAvailable) {
+    if (state is UpdateAvailable || state is UpdateDownloaded) {
       await showUpdateBottomSheet(context);
       return;
     }

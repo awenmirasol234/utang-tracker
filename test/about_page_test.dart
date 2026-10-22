@@ -84,6 +84,9 @@ class _FakeUpdateRepository implements UpdateRepository {
   Future<void> cleanupOldApks() async {}
 
   @override
+  Future<String?> findDownloadedApk(ReleaseAsset asset) async => null;
+
+  @override
   Future<String> downloadApk(
     ReleaseAsset asset,
     void Function(double progress) onProgress,

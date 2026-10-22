@@ -50,6 +50,7 @@ class CheckForUpdates {
       release: release,
       asset: asset,
       currentVersion: currentVersion,
+      apkPath: await _repo.findDownloadedApk(asset),
     );
   }
 }
@@ -60,6 +61,7 @@ class CheckResult {
     this.release,
     this.asset,
     this.currentVersion,
+    this.apkPath,
     this.error,
   });
 
@@ -67,6 +69,7 @@ class CheckResult {
   final AppRelease? release;
   final ReleaseAsset? asset;
   final String? currentVersion;
+  final String? apkPath;
   final String? error;
 }
 
