@@ -43,7 +43,21 @@ class _AboutPageState extends ConsumerState<AboutPage> {
   Future<void> _checkForUpdates() async {
     await ref.read(updateNotifierProvider.notifier).checkForUpdates();
     if (!mounted) return;
-    await showUpdateBottomSheet(context);
+
+    final state = ref.read(updateNotifierProvider);
+    if (state is UpdateAvailable) {
+      await showUpdateBottomSheet(context);
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    if (state is UpdateError) {
+      messenger.showSnackBar(SnackBar(content: Text(state.message)));
+    } else {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('No new updates available.')),
+      );
+    }
   }
 
   @override
