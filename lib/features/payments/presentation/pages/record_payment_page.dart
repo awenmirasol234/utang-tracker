@@ -396,7 +396,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                   child: GestureDetector(
                     onTap: () => setState(() => _confirmed = !_confirmed),
                     child: Text(
-                      'I confirm the payment details are correct',
+                      'I confirm the payment details are correct.',
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
                   ),
