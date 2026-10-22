@@ -2,7 +2,7 @@
 description: "Utang tracker for sari-sari stores in the Philippines."
 publish_to: 'none'
 
-version: 1.0.53+52
+version: 1.0.54+53
 
 environment:
   sdk: ^3.12.0

@@ -1,15 +1,13 @@
 {
-  "version": "1.0.53",
+  "version": "1.0.54",
   "date": "2026-10-22",
   "notes": {
-    "added": [],
-    "changed": [
-      "Translated the app screens into English",
-      "Showed the result of a manual update check on the About page",
-      "Added spacing between the tiles on the Settings page"
+    "added": [
+      "Selected a customer you just added from the New Debt screen so the debt can be recorded right away"
     ],
-    "fixed": [
-      "Kept the downloaded update file after the install permission is granted so it can be installed without downloading it again"
-    ]
+    "changed": [
+      "Showed load errors on the New debt and Edit customer screens with the shared error layout"
+    ],
+    "fixed": []
   }
 }
