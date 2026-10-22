@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:utang_tracker/core/utils/local_date_time.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 
 enum DebtNotificationKind { overdue, dueToday, dueSoon }
@@ -29,25 +30,28 @@ class DebtNotificationFeed extends Equatable {
     required DateTime now,
     int upcomingDays = 7,
   }) {
-    final today = _localDay(now);
+    final today = startOfLocalDay(now);
     final items = <DebtNotification>[];
 
     for (final debt in debts) {
       final dueDate = debt.dueDate;
       if (dueDate == null ||
           debt.status == DebtStatus.paid ||
-          !debt.balance.isPositive) {
+          !debt.hasOpenBalance) {
         continue;
       }
 
-      final daysFromToday = _localDay(dueDate).difference(today).inDays;
+      final daysFromToday = startOfLocalDay(dueDate).difference(today).inDays;
       if (daysFromToday > upcomingDays) continue;
 
-      final kind = switch (daysFromToday) {
-        < 0 => DebtNotificationKind.overdue,
-        0 => DebtNotificationKind.dueToday,
-        _ => DebtNotificationKind.dueSoon,
-      };
+      final DebtNotificationKind kind;
+      if (debt.isOverdue(now: now)) {
+        kind = DebtNotificationKind.overdue;
+      } else if (daysFromToday == 0) {
+        kind = DebtNotificationKind.dueToday;
+      } else {
+        kind = DebtNotificationKind.dueSoon;
+      }
       items.add(
         DebtNotification(debt: debt, kind: kind, daysFromToday: daysFromToday),
       );
@@ -77,9 +81,4 @@ class DebtNotificationFeed extends Equatable {
 
   @override
   List<Object?> get props => [items];
-
-  static DateTime _localDay(DateTime date) {
-    final local = date.toLocal();
-    return DateTime(local.year, local.month, local.day);
-  }
 }

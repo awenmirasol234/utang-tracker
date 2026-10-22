@@ -135,7 +135,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     Money? amount;
     String? debtError;
     if (_debtId == null) {
-      debtError = 'Select debt';
+      debtError = 'Select a debt.';
     }
     setState(() {
       _error = null;

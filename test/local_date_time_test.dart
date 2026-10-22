@@ -36,4 +36,20 @@ void main() {
       );
     });
   });
+
+  group('start and end of the local day', () {
+    test('truncates a moment to the start of its local day', () {
+      final result = startOfLocalDay(DateTime(2026, 5, 3, 18, 45));
+
+      expect(result, DateTime(2026, 5, 3));
+      expect(result.isUtc, isFalse);
+    });
+
+    test('covers the last moment of the local day', () {
+      final result = endOfLocalDay(DateTime(2026, 5, 3, 18, 45));
+
+      expect(result, DateTime(2026, 5, 3, 23, 59, 59, 999));
+      expect(result.isUtc, isFalse);
+    });
+  });
 }

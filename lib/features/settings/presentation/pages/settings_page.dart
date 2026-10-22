@@ -6,6 +6,7 @@ import 'package:utang_tracker/core/widgets/app_card.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,6 +49,7 @@ class _MenuItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     return AppCard(

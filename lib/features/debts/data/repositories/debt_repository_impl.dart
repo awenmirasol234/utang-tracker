@@ -452,7 +452,7 @@ class DebtRepositoryImpl implements DebtRepository {
         throw const ValidationException('Product name is required.');
       }
       if (item.quantity <= 0) {
-        throw const ValidationException('Quantity must be greater than zero.');
+        throw const ValidationException('Quantity must be greater than 0.');
       }
       if (item.unit.trim().isEmpty) {
         throw const ValidationException('Unit is required.');
@@ -461,7 +461,7 @@ class DebtRepositoryImpl implements DebtRepository {
         throw const ValidationException('Unit must be 24 characters or fewer.');
       }
       if (!item.price.isPositive) {
-        throw const ValidationException('Price must be greater than zero.');
+        throw const ValidationException('Price must be greater than 0.');
       }
     }
   }

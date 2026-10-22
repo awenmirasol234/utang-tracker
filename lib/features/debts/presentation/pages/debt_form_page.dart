@@ -22,6 +22,7 @@ import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
+import 'package:utang_tracker/features/debts/domain/usecases/get_debt_detail.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 import 'package:utang_tracker/features/debts/presentation/widgets/debt_item_sheet.dart';
 
@@ -419,7 +420,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     );
   }
 
-  void _loadEdit(DebtDetailViewData data) {
+  void _loadEdit(DebtDetailData data) {
     _customerId = data.detail.debt.customerId;
     _customerName = data.detail.debt.customerName;
     _transactionDate = data.detail.debt.transactionDate.toLocal();

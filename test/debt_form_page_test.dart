@@ -403,7 +403,7 @@ void main() {
         .first;
     expect(
       tester.widget<TextField>(firstProductInput).decoration?.errorText,
-      'Product is required.',
+      'Product name is required.',
     );
 
     await tester.enterText(firstProductInput, 'Rice');

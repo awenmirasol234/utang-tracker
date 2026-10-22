@@ -48,21 +48,21 @@ lib/
   app/coordination.dart                # invalidateBusinessData (9-27)
   core/
     database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart (generated, committed)
-    domain/ money.dart / debt_status.dart / audit_action.dart
-    audit/ audit_log_writer.dart        # shared audit writer called by every repository write
+    domain/ money.dart / debt_status.dart / audit_action.dart / audit_change_detail.dart
+    audit/ audit_log_writer.dart / audit_details.dart / audit_details_codec.dart   # shared audit writer called by every repository write
     providers/ core_providers.dart     # plain Riverpod Providers
     mappers: features/customers|debts|payments|audit/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart / audit_mappers.dart)
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
   features/
     customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 feature dirs
-      domain/entities + domain/repositories (interface) + domain/usecases
+      domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, payments, updater)
       data/repositories (impl - enforces business rules) + data/repositories/*_mappers.dart
       presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel (com.example.utang_tracker/updater)
   assets/images/ + assets/release_notes/current.json
   rules/database_rules.md              # authoritative data spec (schema v8)
-  test/                                # repo + migration tests (in-memory DB)
+  test/                                # repo + migration tests (in-memory DB) + test/support (shared fakes)
 ```
 
 ## Data Rules

@@ -103,16 +103,6 @@ class DateFormatters {
     return localA.year == localB.year && localA.month == localB.month && localA.day == localB.day;
   }
 
-  static DateTime startOfLocalDay(DateTime date) {
-    final localDate = date.toLocal();
-    return DateTime(localDate.year, localDate.month, localDate.day);
-  }
-
-  static DateTime endOfLocalDay(DateTime date) {
-    final localDate = date.toLocal();
-    return DateTime(localDate.year, localDate.month, localDate.day, 23, 59, 59, 999);
-  }
-
   static String _smartDateLabel(
     DateTime localValue, {
     required DateTime relativeTo,

@@ -68,7 +68,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _nameError = 'Name is required');
+      setState(() => _nameError = 'Name is required.');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _nameFocusNode.requestFocus();
       });

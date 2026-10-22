@@ -101,7 +101,7 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
     Money? price;
 
     if (productName.isEmpty) {
-      pErr = 'Product is required.';
+      pErr = 'Product name is required.';
     }
     if (quantityText.isEmpty) {
       qErr = 'Quantity is required.';

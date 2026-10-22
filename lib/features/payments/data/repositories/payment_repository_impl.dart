@@ -152,7 +152,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
   }) async {
     if (!amount.isPositive) {
       throw const ValidationException(
-        'Payment amount must be greater than zero.',
+        'Amount must be greater than 0.',
       );
     }
     if (paymentMethod.trim().isEmpty) {

@@ -15,7 +15,7 @@ enum CustomerSortOrder {
   final String label;
 }
 
-class CustomerSearchQuery extends Notifier<String> {
+class CustomerSearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
 
@@ -23,9 +23,11 @@ class CustomerSearchQuery extends Notifier<String> {
 }
 
 final customerSearchQueryProvider =
-    NotifierProvider<CustomerSearchQuery, String>(CustomerSearchQuery.new);
+    NotifierProvider<CustomerSearchQueryNotifier, String>(
+      CustomerSearchQueryNotifier.new,
+    );
 
-class CustomerSortFilter extends Notifier<CustomerSortOrder> {
+class CustomerSortFilterNotifier extends Notifier<CustomerSortOrder> {
   @override
   CustomerSortOrder build() => CustomerSortOrder.nameAsc;
 
@@ -33,8 +35,8 @@ class CustomerSortFilter extends Notifier<CustomerSortOrder> {
 }
 
 final customerSortOrderProvider =
-    NotifierProvider<CustomerSortFilter, CustomerSortOrder>(
-      CustomerSortFilter.new,
+    NotifierProvider<CustomerSortFilterNotifier, CustomerSortOrder>(
+      CustomerSortFilterNotifier.new,
     );
 
 final customersListProvider =
@@ -93,7 +95,7 @@ List<Customer> applyCustomerSort(
   return sorted;
 }
 
-final getCustomerDetailProvider = Provider((ref) {
+final getCustomerDetailUseCaseProvider = Provider((ref) {
   return GetCustomerDetail(
     customers: ref.watch(customerRepositoryProvider),
     debts: ref.watch(debtRepositoryProvider),
@@ -103,5 +105,5 @@ final getCustomerDetailProvider = Provider((ref) {
 
 final customerDetailProvider =
     FutureProvider.family<CustomerDetailData?, String>((ref, customerId) async {
-      return ref.watch(getCustomerDetailProvider)(customerId);
+      return ref.watch(getCustomerDetailUseCaseProvider)(customerId);
     });

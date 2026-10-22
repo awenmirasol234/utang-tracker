@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/local_date_time.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 import 'package:utang_tracker/features/payments/domain/usecases/record_payment.dart';
 
@@ -133,7 +133,7 @@ class PaymentsListNotifier extends AsyncNotifier<List<Payment>> {
         return false;
       }
 
-      final paymentDay = DateFormatters.startOfLocalDay(payment.paymentDate);
+      final paymentDay = startOfLocalDay(payment.paymentDate);
 
       if (filters.startDate != null) {
         final startDay = DateTime(

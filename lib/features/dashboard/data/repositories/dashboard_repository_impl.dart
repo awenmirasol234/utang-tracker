@@ -1,6 +1,6 @@
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/domain/money.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/local_date_time.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
@@ -18,8 +18,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
   @override
   Future<DashboardSummary> getDashboardData() async {
     final now = DateTime.now();
-    final start = DateFormatters.startOfLocalDay(now);
-    final end = DateFormatters.endOfLocalDay(now);
+    final start = startOfLocalDay(now);
+    final end = endOfLocalDay(now);
 
     final outstandingCentavos = await _debts.outstandingBalanceCentavos();
     final collectedToday = await _payments.collectedBetween(

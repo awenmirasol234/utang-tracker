@@ -67,7 +67,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   }) async {
     final trimmed = name.trim();
     if (trimmed.isEmpty) {
-      throw const ValidationException('Customer name is required.');
+      throw const ValidationException('Name is required.');
     }
     await _ensureUniqueName(trimmed);
 
@@ -110,7 +110,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Future<Customer> update(Customer customer) async {
     final trimmed = customer.name.trim();
     if (trimmed.isEmpty) {
-      throw const ValidationException('Customer name is required.');
+      throw const ValidationException('Name is required.');
     }
     final previous = await getById(customer.id);
     if (previous == null) {

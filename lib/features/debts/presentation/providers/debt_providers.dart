@@ -3,8 +3,7 @@ import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_sort_order.dart';
-import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
-import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
+import 'package:utang_tracker/features/debts/domain/usecases/get_debt_detail.dart';
 
 enum DebtListFilter { all, unpaid, partial, paid, overdue }
 
@@ -25,7 +24,7 @@ extension DebtListFilterX on DebtListFilter {
   };
 }
 
-class DebtStatusFilter extends Notifier<DebtListFilter> {
+class DebtStatusFilterNotifier extends Notifier<DebtListFilter> {
   @override
   DebtListFilter build() => DebtListFilter.all;
 
@@ -33,18 +32,21 @@ class DebtStatusFilter extends Notifier<DebtListFilter> {
 }
 
 final debtStatusFilterProvider =
-    NotifierProvider<DebtStatusFilter, DebtListFilter>(DebtStatusFilter.new);
+    NotifierProvider<DebtStatusFilterNotifier, DebtListFilter>(
+      DebtStatusFilterNotifier.new,
+    );
 
-class DebtSortFilter extends Notifier<DebtSortOrder> {
+class DebtSortFilterNotifier extends Notifier<DebtSortOrder> {
   @override
   DebtSortOrder build() => DebtSortOrder.newest;
 
   void setSort(DebtSortOrder order) => state = order;
 }
 
-final debtSortOrderProvider = NotifierProvider<DebtSortFilter, DebtSortOrder>(
-  DebtSortFilter.new,
-);
+final debtSortOrderProvider =
+    NotifierProvider<DebtSortFilterNotifier, DebtSortOrder>(
+      DebtSortFilterNotifier.new,
+    );
 
 final debtsListProvider = AsyncNotifierProvider<DebtsListNotifier, List<Debt>>(
   DebtsListNotifier.new,
@@ -75,38 +77,23 @@ class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
         .getAll(status: filter.status);
     if (filter != DebtListFilter.overdue) return debts;
 
-    return debts.where(_isOverdue).toList(growable: false);
+    final now = DateTime.now();
+    return debts
+        .where((debt) => debt.isOverdue(now: now))
+        .toList(growable: false);
   }
 }
 
-bool _isOverdue(Debt debt) {
-  final dueDate = debt.dueDate;
-  if (dueDate == null ||
-      debt.status == DebtStatus.paid ||
-      !debt.balance.isPositive) {
-    return false;
-  }
-  return _localDay(dueDate).isBefore(_localDay(DateTime.now()));
-}
+final getDebtDetailUseCaseProvider = Provider((ref) {
+  return GetDebtDetail(
+    debts: ref.watch(debtRepositoryProvider),
+    payments: ref.watch(paymentRepositoryProvider),
+  );
+});
 
-DateTime _localDay(DateTime date) {
-  final local = date.toLocal();
-  return DateTime(local.year, local.month, local.day);
-}
-
-class DebtDetailViewData {
-  const DebtDetailViewData({required this.detail, required this.payments});
-
-  final DebtDetail detail;
-  final List<Payment> payments;
-}
-
-final debtDetailProvider = FutureProvider.family<DebtDetailViewData?, String>((
+final debtDetailProvider = FutureProvider.family<DebtDetailData?, String>((
   ref,
   id,
 ) async {
-  final detail = await ref.watch(debtRepositoryProvider).getById(id);
-  if (detail == null) return null;
-  final payments = await ref.watch(paymentRepositoryProvider).getByDebt(id);
-  return DebtDetailViewData(detail: detail, payments: payments);
+  return ref.watch(getDebtDetailUseCaseProvider)(id);
 });

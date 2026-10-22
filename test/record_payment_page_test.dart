@@ -54,7 +54,7 @@ void main() {
         .first;
     expect(
       tester.widget<InputDecorator>(debtDecorator).decoration.errorText,
-      'Select debt',
+      'Select a debt.',
     );
 
     final amountField = find.byWidgetPredicate(

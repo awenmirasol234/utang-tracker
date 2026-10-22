@@ -17,6 +17,7 @@ import 'package:utang_tracker/features/notifications/presentation/widgets/debt_n
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(dashboardSummaryProvider);
@@ -83,6 +84,7 @@ class _NotificationAction extends StatelessWidget {
   const _NotificationAction({required this.notifications, required this.onTap});
   final AsyncValue<DebtNotificationFeed> notifications;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final urgentCount = notifications.value?.urgentCount ?? 0;
@@ -146,6 +148,7 @@ class _LedgerBalanceCard extends StatelessWidget {
   final Money balance;
   final int activeDebts;
   final Money collectedToday;
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -243,6 +246,7 @@ class _LedgerBalanceCard extends StatelessWidget {
 
 class _DashedRule extends StatelessWidget {
   const _DashedRule();
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -269,6 +273,7 @@ class _DashedRule extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
   final String title;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -289,6 +294,7 @@ class _SectionHeader extends StatelessWidget {
 class _ActivityLedger extends StatelessWidget {
   const _ActivityLedger({required this.items});
   final List<RecentActivityItem> items;
+
   @override
   Widget build(BuildContext context) {
     return AppCard(
@@ -320,6 +326,7 @@ class _ActivityRow extends StatelessWidget {
   const _ActivityRow({required this.item, required this.onTap});
   final RecentActivityItem item;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final isPayment = item.type == RecentActivityType.payment;
@@ -420,6 +427,7 @@ String _urgentCountLabel(int count) {
 
 class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
+
   @override
   Widget build(BuildContext context) {
     return AppCard(
