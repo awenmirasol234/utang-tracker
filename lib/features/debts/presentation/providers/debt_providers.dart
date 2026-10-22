@@ -1,10 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_sort_order.dart';
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
-import 'package:utang_tracker/features/debts/domain/usecases/debt_usecases.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 
 enum DebtListFilter { all, unpaid, partial, paid, overdue }
