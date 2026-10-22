@@ -80,11 +80,11 @@ lib/
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
   features/customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 dirs
     domain/entities + domain/repositories (interface) + domain/usecases
-    data/repositories (impl) + data/datasources + data/services
+    data/repositories (impl) + data/repositories/*_mappers.dart
     presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater
 assets/images/ + assets/release_notes/current.json
-rules/database_rules.md   # authoritative schema v6 spec
+rules/database_rules.md   # authoritative schema v8 spec
 test/                     # AppDatabase.forTesting() (in-memory SQLite)
 ```
 
@@ -94,12 +94,12 @@ State and navigation details are in §4.
 
 ## 4. Subsystems Reference
 
-### 4.1 Drift SQLite — schema v6
+### 4.1 Drift SQLite — schema v8
 
 - **Files:** `lib/core/database/tables.dart`, `lib/core/database/app_database.dart`, `lib/core/database/database_location.dart`, `lib/core/database/app_database.g.dart` (generated) + `lib/features/customers/data/repositories/customer_mappers.dart`, `lib/features/debts/data/repositories/debt_mappers.dart`, `lib/features/payments/data/repositories/payment_mappers.dart`, `lib/features/audit/data/repositories/audit_mappers.dart` (`features/*/data/repositories/*_mappers.dart`).
-- **Schema version:** `6` (`AppDatabase.schemaVersion`). No SQL `CHECK`/`UNIQUE`/cascade — rules enforced in repository impls.
+- **Schema version:** `8` (`AppDatabase.schemaVersion`). No SQL `CHECK`/`UNIQUE`/cascade — rules enforced in repository impls.
 - **Tables:** `customers`, `debts`, `debt_items`, `payments`, `audit_logs` — see `rules/database_rules.md` for columns, indexes, and business rules.
-- **Migrations:** v2 soft-delete (`deleted_at`), v3 recreate `debt_items`, v4 add `unit` default `piece`, v5 `unit_price+subtotal -> price` (custom line amount, quantity does NOT multiply price), v6 add the append-only `audit_logs` table.
+- **Migrations:** v2 soft-delete (`deleted_at`), v3 recreate `debt_items`, v4 add `unit` default `piece`, v5 `unit_price+subtotal -> price` (custom line amount, quantity does NOT multiply price), v6 add the append-only `audit_logs` table, v7 rewrite `audit_logs.summary` into English, v8 add the nullable `audit_logs.details` column.
 - **Date handling:** user-selected local day + save-time clock → stored UTC (`DateTime` as `INTEGER`). `due_date` is date-only (no save-time stamping).
 - **Testing:** `AppDatabase.forTesting()` creates an in-memory DB; migration tests seed legacy schemas via raw SQL.
 - **Codegen:** `dart run build_runner build --delete-conflicting-outputs` after editing drift tables. Commit the updated `app_database.g.dart`.

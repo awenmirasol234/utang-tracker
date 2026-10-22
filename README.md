@@ -20,7 +20,7 @@ Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers
 |---|---|
 | Framework | Flutter 3.44.0 (stable, Dart SDK ^3.12.0, Android only) |
 | State | `flutter_riverpod` - plain `Provider`s in `lib/core/providers/core_providers.dart` |
-| DB | `drift` 2.34.1 + `drift_flutter` 0.3.0 + `sqlite3` 3.5.0, schema v7, `AppDatabase.forTesting()` for tests |
+| DB | `drift` 2.34.1 + `drift_flutter` 0.3.0 + `sqlite3` 3.5.0, schema v8, `AppDatabase.forTesting()` for tests |
 | Nav | `go_router` `StatefulShellRoute.indexedStack` (5 tabs) |
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
@@ -61,13 +61,13 @@ lib/
       presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel (com.example.utang_tracker/updater)
   assets/images/ + assets/release_notes/current.json
-  rules/database_rules.md              # authoritative data spec (schema v7)
+  rules/database_rules.md              # authoritative data spec (schema v8)
   test/                                # repo + migration tests (in-memory DB)
 ```
 
 ## Data Rules
 
-Full spec -> [`rules/database_rules.md`](rules/database_rules.md) (schema v7, authoritative).
+Full spec -> [`rules/database_rules.md`](rules/database_rules.md) (schema v8, authoritative).
 
 Summary (enforced in repository impls, not SQL):
 
@@ -83,7 +83,7 @@ Summary (enforced in repository impls, not SQL):
 
 Indexes: `idx_debts_customer_id/status/transaction_date`, `idx_debt_items_debt_id`, `idx_payments_debt_id/payment_date`, `idx_audit_logs_created_at`.
 
-Migrations: v2 soft-delete, v3 recreate `debt_items`, v4 add `unit` (default `piece`), v5 `unit_price+subtotal -> price`, v6 add `audit_logs`, v7 rewrite `audit_logs.summary` into English.
+Migrations: v2 soft-delete, v3 recreate `debt_items`, v4 add `unit` (default `piece`), v5 `unit_price+subtotal -> price`, v6 add `audit_logs`, v7 rewrite `audit_logs.summary` into English, v8 add `audit_logs.details`.
 
 ## Setup & Commands
 
