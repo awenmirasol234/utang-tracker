@@ -194,7 +194,7 @@ flutter analyze -v
 
 ## 7. Gotchas
 
-- UI strings are hardcoded Taglish/Cebuano — no i18n, intentional. Do not add localization plumbing.
+- UI strings are hardcoded English — no i18n, intentional. Do not add localization plumbing.
 - `Money` must stay integer centavos — never introduce `double` for amounts.
 - `debt_items.price` is final — quantity does NOT multiply price.
 - Soft delete everywhere (`deleted_at IS NULL` = active); debt/payment deletion is intentionally not exposed.

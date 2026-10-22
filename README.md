@@ -1,6 +1,6 @@
 # utang_tracker
 
-Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers, debts (with line items), and payments. UI strings are hardcoded Taglish/Cebuano (no i18n, intentional).
+Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers, debts (with line items), and payments. UI strings are hardcoded English (no i18n, intentional).
 
 > **New dev?** Start with [`docs/SETUP.md`](docs/SETUP.md) — single canonical setup doc (prerequisites, all subsystems, troubleshooting).
 
@@ -8,10 +8,10 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 
 - **Customers** - create/edit/soft-delete, unique name (case-insensitive), search, sort by name/date
 - **Debts** - one debt = many `debt_items` (product, qty, unit, price), editable only while `paid_amount == 0`, items can be appended to a partially paid debt
-- **Payments** - record partial/full bayad, balance/status derived atomically
+- **Payments** - record partial/full payments, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
 - **Overdue & notifications** - due-date aware
-- **Audit log** - Settings page lists every recorded change (customers, debts, bayad); rows are written by the repositories
+- **Audit log** - Settings page lists every recorded change (customers, debts, payments); rows are written by the repositories
 - **Updater** - GitHub Releases check, in-app update sheet + About page
 
 ## Tech Stack

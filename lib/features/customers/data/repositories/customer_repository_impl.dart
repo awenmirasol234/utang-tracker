@@ -83,7 +83,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       _db,
       action: AuditAction.customerCreated,
       entityId: customerId,
-      summary: 'Nag-add si $trimmed',
+      summary: 'Added customer $trimmed',
       createdAt: now,
       uuid: _uuid,
     );
@@ -118,7 +118,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       _db,
       action: AuditAction.customerUpdated,
       entityId: customer.id,
-      summary: 'Na-update si $trimmed',
+      summary: 'Updated customer $trimmed',
       createdAt: now,
       uuid: _uuid,
     );
@@ -152,7 +152,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       _db,
       action: AuditAction.customerDeleted,
       entityId: customerId,
-      summary: 'Na-delete si ${existing.name}',
+      summary: 'Deleted customer ${existing.name}',
       createdAt: now,
       uuid: _uuid,
     );

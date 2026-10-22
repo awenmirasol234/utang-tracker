@@ -104,7 +104,7 @@ class CustomersListPage extends ConsumerWidget {
                 if (customers.isEmpty) {
                   return EmptyState(
                     icon: Icons.people_outline,
-                    title: 'Walay customer',
+                    title: 'No customers yet',
                     message: 'Tap + Add customer to add.',
                   );
                 }

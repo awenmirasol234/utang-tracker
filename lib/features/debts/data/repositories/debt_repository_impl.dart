@@ -192,7 +192,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db,
         action: AuditAction.debtCreated,
         entityId: debtId,
-        summary: 'Bag-ong utang ni ${customer.name}',
+        summary: 'New debt for ${customer.name}',
         createdAt: now,
         uuid: _uuid,
       );
@@ -276,7 +276,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db,
         action: AuditAction.debtUpdated,
         entityId: debtId,
-        summary: 'Na-update ang utang ni ${existing.debt.customerName ?? 'Customer'}',
+        summary: 'Updated debt for ${existing.debt.customerName ?? 'Customer'}',
         createdAt: now,
         uuid: _uuid,
       );
@@ -346,7 +346,7 @@ class DebtRepositoryImpl implements DebtRepository {
         action: AuditAction.debtItemsAdded,
         entityId: debtId,
         summary:
-            'Nag-add items sa utang ni ${existing.debt.customerName ?? 'Customer'}',
+            'Added items to debt for ${existing.debt.customerName ?? 'Customer'}',
         createdAt: now,
         uuid: _uuid,
       );

@@ -1,6 +1,6 @@
 # Database Rules
 
-The application uses Drift with SQLite. The current schema version is `6`.
+The application uses Drift with SQLite. The current schema version is `7`.
 
 ## Storage Conventions
 
@@ -94,7 +94,7 @@ Common units are normalized case-insensitively to the values above. A trimmed, n
 | `id` | `TEXT` | No | Primary key; UUID v4 |
 | `action` | `TEXT` | No | `customer_created`, `customer_updated`, `customer_deleted`, `debt_created`, `debt_updated`, `debt_items_added`, or `payment_recorded` |
 | `entity_id` | `TEXT` | No | Id of the customer, debt, or payment the action belongs to |
-| `summary` | `TEXT` | No | Human-readable Taglish description of the action |
+| `summary` | `TEXT` | No | Human-readable English description of the action |
 | `created_at` | `INTEGER` | No | Drift `DateTime`, UTC |
 
 Audit rows are immutable. They are never updated, soft-deleted, or purged.
@@ -174,3 +174,4 @@ Fresh databases create these indexes:
 - Version 4 added the current `unit` column with a `piece` default.
 - Version 5 replaced the legacy `unit_price` and `subtotal` columns with `price`, preserving each existing item's former subtotal as its final custom line amount.
 - Version 6 added the `audit_logs` table.
+- Version 7 rewrote the existing `audit_logs.summary` values into English. No column or table changed.

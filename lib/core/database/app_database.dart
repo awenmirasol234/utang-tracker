@@ -9,7 +9,7 @@ part 'app_database.g.dart';
 @DriftDatabase(tables: [Customers, Debts, DebtItems, Payments, AuditLogs])
 class AppDatabase extends _$AppDatabase {
   static const applicationId = 0x5554414e;
-  static const currentSchemaVersion = 6;
+  static const currentSchemaVersion = 7;
 
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
@@ -100,6 +100,9 @@ FROM debt_items;
       if (from < 6) {
         await m.createTable(auditLogs);
       }
+      if (from < 7) {
+        await _translateAuditSummaries();
+      }
       await _createIndexes();
     },
     beforeOpen: (_) async {
@@ -107,6 +110,35 @@ FROM debt_items;
       await customStatement('PRAGMA application_id = $applicationId');
     },
   );
+
+  /// Rewrites the Taglish audit log summaries written by earlier versions
+  /// into English. Each pattern is anchored to the start of the summary and
+  /// the customer name is preserved.
+  Future<void> _translateAuditSummaries() async {
+    const replacements = <({String legacy, String english})>[
+      (legacy: 'Nag-add si ', english: 'Added customer '),
+      (legacy: 'Na-update si ', english: 'Updated customer '),
+      (legacy: 'Na-delete si ', english: 'Deleted customer '),
+      (legacy: 'Bag-ong utang ni ', english: 'New debt for '),
+      (legacy: 'Na-update ang utang ni ', english: 'Updated debt for '),
+      (
+        legacy: 'Nag-add items sa utang ni ',
+        english: 'Added items to debt for ',
+      ),
+      (legacy: 'Nagbayad ni ', english: 'Paid by '),
+    ];
+    for (final replacement in replacements) {
+      await customStatement(
+        'UPDATE audit_logs SET summary = ? || SUBSTR(summary, LENGTH(?) + 1) '
+        'WHERE summary LIKE ?',
+        [
+          replacement.english,
+          replacement.legacy,
+          '${replacement.legacy}%',
+        ],
+      );
+    }
+  }
 
   Future<void> _createIndexes() async {
     await customStatement(

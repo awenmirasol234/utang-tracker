@@ -42,12 +42,12 @@ class AppShell extends StatelessWidget {
               NavigationDestination(
                 icon: Icon(Icons.receipt_long_outlined),
                 selectedIcon: Icon(Icons.receipt_long_rounded),
-                label: 'Utang',
+                label: 'Debts',
               ),
               NavigationDestination(
                 icon: Icon(Icons.payments_outlined),
                 selectedIcon: Icon(Icons.payments_rounded),
-                label: 'Bayad',
+                label: 'Payments',
               ),
               NavigationDestination(
                 icon: Icon(Icons.settings_outlined),

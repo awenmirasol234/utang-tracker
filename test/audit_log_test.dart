@@ -110,12 +110,12 @@ void main() {
           AuditAction.customerCreated,
         ],
       );
-      expect(entries.first.summary, 'Nagbayad ni Maria Santos (₱20.00)');
-      expect(entries[1].summary, 'Nag-add items sa utang ni Maria Santos');
-      expect(entries[2].summary, 'Na-update ang utang ni Maria Santos');
-      expect(entries[3].summary, 'Bag-ong utang ni Maria Santos');
-      expect(entries[4].summary, 'Na-update si Maria Santos');
-      expect(entries[5].summary, 'Nag-add si Maria');
+      expect(entries.first.summary, 'Paid by Maria Santos (₱20.00)');
+      expect(entries[1].summary, 'Added items to debt for Maria Santos');
+      expect(entries[2].summary, 'Updated debt for Maria Santos');
+      expect(entries[3].summary, 'New debt for Maria Santos');
+      expect(entries[4].summary, 'Updated customer Maria Santos');
+      expect(entries[5].summary, 'Added customer Maria');
     });
 
     test('a rejected write is not logged', () async {
@@ -138,21 +138,21 @@ void main() {
           id: '1',
           action: AuditAction.customerCreated,
           entityId: 'customer-1',
-          summary: 'Nag-add si Maria Santos',
+          summary: 'Added customer Maria Santos',
           createdAt: DateTime.utc(2030, 1, 1, 10),
         ),
       ],
     );
 
     expect(find.text('Audit Log'), findsOneWidget);
-    expect(find.text('Nag-add customer'), findsOneWidget);
-    expect(find.text('Nag-add si Maria Santos'), findsOneWidget);
+    expect(find.text('Customer added'), findsOneWidget);
+    expect(find.text('Added customer Maria Santos'), findsOneWidget);
   });
 
   testWidgets('audit log page shows an empty state', (tester) async {
     await _pumpPage(tester, []);
 
-    expect(find.text('Walay audit log'), findsOneWidget);
+    expect(find.text('No audit log'), findsOneWidget);
   });
 }
 

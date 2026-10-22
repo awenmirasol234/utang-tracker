@@ -29,7 +29,7 @@ class AuditLogPage extends ConsumerWidget {
           if (entries.isEmpty) {
             return const EmptyState(
               icon: Icons.history_rounded,
-              title: 'Walay audit log',
+              title: 'No audit log',
               message: 'No recorded changes yet.',
             );
           }

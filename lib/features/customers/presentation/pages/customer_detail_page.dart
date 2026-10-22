@@ -62,9 +62,9 @@ class CustomerDetailPage extends ConsumerWidget {
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () =>
                   context.push('/debts/new?customerId=$customerId'),
-              tooltip: 'New utang',
+              tooltip: 'New debt',
               icon: const Icon(Icons.add),
-              label: const Text('New utang'),
+              label: const Text('New debt'),
             ),
             body: RefreshIndicator(
               onRefresh: () =>
@@ -188,8 +188,8 @@ class _HistoryTabBar extends StatelessWidget {
       color: AppColors.surface,
       child: const TabBar(
         tabs: [
-          Tab(text: 'Utang'),
-          Tab(text: 'Bayad'),
+          Tab(text: 'Debts'),
+          Tab(text: 'Payments'),
         ],
       ),
     );
@@ -234,8 +234,8 @@ class _DebtHistoryList extends StatelessWidget {
         children: [
           EmptyState(
             icon: Icons.receipt_long_outlined,
-            title: 'Walay utang',
-            message: 'Tap + New utang to add.',
+            title: 'No debts yet',
+            message: 'Tap + New debt to add.',
           ),
         ],
       );
@@ -304,8 +304,8 @@ class _PaymentHistoryList extends StatelessWidget {
         children: [
           EmptyState(
             icon: Icons.payments_outlined,
-            title: 'Walay bayad',
-            message: 'Tap + Record bayad to add.',
+            title: 'No payments yet',
+            message: 'Tap + Record payment to add.',
           ),
         ],
       );

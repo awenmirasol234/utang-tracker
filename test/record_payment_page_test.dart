@@ -43,18 +43,18 @@ void main() {
     await tester.tap(save);
     await tester.pump();
 
-    expect(find.text('Select utang'), findsAtLeastNWidgets(1));
+    expect(find.text('Select debt'), findsAtLeastNWidgets(1));
     expect(find.text('Amount is required.'), findsOneWidget);
 
     final debtDecorator = find
         .ancestor(
-          of: find.text('Select utang'),
+          of: find.text('Select debt'),
           matching: find.byType(InputDecorator),
         )
         .first;
     expect(
       tester.widget<InputDecorator>(debtDecorator).decoration.errorText,
-      'Select utang',
+      'Select debt',
     );
 
     final amountField = find.byWidgetPredicate(

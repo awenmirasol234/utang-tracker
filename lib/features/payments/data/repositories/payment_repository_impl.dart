@@ -225,7 +225,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
         action: AuditAction.paymentRecorded,
         entityId: paymentId,
         summary:
-            'Nagbayad ni ${customer?.name ?? 'Customer'} (${amount.format()})',
+            'Paid by ${customer?.name ?? 'Customer'} (${amount.format()})',
         createdAt: now,
         uuid: _uuid,
       );

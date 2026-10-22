@@ -295,7 +295,7 @@ class _EmptyNotifications extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'No due utang.',
+              'No due debts.',
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,

@@ -23,12 +23,12 @@ class PaymentsListPage extends ConsumerWidget {
     final optionsAsync = ref.watch(paymentFilterOptionsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Bayad')),
+      appBar: AppBar(title: const Text('Payments')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/payments/new'),
-        tooltip: 'Record bayad',
+        tooltip: 'Record payment',
         icon: const Icon(Icons.add),
-        label: const Text('Record bayad'),
+        label: const Text('Record payment'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,12 +83,12 @@ class PaymentsListPage extends ConsumerWidget {
                   String emptyMessage;
                   if (filters.hasActiveFilters) {
                     emptyIcon = Icons.filter_alt_off_outlined;
-                    emptyTitle = 'Walay bayad';
+                    emptyTitle = 'No payments yet';
                     emptyMessage = 'No results for filter.';
                   } else {
                     emptyIcon = Icons.payments_outlined;
-                    emptyTitle = 'Wala pay nibayad';
-                    emptyMessage = 'Tap + Record bayad to add.';
+                    emptyTitle = 'No payments recorded';
+                    emptyMessage = 'Tap + Record payment to add.';
                   }
                   return EmptyState(
                     icon: emptyIcon,

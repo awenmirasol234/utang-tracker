@@ -1,11 +1,11 @@
 enum AuditAction {
-  customerCreated('customer_created', 'Nag-add customer'),
-  customerUpdated('customer_updated', 'Na-update customer'),
-  customerDeleted('customer_deleted', 'Na-delete customer'),
-  debtCreated('debt_created', 'Bag-ong utang'),
-  debtUpdated('debt_updated', 'Na-update utang'),
-  debtItemsAdded('debt_items_added', 'Nag-add items'),
-  paymentRecorded('payment_recorded', 'Nagbayad'),
+  customerCreated('customer_created', 'Customer added'),
+  customerUpdated('customer_updated', 'Customer updated'),
+  customerDeleted('customer_deleted', 'Customer deleted'),
+  debtCreated('debt_created', 'Debt created'),
+  debtUpdated('debt_updated', 'Debt updated'),
+  debtItemsAdded('debt_items_added', 'Items added'),
+  paymentRecorded('payment_recorded', 'Payment recorded'),
   unknown('unknown', 'Unknown action');
 
   const AuditAction(this.value, this.label);

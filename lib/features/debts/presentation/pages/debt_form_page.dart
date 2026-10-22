@@ -221,7 +221,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       confirmationTitle = 'Confirm changes?';
       confirmationAction = 'Save';
     } else {
-      confirmationTitle = 'Confirm utang?';
+      confirmationTitle = 'Confirm debt?';
       confirmationAction = 'Confirm';
     }
     final confirmedItems = items;
@@ -364,9 +364,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       _isDirty = false;
       String successMessage;
       if (widget.isEditing) {
-        successMessage = 'Utang updated';
+        successMessage = 'Debt updated';
       } else {
-        successMessage = 'Utang recorded';
+        successMessage = 'Debt recorded';
       }
       AppSnackBar.success(
         context,
@@ -515,9 +515,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     String notesTooltip;
     IconData notesIcon;
     if (widget.isEditing) {
-      title = 'Edit utang';
+      title = 'Edit debt';
     } else {
-      title = 'New utang';
+      title = 'New debt';
     }
     if (_notesExpanded) {
       notesTooltip = 'Hide note';

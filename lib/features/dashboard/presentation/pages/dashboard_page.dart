@@ -182,7 +182,7 @@ class _LedgerBalanceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Active Utang',
+                          'Active Debts',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: AppColors.textOnPrimarySoft,

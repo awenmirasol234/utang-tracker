@@ -34,7 +34,7 @@ INSERT INTO debt_items (
 
     expect(item.unit, DebtItemUnits.piece);
     expect(item.price, 10000);
-    expect(database.schemaVersion, 6);
+    expect(database.schemaVersion, 7);
   });
 
   test('schema 4 custom units and subtotals migrate without changes', () async {
@@ -160,6 +160,104 @@ CREATE TABLE payments (
         .get();
     expect(indexes.length, 1);
   });
+
+  test('schema 6 audit summaries migrate to English', () async {
+    final executor = NativeDatabase.memory(
+      setup: (database) {
+        _createVersion6Tables(database);
+        database.execute('''
+INSERT INTO audit_logs (id, action, entity_id, summary, created_at) VALUES
+  ('log-1', 'customer_created', 'customer-1', 'Nag-add si Maria Santos', 0),
+  ('log-2', 'customer_updated', 'customer-1', 'Na-update si Maria Santos', 0),
+  ('log-3', 'customer_deleted', 'customer-1', 'Na-delete si Maria Santos', 0),
+  ('log-4', 'debt_created', 'debt-1', 'Bag-ong utang ni Maria Santos', 0),
+  ('log-5', 'debt_updated', 'debt-1', 'Na-update ang utang ni Maria Santos', 0),
+  ('log-6', 'debt_items_added', 'debt-1', 'Nag-add items sa utang ni Maria Santos', 0),
+  ('log-7', 'payment_recorded', 'payment-1', 'Nagbayad ni Maria Santos (₱20.00)', 0);
+''');
+        database.execute('PRAGMA user_version = 6;');
+      },
+    );
+    final database = AppDatabase(executor);
+    addTearDown(database.close);
+
+    final rows = await database.select(database.auditLogs).get();
+
+    expect(
+      rows.map((row) => row.summary),
+      [
+        'Added customer Maria Santos',
+        'Updated customer Maria Santos',
+        'Deleted customer Maria Santos',
+        'New debt for Maria Santos',
+        'Updated debt for Maria Santos',
+        'Added items to debt for Maria Santos',
+        'Paid by Maria Santos (₱20.00)',
+      ],
+    );
+  });
+}
+
+void _createVersion6Tables(dynamic database) {
+  database.execute('''
+CREATE TABLE customers (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  phone TEXT NULL,
+  notes TEXT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+  database.execute('''
+CREATE TABLE debts (
+  id TEXT NOT NULL PRIMARY KEY,
+  customer_id TEXT NOT NULL,
+  total_amount INTEGER NOT NULL,
+  paid_amount INTEGER NOT NULL,
+  balance INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  transaction_date INTEGER NOT NULL,
+  due_date INTEGER NULL,
+  notes TEXT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+  database.execute('''
+CREATE TABLE debt_items (
+  id TEXT NOT NULL PRIMARY KEY,
+  debt_id TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  quantity REAL NOT NULL,
+  unit TEXT NOT NULL DEFAULT 'piece',
+  price INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+  database.execute('''
+CREATE TABLE payments (
+  id TEXT NOT NULL PRIMARY KEY,
+  debt_id TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  payment_date INTEGER NOT NULL,
+  payment_method TEXT NOT NULL,
+  notes TEXT NULL,
+  created_at INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+  database.execute('''
+CREATE TABLE audit_logs (
+  id TEXT NOT NULL PRIMARY KEY,
+  action TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+''');
 }
 
 void _createIndexedTables(dynamic database) {

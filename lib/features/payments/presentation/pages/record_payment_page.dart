@@ -135,7 +135,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     Money? amount;
     String? debtError;
     if (_debtId == null) {
-      debtError = 'Select utang';
+      debtError = 'Select debt';
     }
     setState(() {
       _error = null;
@@ -192,7 +192,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       );
       if (!mounted) return;
       _isDirty = false;
-      AppSnackBar.success(context, 'Bayad recorded');
+      AppSnackBar.success(context, 'Payment recorded');
       context.pop();
     } on AppException catch (appException) {
       if (!mounted) return;
@@ -227,7 +227,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   Widget build(BuildContext context) {
     if (_resolvingInitial && _selectedDebt == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Record bayad')),
+        appBar: AppBar(title: const Text('Record payment')),
         body: const LoadingIndicator(),
       );
     }
@@ -253,11 +253,11 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         if (!didPop) _confirmBack();
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Record bayad')),
+        appBar: AppBar(title: const Text('Record payment')),
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.pagePadding),
           children: [
-            AppTextField.buildLabel(context, 'Utang *'),
+            AppTextField.buildLabel(context, 'Debt *'),
             const SizedBox(height: AppSpacing.sm),
             _DebtField(
               key: _debtFieldKey,
@@ -438,7 +438,7 @@ class _DebtField extends StatelessWidget {
       displayLabel = label!;
       displayColor = AppColors.textPrimary;
     } else {
-      displayLabel = 'Select utang';
+      displayLabel = 'Select debt';
       displayColor = AppColors.textMuted;
     }
     return InkWell(
@@ -529,7 +529,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
     final debts = _debts;
 
     return AppModalBottomSheet(
-      title: 'Select utang',
+      title: 'Select debt',
       headerBottom: AppSearchBar(
         hintText: 'Search by customer',
         onChanged: (value) {
@@ -563,9 +563,9 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
       final searching = _query.trim().isNotEmpty;
       String emptyMessage;
       if (searching) {
-        emptyMessage = 'Walay utang match your search.';
+        emptyMessage = 'No debts match your search.';
       } else {
-        emptyMessage = 'Wala pay utang';
+        emptyMessage = 'No debts yet';
       }
       return Center(
         child: Padding(

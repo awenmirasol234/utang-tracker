@@ -6,8 +6,8 @@ enum RecentActivityType {
   payment;
 
   String get label => switch (this) {
-    RecentActivityType.debt => 'Utang',
-    RecentActivityType.payment => 'Bayad',
+    RecentActivityType.debt => 'Debt',
+    RecentActivityType.payment => 'Payment',
   };
 }
 

@@ -57,7 +57,7 @@ class DebtDetailPage extends ConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Utang details'),
+            title: const Text('Debt details'),
             actions: [
               if (debt.isEditable)
                 IconButton(
@@ -137,7 +137,7 @@ class DebtDetailPage extends ConsumerWidget {
                 if (debt.status != DebtStatus.paid) ...[
                   const SizedBox(height: AppSpacing.lg),
                   AppButton(
-                    label: 'Record bayad',
+                    label: 'Record payment',
                     onPressed: () =>
                         context.push('/payments/new?debtId=$debtId'),
                   ),
@@ -162,14 +162,14 @@ class DebtDetailPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 _DebtItemsCard(items: items, totalAmount: debt.totalAmount),
                 const SizedBox(height: AppSpacing.xl),
-                Text('Bayad', style: Theme.of(context).textTheme.titleMedium),
+                Text('Payments', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
                 if (payments.isEmpty)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                       child: Text(
-                        'No bayad yet.',
+                        'No payments yet.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textMuted,
                         ),

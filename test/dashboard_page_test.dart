@@ -57,7 +57,7 @@ void main() {
         use24HourFormat: false,
       ),
     );
-    final label = find.text('Bayad');
+    final label = find.text('Payment');
     final amount = find.text(Money.fromPesos(125).format());
 
     expect(dateAndTime, findsOneWidget);

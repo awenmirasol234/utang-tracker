@@ -24,12 +24,12 @@ class DebtsListPage extends ConsumerWidget {
     final debtsAsync = ref.watch(debtsListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Utang')),
+      appBar: AppBar(title: const Text('Debts')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/debts/new'),
-        tooltip: 'New utang',
+        tooltip: 'New debt',
         icon: const Icon(Icons.add),
-        label: const Text('New utang'),
+        label: const Text('New debt'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,13 +135,13 @@ class DebtsListPage extends ConsumerWidget {
                 if (debts.isEmpty) {
                   String emptyMessage;
                   if (filter == DebtListFilter.all) {
-                    emptyMessage = 'Tap + New utang to add.';
+                    emptyMessage = 'Tap + New debt to add.';
                   } else {
-                    emptyMessage = 'No ${filter.label.toLowerCase()} utang.';
+                    emptyMessage = 'No ${filter.label.toLowerCase()} debts.';
                   }
                   return EmptyState(
                     icon: Icons.receipt_long_outlined,
-                    title: 'Walay utang',
+                    title: 'No debts yet',
                     message: emptyMessage,
                   );
                 }
