@@ -24,7 +24,7 @@
 
 ## Architecture
 
-- Data refresh is push-based: after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart` (31-42) — NOT Drift reactive streams. Register new list/detail providers there.
+- Data refresh is push-based: after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart` (9-27) — NOT Drift reactive streams. Register new list/detail providers there.
 - DI: plain Riverpod `Provider`s in `lib/core/providers/core_providers.dart`; repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`
 - Repo tests use `AppDatabase.forTesting()` (in-memory SQLite); migration tests seed legacy schemas via raw SQL
 - Android method channels live in `android/.../MainActivity.kt`: updater (`com.example.utang_tracker/updater`); the updater permission flow uses deprecated onActivityResult
