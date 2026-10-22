@@ -269,15 +269,52 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hide details'), findsOneWidget);
+    expect(find.text('What changed'), findsOneWidget);
     expect(find.text('Name'), findsOneWidget);
     expect(find.text('Maria'), findsOneWidget);
     expect(find.text('Maria Santos'), findsOneWidget);
-    expect(find.text('Record id'), findsOneWidget);
-    expect(find.text('customer-1'), findsOneWidget);
-    expect(find.text('Logged at'), findsOneWidget);
+    expect(find.text('Record id'), findsNothing);
+    expect(find.text('customer-1'), findsNothing);
+    expect(find.text('Logged at'), findsNothing);
+    expect(find.text('customer_updated'), findsNothing);
   });
 
-  testWidgets('audit log tile expands entries without recorded details', (
+  testWidgets('audit log tile uses plain labels and friendly dates', (
+    tester,
+  ) async {
+    await _pumpPage(tester, [
+      AuditLogEntry(
+        id: '1',
+        action: AuditAction.debtUpdated,
+        entityId: 'debt-1',
+        summary: 'Updated debt for Maria Santos',
+        createdAt: DateTime.utc(2030, 1, 1, 10),
+        details: const [
+          AuditChangeDetail(field: 'Transaction date', after: '2030-01-01'),
+          AuditChangeDetail(field: 'Method', after: 'Cash'),
+          AuditChangeDetail(
+            field: 'Items added',
+            after: '1 item: Bigas x2 pc (\u20B150.00)',
+          ),
+        ],
+      ),
+    ]);
+
+    await tester.tap(find.text('Show details'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('What changed'), findsOneWidget);
+    expect(find.text('Date'), findsOneWidget);
+    expect(find.text('Jan 1, 2030'), findsOneWidget);
+    expect(find.text('2030-01-01'), findsNothing);
+    expect(find.text('Payment method'), findsOneWidget);
+    expect(find.text('Cash'), findsOneWidget);
+    expect(find.text('Items'), findsOneWidget);
+    expect(find.text('Transaction date'), findsNothing);
+    expect(find.text('Method'), findsNothing);
+  });
+
+  testWidgets('audit log tile hides the details toggle when nothing was recorded', (
     tester,
   ) async {
     await _pumpPage(tester, [
@@ -290,13 +327,10 @@ void main() {
       ),
     ]);
 
-    await tester.tap(find.text('Show details'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Record'), findsOneWidget);
-    expect(find.text('Customer'), findsOneWidget);
-    expect(find.text('customer_updated'), findsNothing);
-    expect(find.text('customer_created'), findsOneWidget);
+    expect(find.text('Show details'), findsNothing);
+    expect(find.text('Hide details'), findsNothing);
+    expect(find.text('Record id'), findsNothing);
+    expect(find.text('customer_created'), findsNothing);
   });
 }
 

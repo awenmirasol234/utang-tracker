@@ -4,6 +4,7 @@ import 'package:utang_tracker/core/domain/audit_action.dart';
 import 'package:utang_tracker/core/domain/audit_change_detail.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
+import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
@@ -72,6 +73,7 @@ class _AuditLogTileState extends State<_AuditLogTile> {
   @override
   Widget build(BuildContext context) {
     final entry = widget.entry;
+    final hasDetails = entry.details.isNotEmpty;
 
     return AppCard(
       child: Column(
@@ -111,38 +113,44 @@ class _AuditLogTileState extends State<_AuditLogTile> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          const Divider(height: 1),
-          InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Row(
-                children: [
-                  Icon(
-                    _expanded
-                        ? Icons.expand_less_rounded
-                        : Icons.expand_more_rounded,
-                    size: 20,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    _expanded ? 'Hide details' : 'Show details',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.primaryDark,
-                      fontWeight: FontWeight.w600,
+          if (hasDetails) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const Divider(height: 1),
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Icon(
+                      _expanded
+                          ? Icons.expand_less_rounded
+                          : Icons.expand_more_rounded,
+                      size: 20,
+                      color: AppColors.textSecondary,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      _expanded ? 'Hide details' : 'Show details',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppColors.primaryDark,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          if (_expanded) ...[
-            const Divider(height: 1),
-            const SizedBox(height: AppSpacing.sm),
-            ...entry.details.map((detail) => _buildChange(context, detail)),
-            ..._buildMetadata(context, entry),
+            if (_expanded) ...[
+              const Divider(height: 1),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'What changed',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ...entry.details.map((detail) => _buildChange(context, detail)),
+            ],
           ],
         ],
       ),
@@ -156,7 +164,7 @@ class _AuditLogTileState extends State<_AuditLogTile> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            detail.field,
+            _friendlyFieldLabels[detail.field] ?? detail.field,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.textMuted,
               fontWeight: FontWeight.w600,
@@ -178,13 +186,21 @@ class _AuditLogTileState extends State<_AuditLogTile> {
     ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary);
 
     if (detail.before == null) {
-      return Text(detail.after ?? '', style: valueStyle);
+      return Text(
+        _displayValue(context, detail.field, detail.after ?? ''),
+        style: valueStyle,
+      );
     }
     if (detail.after == null) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Flexible(child: Text(detail.before!, style: beforeStyle)),
+          Flexible(
+            child: Text(
+              _displayValue(context, detail.field, detail.before!),
+              style: beforeStyle,
+            ),
+          ),
           Text(' (removed)', style: beforeStyle),
         ],
       );
@@ -192,47 +208,49 @@ class _AuditLogTileState extends State<_AuditLogTile> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Flexible(child: Text(detail.before!, style: beforeStyle)),
+        Flexible(
+          child: Text(
+            _displayValue(context, detail.field, detail.before!),
+            style: beforeStyle,
+          ),
+        ),
         const Text(' \u2192 '),
-        Flexible(child: Text(detail.after!, style: valueStyle)),
+        Flexible(
+          child: Text(
+            _displayValue(context, detail.field, detail.after!),
+            style: valueStyle,
+          ),
+        ),
       ],
     );
   }
 
-  List<Widget> _buildMetadata(BuildContext context, AuditLogEntry entry) {
-    return [
-      _buildMetadataRow(context, 'Record', entry.action.entityLabel),
-      _buildMetadataRow(context, 'Record id', entry.entityId),
-      _buildMetadataRow(context, 'Action', entry.action.value),
-      _buildMetadataRow(context, 'Logged at', context.fullTimestamp(entry.createdAt)),
-    ];
-  }
-
-  Widget _buildMetadataRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary),
-          ),
-        ],
-      ),
+  /// Renders a stored value the way the rest of the app shows it.
+  String _displayValue(BuildContext context, String field, String value) {
+    if (!_dateFields.contains(field)) {
+      return value;
+    }
+    return DateFormatters.friendlyDayKey(
+      value,
+      locale: Localizations.localeOf(context).toLanguageTag(),
     );
   }
 }
+
+/// Field names as they are stored, mapped to the wording used on the forms.
+const _friendlyFieldLabels = <String, String>{
+  'Transaction date': 'Date',
+  'Payment date': 'Date',
+  'Method': 'Payment method',
+  'Items added': 'Items',
+};
+
+/// Fields whose stored value is a `yyyy-MM-dd` day key.
+const _dateFields = <String>{
+  'Transaction date',
+  'Due date',
+  'Payment date',
+};
 
 class _ActionIcon extends StatelessWidget {
   const _ActionIcon({required this.action});

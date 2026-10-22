@@ -58,6 +58,19 @@ class DateFormatters {
 
   static String dayKey(DateTime date) => _dayKey.format(date.toLocal());
 
+  /// Formats a stored `yyyy-MM-dd` day key as a friendly date.
+  /// Returns the value unchanged when it is not a day key.
+  static String friendlyDayKey(String dayKey, {required String locale}) {
+    DateTime parsed;
+    try {
+      parsed = _dayKey.parseStrict(dayKey);
+    } on FormatException {
+      return dayKey;
+    }
+    final canonicalLocale = Intl.canonicalizedLocale(locale);
+    return DateFormat.yMMMd(canonicalLocale).format(parsed);
+  }
+
   static String fullDate(DateTime date, {required String locale}) {
     final canonicalLocale = Intl.canonicalizedLocale(locale);
     return DateFormat.yMMMMd(canonicalLocale).format(date.toLocal());

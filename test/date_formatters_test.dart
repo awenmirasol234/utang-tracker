@@ -145,6 +145,22 @@ void main() {
     });
   });
 
+  group('friendly day key', () {
+    test('formats a stored day key as a friendly date', () {
+      expect(
+        DateFormatters.friendlyDayKey('2026-07-20', locale: 'en_US'),
+        'Jul 20, 2026',
+      );
+    });
+
+    test('keeps the value when it is not a day key', () {
+      expect(
+        DateFormatters.friendlyDayKey('not a date', locale: 'en_US'),
+        'not a date',
+      );
+    });
+  });
+
   testWidgets('context adapter uses the device 24-hour preference', (
     tester,
   ) async {
