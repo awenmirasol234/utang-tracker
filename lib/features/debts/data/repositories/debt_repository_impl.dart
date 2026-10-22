@@ -1,10 +1,13 @@
 import 'package:drift/drift.dart';
+import 'package:utang_tracker/core/audit/audit_details.dart';
 import 'package:utang_tracker/core/audit/audit_log_writer.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_change_detail.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
 import 'package:utang_tracker/core/utils/local_date_time.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';
@@ -153,6 +156,7 @@ class DebtRepositoryImpl implements DebtRepository {
       savedAt,
     ).toUtc();
     final debtId = _uuid.v4();
+    final normalizedNotes = emptyToNull(notes);
 
     await _db.transaction(() async {
       await _db
@@ -167,7 +171,7 @@ class DebtRepositoryImpl implements DebtRepository {
               status: status.value,
               transactionDate: savedTransactionDate,
               dueDate: Value(dueDate?.toUtc()),
-              notes: Value(emptyToNull(notes)),
+              notes: Value(normalizedNotes),
               createdAt: now,
               updatedAt: now,
             ),
@@ -194,6 +198,22 @@ class DebtRepositoryImpl implements DebtRepository {
         entityId: debtId,
         summary: 'New debt for ${customer.name}',
         createdAt: now,
+        details: [
+          AuditChangeDetail(field: 'Customer', after: customer.name),
+          AuditChangeDetail(field: 'Total', after: total.format()),
+          AuditChangeDetail(field: 'Items', after: _itemsSummary(prepared)),
+          AuditChangeDetail(
+            field: 'Transaction date',
+            after: DateFormatters.dayKey(savedTransactionDate),
+          ),
+          if (dueDate != null)
+            AuditChangeDetail(
+              field: 'Due date',
+              after: DateFormatters.dayKey(dueDate),
+            ),
+          if (normalizedNotes != null)
+            AuditChangeDetail(field: 'Notes', after: normalizedNotes),
+        ],
         uuid: _uuid,
       );
     });
@@ -278,6 +298,33 @@ class DebtRepositoryImpl implements DebtRepository {
         entityId: debtId,
         summary: 'Updated debt for ${existing.debt.customerName ?? 'Customer'}',
         createdAt: now,
+        details: [
+          ...auditChange(
+            field: 'Total',
+            before: existing.debt.totalAmount.format(),
+            after: total.format(),
+          ),
+          ...auditChange(
+            field: 'Items',
+            before: _itemsSummary(_existingItems(existing.items)),
+            after: _itemsSummary(prepared),
+          ),
+          ...auditChange(
+            field: 'Transaction date',
+            before: DateFormatters.dayKey(existing.debt.transactionDate),
+            after: DateFormatters.dayKey(savedTransactionDate),
+          ),
+          ...auditChange(
+            field: 'Due date',
+            before: _dayKey(existing.debt.dueDate),
+            after: _dayKey(dueDate),
+          ),
+          ...auditChange(
+            field: 'Notes',
+            before: existing.debt.notes,
+            after: emptyToNull(notes),
+          ),
+        ],
         uuid: _uuid,
       );
     });
@@ -348,6 +395,14 @@ class DebtRepositoryImpl implements DebtRepository {
         summary:
             'Added items to debt for ${existing.debt.customerName ?? 'Customer'}',
         createdAt: now,
+        details: [
+          AuditChangeDetail(field: 'Items added', after: _itemsSummary(prepared)),
+          ...auditChange(
+            field: 'Total',
+            before: existing.debt.totalAmount.format(),
+            after: total.format(),
+          ),
+        ],
         uuid: _uuid,
       );
     });
@@ -421,5 +476,44 @@ class DebtRepositoryImpl implements DebtRepository {
         price: item.price,
       );
     }).toList();
+  }
+
+  List<({String productName, double quantity, String unit, Money price})>
+  _existingItems(List<DebtItem> items) {
+    return items
+        .map(
+          (item) => (
+            productName: item.productName,
+            quantity: item.quantity,
+            unit: item.unit,
+            price: item.price,
+          ),
+        )
+        .toList();
+  }
+
+  /// Describes the items of a debt for the audit log.
+  String _itemsSummary(
+    List<({String productName, double quantity, String unit, Money price})> items,
+  ) {
+    if (items.isEmpty) return 'No items';
+    final names = items.map((item) {
+      final unitName = DebtItemUnits.displayNameForQuantity(
+        item.unit,
+        item.quantity,
+      );
+      return '${item.productName} x${formatQuantity(item.quantity)} '
+          '$unitName (${item.price.format()})';
+    }).join(', ');
+    String label = '${items.length} items';
+    if (items.length == 1) {
+      label = '1 item';
+    }
+    return '$label: $names';
+  }
+
+  String? _dayKey(DateTime? date) {
+    if (date == null) return null;
+    return DateFormatters.dayKey(date);
   }
 }

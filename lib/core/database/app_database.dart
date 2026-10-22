@@ -9,7 +9,7 @@ part 'app_database.g.dart';
 @DriftDatabase(tables: [Customers, Debts, DebtItems, Payments, AuditLogs])
 class AppDatabase extends _$AppDatabase {
   static const applicationId = 0x5554414e;
-  static const currentSchemaVersion = 7;
+  static const currentSchemaVersion = 8;
 
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
@@ -98,10 +98,23 @@ FROM debt_items;
         );
       }
       if (from < 6) {
-        await m.createTable(auditLogs);
+        // The table is created in its version 6 shape. The details column is
+        // added by the version 8 step below.
+        await customStatement('''
+CREATE TABLE audit_logs (
+  id TEXT NOT NULL PRIMARY KEY,
+  action TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+''');
       }
       if (from < 7) {
         await _translateAuditSummaries();
+      }
+      if (from < 8) {
+        await m.addColumn(auditLogs, auditLogs.details);
       }
       await _createIndexes();
     },

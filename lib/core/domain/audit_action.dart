@@ -13,6 +13,18 @@ enum AuditAction {
   final String value;
   final String label;
 
+  /// The kind of record the action belongs to.
+  String get entityLabel => switch (this) {
+    AuditAction.customerCreated ||
+    AuditAction.customerUpdated ||
+    AuditAction.customerDeleted => 'Customer',
+    AuditAction.debtCreated ||
+    AuditAction.debtUpdated ||
+    AuditAction.debtItemsAdded => 'Debt',
+    AuditAction.paymentRecorded => 'Payment',
+    AuditAction.unknown => 'Record',
+  };
+
   static AuditAction fromValue(String value) {
     return AuditAction.values.firstWhere(
       (action) => action.value == value,

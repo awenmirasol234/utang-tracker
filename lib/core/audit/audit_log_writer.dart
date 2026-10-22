@@ -1,17 +1,23 @@
+import 'package:drift/drift.dart';
+import 'package:utang_tracker/core/audit/audit_details.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_change_detail.dart';
 import 'package:uuid/uuid.dart';
 
 /// Writes one audit row. Call this from the repository that performs the
 /// change so the log cannot miss an action the user performed.
 /// [createdAt] must be UTC, like every other timestamp written by the
 /// repository layer.
+/// [details] records the fields the change touched. It is optional, so rows
+/// written before the details column existed stay readable.
 Future<void> writeAuditLog(
   AppDatabase db, {
   required AuditAction action,
   required String entityId,
   required String summary,
   required DateTime createdAt,
+  List<AuditChangeDetail> details = const [],
   Uuid? uuid,
 }) async {
   await db
@@ -22,6 +28,7 @@ Future<void> writeAuditLog(
           action: action.value,
           entityId: entityId,
           summary: summary,
+          details: Value(encodeAuditDetails(details)),
           createdAt: createdAt,
         ),
       );

@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart';
+import 'package:utang_tracker/core/audit/audit_details.dart';
 import 'package:utang_tracker/core/audit/audit_log_writer.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_change_detail.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';
@@ -67,14 +69,16 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
     final now = _now().toUtc();
     final customerId = _uuid.v4();
+    final normalizedPhone = emptyToNull(phone);
+    final normalizedNotes = emptyToNull(notes);
     await _db
         .into(_db.customers)
         .insert(
           CustomersCompanion.insert(
             id: customerId,
             name: trimmed,
-            phone: Value(emptyToNull(phone)),
-            notes: Value(emptyToNull(notes)),
+            phone: Value(normalizedPhone),
+            notes: Value(normalizedNotes),
             createdAt: now,
             updatedAt: now,
           ),
@@ -85,6 +89,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
       entityId: customerId,
       summary: 'Added customer $trimmed',
       createdAt: now,
+      details: [
+        AuditChangeDetail(field: 'Name', after: trimmed),
+        if (normalizedPhone != null)
+          AuditChangeDetail(field: 'Phone', after: normalizedPhone),
+        if (normalizedNotes != null)
+          AuditChangeDetail(field: 'Notes', after: normalizedNotes),
+      ],
       uuid: _uuid,
     );
     final created = await getById(customerId);
@@ -97,17 +108,23 @@ class CustomerRepositoryImpl implements CustomerRepository {
     if (trimmed.isEmpty) {
       throw const ValidationException('Customer name is required.');
     }
+    final previous = await getById(customer.id);
+    if (previous == null) {
+      throw const NotFoundException('Customer not found.');
+    }
     await _ensureUniqueName(trimmed, excludeId: customer.id);
 
     final now = _now().toUtc();
+    final normalizedPhone = emptyToNull(customer.phone);
+    final normalizedNotes = emptyToNull(customer.notes);
     final updated =
         await (_db.update(
           _db.customers,
         )..where((table) => table.id.equals(customer.id) & table.deletedAt.isNull())).write(
           CustomersCompanion(
             name: Value(trimmed),
-            phone: Value(emptyToNull(customer.phone)),
-            notes: Value(emptyToNull(customer.notes)),
+            phone: Value(normalizedPhone),
+            notes: Value(normalizedNotes),
             updatedAt: Value(now),
           ),
         );
@@ -120,6 +137,19 @@ class CustomerRepositoryImpl implements CustomerRepository {
       entityId: customer.id,
       summary: 'Updated customer $trimmed',
       createdAt: now,
+      details: [
+        ...auditChange(field: 'Name', before: previous.name, after: trimmed),
+        ...auditChange(
+          field: 'Phone',
+          before: previous.phone,
+          after: normalizedPhone,
+        ),
+        ...auditChange(
+          field: 'Notes',
+          before: previous.notes,
+          after: normalizedNotes,
+        ),
+      ],
       uuid: _uuid,
     );
     final result = await getById(customer.id);
@@ -154,6 +184,11 @@ class CustomerRepositoryImpl implements CustomerRepository {
       entityId: customerId,
       summary: 'Deleted customer ${existing.name}',
       createdAt: now,
+      details: [
+        AuditChangeDetail(field: 'Name', before: existing.name),
+        if (existing.phone != null)
+          AuditChangeDetail(field: 'Phone', before: existing.phone),
+      ],
       uuid: _uuid,
     );
   }

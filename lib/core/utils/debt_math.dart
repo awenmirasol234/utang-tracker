@@ -17,3 +17,9 @@ DebtStatus deriveStatus({
   }
   return DebtStatus.partial;
 }
+
+/// Formats a quantity without a trailing decimal when it is a whole number.
+String formatQuantity(double quantity) {
+  if (quantity % 1 == 0) return quantity.toInt().toString();
+  return quantity.toString();
+}

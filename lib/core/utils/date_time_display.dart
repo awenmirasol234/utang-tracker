@@ -27,4 +27,12 @@ extension DateTimeDisplayContext on BuildContext {
       locale: Localizations.localeOf(this).toLanguageTag(),
     );
   }
+
+  String fullTimestamp(DateTime value) {
+    return DateFormatters.fullTimestamp(
+      value,
+      locale: Localizations.localeOf(this).toLanguageTag(),
+      use24HourFormat: MediaQuery.alwaysUse24HourFormatOf(this),
+    );
+  }
 }

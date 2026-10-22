@@ -2208,6 +2208,17 @@ class $AuditLogsTable extends AuditLogs
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _detailsMeta = const VerificationMeta(
+    'details',
+  );
+  @override
+  late final GeneratedColumn<String> details = GeneratedColumn<String>(
+    'details',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2225,6 +2236,7 @@ class $AuditLogsTable extends AuditLogs
     action,
     entityId,
     summary,
+    details,
     createdAt,
   ];
   @override
@@ -2268,6 +2280,12 @@ class $AuditLogsTable extends AuditLogs
     } else if (isInserting) {
       context.missing(_summaryMeta);
     }
+    if (data.containsKey('details')) {
+      context.handle(
+        _detailsMeta,
+        details.isAcceptableOrUnknown(data['details']!, _detailsMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2301,6 +2319,10 @@ class $AuditLogsTable extends AuditLogs
         DriftSqlType.string,
         data['${effectivePrefix}summary'],
       )!,
+      details: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}details'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2319,12 +2341,16 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
   final String action;
   final String entityId;
   final String summary;
+
+  /// JSON array of the fields that changed; NULL when nothing was recorded.
+  final String? details;
   final DateTime createdAt;
   const AuditLogRow({
     required this.id,
     required this.action,
     required this.entityId,
     required this.summary,
+    this.details,
     required this.createdAt,
   });
   @override
@@ -2334,6 +2360,9 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
     map['action'] = Variable<String>(action);
     map['entity_id'] = Variable<String>(entityId);
     map['summary'] = Variable<String>(summary);
+    if (!nullToAbsent || details != null) {
+      map['details'] = Variable<String>(details);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -2344,6 +2373,9 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       action: Value(action),
       entityId: Value(entityId),
       summary: Value(summary),
+      details: details == null && nullToAbsent
+          ? const Value.absent()
+          : Value(details),
       createdAt: Value(createdAt),
     );
   }
@@ -2358,6 +2390,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       action: serializer.fromJson<String>(json['action']),
       entityId: serializer.fromJson<String>(json['entityId']),
       summary: serializer.fromJson<String>(json['summary']),
+      details: serializer.fromJson<String?>(json['details']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -2369,6 +2402,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       'action': serializer.toJson<String>(action),
       'entityId': serializer.toJson<String>(entityId),
       'summary': serializer.toJson<String>(summary),
+      'details': serializer.toJson<String?>(details),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -2378,12 +2412,14 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
     String? action,
     String? entityId,
     String? summary,
+    Value<String?> details = const Value.absent(),
     DateTime? createdAt,
   }) => AuditLogRow(
     id: id ?? this.id,
     action: action ?? this.action,
     entityId: entityId ?? this.entityId,
     summary: summary ?? this.summary,
+    details: details.present ? details.value : this.details,
     createdAt: createdAt ?? this.createdAt,
   );
   AuditLogRow copyWithCompanion(AuditLogsCompanion data) {
@@ -2392,6 +2428,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       action: data.action.present ? data.action.value : this.action,
       entityId: data.entityId.present ? data.entityId.value : this.entityId,
       summary: data.summary.present ? data.summary.value : this.summary,
+      details: data.details.present ? data.details.value : this.details,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -2403,13 +2440,15 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
           ..write('action: $action, ')
           ..write('entityId: $entityId, ')
           ..write('summary: $summary, ')
+          ..write('details: $details, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, action, entityId, summary, createdAt);
+  int get hashCode =>
+      Object.hash(id, action, entityId, summary, details, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2418,6 +2457,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
           other.action == this.action &&
           other.entityId == this.entityId &&
           other.summary == this.summary &&
+          other.details == this.details &&
           other.createdAt == this.createdAt);
 }
 
@@ -2426,6 +2466,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
   final Value<String> action;
   final Value<String> entityId;
   final Value<String> summary;
+  final Value<String?> details;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const AuditLogsCompanion({
@@ -2433,6 +2474,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     this.action = const Value.absent(),
     this.entityId = const Value.absent(),
     this.summary = const Value.absent(),
+    this.details = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -2441,6 +2483,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     required String action,
     required String entityId,
     required String summary,
+    this.details = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -2453,6 +2496,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     Expression<String>? action,
     Expression<String>? entityId,
     Expression<String>? summary,
+    Expression<String>? details,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -2461,6 +2505,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
       if (action != null) 'action': action,
       if (entityId != null) 'entity_id': entityId,
       if (summary != null) 'summary': summary,
+      if (details != null) 'details': details,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2471,6 +2516,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     Value<String>? action,
     Value<String>? entityId,
     Value<String>? summary,
+    Value<String?>? details,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
@@ -2479,6 +2525,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
       action: action ?? this.action,
       entityId: entityId ?? this.entityId,
       summary: summary ?? this.summary,
+      details: details ?? this.details,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -2499,6 +2546,9 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     if (summary.present) {
       map['summary'] = Variable<String>(summary.value);
     }
+    if (details.present) {
+      map['details'] = Variable<String>(details.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2515,6 +2565,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
           ..write('action: $action, ')
           ..write('entityId: $entityId, ')
           ..write('summary: $summary, ')
+          ..write('details: $details, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -4268,6 +4319,7 @@ typedef $$AuditLogsTableCreateCompanionBuilder =
       required String action,
       required String entityId,
       required String summary,
+      Value<String?> details,
       required DateTime createdAt,
       Value<int> rowid,
     });
@@ -4277,6 +4329,7 @@ typedef $$AuditLogsTableUpdateCompanionBuilder =
       Value<String> action,
       Value<String> entityId,
       Value<String> summary,
+      Value<String?> details,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -4307,6 +4360,11 @@ class $$AuditLogsTableFilterComposer
 
   ColumnFilters<String> get summary => $composableBuilder(
     column: $table.summary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get details => $composableBuilder(
+    column: $table.details,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4345,6 +4403,11 @@ class $$AuditLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get details => $composableBuilder(
+    column: $table.details,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4371,6 +4434,9 @@ class $$AuditLogsTableAnnotationComposer
 
   GeneratedColumn<String> get summary =>
       $composableBuilder(column: $table.summary, builder: (column) => column);
+
+  GeneratedColumn<String> get details =>
+      $composableBuilder(column: $table.details, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4411,6 +4477,7 @@ class $$AuditLogsTableTableManager
                 Value<String> action = const Value.absent(),
                 Value<String> entityId = const Value.absent(),
                 Value<String> summary = const Value.absent(),
+                Value<String?> details = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AuditLogsCompanion(
@@ -4418,6 +4485,7 @@ class $$AuditLogsTableTableManager
                 action: action,
                 entityId: entityId,
                 summary: summary,
+                details: details,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -4427,6 +4495,7 @@ class $$AuditLogsTableTableManager
                 required String action,
                 required String entityId,
                 required String summary,
+                Value<String?> details = const Value.absent(),
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => AuditLogsCompanion.insert(
@@ -4434,6 +4503,7 @@ class $$AuditLogsTableTableManager
                 action: action,
                 entityId: entityId,
                 summary: summary,
+                details: details,
                 createdAt: createdAt,
                 rowid: rowid,
               ),

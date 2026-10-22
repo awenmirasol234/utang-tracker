@@ -59,6 +59,9 @@ class AuditLogs extends Table {
   TextColumn get action => text()();
   TextColumn get entityId => text()();
   TextColumn get summary => text()();
+
+  /// JSON array of the fields that changed; NULL when nothing was recorded.
+  TextColumn get details => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 
   @override

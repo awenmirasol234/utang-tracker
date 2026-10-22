@@ -1,6 +1,6 @@
 # Database Rules
 
-The application uses Drift with SQLite. The current schema version is `7`.
+The application uses Drift with SQLite. The current schema version is `8`.
 
 ## Storage Conventions
 
@@ -95,6 +95,7 @@ Common units are normalized case-insensitively to the values above. A trimmed, n
 | `action` | `TEXT` | No | `customer_created`, `customer_updated`, `customer_deleted`, `debt_created`, `debt_updated`, `debt_items_added`, or `payment_recorded` |
 | `entity_id` | `TEXT` | No | Id of the customer, debt, or payment the action belongs to |
 | `summary` | `TEXT` | No | Human-readable English description of the action |
+| `details` | `TEXT` | Yes | JSON array of the fields the change touched, as `{"field","before","after"}` entries; `NULL` when no details were recorded |
 | `created_at` | `INTEGER` | No | Drift `DateTime`, UTC |
 
 Audit rows are immutable. They are never updated, soft-deleted, or purged.
@@ -166,6 +167,7 @@ Fresh databases create these indexes:
 - Customer additions, updates, and deletions are logged right after the change succeeds.
 - The audit log is append-only: rows are never updated, soft-deleted, or purged, and no retention limit is applied.
 - The log lists the newest entries first.
+- Each row records the fields the change touched in `details`. A field that was set has no `before` value, a removed field has no `after` value, and an unchanged field is not recorded. Rows written before version 8 keep a `NULL` `details` value.
 
 ## Migration History
 
@@ -175,3 +177,4 @@ Fresh databases create these indexes:
 - Version 5 replaced the legacy `unit_price` and `subtotal` columns with `price`, preserving each existing item's former subtotal as its final custom line amount.
 - Version 6 added the `audit_logs` table.
 - Version 7 rewrote the existing `audit_logs.summary` values into English. No column or table changed.
+- Version 8 added the nullable `audit_logs.details` column. Existing rows keep a `NULL` value.

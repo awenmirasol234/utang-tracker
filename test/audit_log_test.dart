@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_change_detail.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/audit/data/repositories/audit_log_repository_impl.dart';
@@ -128,6 +129,98 @@ void main() {
 
       expect(entries, isEmpty);
     });
+
+    test('records the fields a customer change touched', () async {
+      final customer = await customers.create(name: 'Maria', phone: '0917');
+      await customers.update(
+        Customer(
+          id: customer.id,
+          name: 'Maria Santos',
+          phone: '0918',
+          notes: 'Tagalog',
+          createdAt: customer.createdAt,
+          updatedAt: customer.updatedAt,
+        ),
+      );
+
+      final entries = await auditLogs.getAll();
+      final created = entries.firstWhere(
+        (entry) => entry.action == AuditAction.customerCreated,
+      );
+      final updated = entries.firstWhere(
+        (entry) => entry.action == AuditAction.customerUpdated,
+      );
+
+      expect(created.details, [
+        const AuditChangeDetail(field: 'Name', after: 'Maria'),
+        const AuditChangeDetail(field: 'Phone', after: '0917'),
+      ]);
+      expect(updated.details, [
+        const AuditChangeDetail(
+          field: 'Name',
+          before: 'Maria',
+          after: 'Maria Santos',
+        ),
+        const AuditChangeDetail(
+          field: 'Phone',
+          before: '0917',
+          after: '0918',
+        ),
+        const AuditChangeDetail(field: 'Notes', before: null, after: 'Tagalog'),
+      ]);
+    });
+
+    test('records debt totals and the remaining balance', () async {
+      final customer = await customers.create(name: 'Maria');
+      final debt = await debts.create(
+        customerId: customer.id,
+        transactionDate: DateTime.now(),
+        items: [
+          DebtItemInput(
+            productName: 'Bigas',
+            quantity: 2,
+            price: Money.fromPesos(50),
+          ),
+        ],
+      );
+      await debts.update(
+        debtId: debt.id,
+        transactionDate: DateTime.now(),
+        items: [
+          DebtItemInput(
+            productName: 'Bigas',
+            quantity: 3,
+            price: Money.fromPesos(80),
+          ),
+        ],
+      );
+      await payments.recordPayment(
+        debtId: debt.id,
+        amount: Money.fromPesos(20),
+        paymentDate: DateTime.now(),
+        paymentMethod: 'Cash',
+      );
+
+      final entries = await auditLogs.getAll();
+      final debtUpdated = entries.firstWhere(
+        (entry) => entry.action == AuditAction.debtUpdated,
+      );
+      final payment = entries.firstWhere(
+        (entry) => entry.action == AuditAction.paymentRecorded,
+      );
+
+      final total = debtUpdated.details.firstWhere(
+        (detail) => detail.field == 'Total',
+      );
+      expect(total.before, '₱50.00');
+      expect(total.after, '₱80.00');
+
+      final balance = payment.details.firstWhere(
+        (detail) => detail.field == 'Remaining balance',
+      );
+      expect(balance.before, '₱80.00');
+      expect(balance.after, '₱60.00');
+    });
   });
 
   testWidgets('audit log page lists recorded actions', (tester) async {
@@ -153,6 +246,57 @@ void main() {
     await _pumpPage(tester, []);
 
     expect(find.text('No audit log'), findsOneWidget);
+  });
+
+  testWidgets('audit log tile expands to show what changed', (tester) async {
+    await _pumpPage(tester, [
+      AuditLogEntry(
+        id: '1',
+        action: AuditAction.customerUpdated,
+        entityId: 'customer-1',
+        summary: 'Updated customer Maria Santos',
+        createdAt: DateTime.utc(2030, 1, 1, 10),
+        details: const [
+          AuditChangeDetail(field: 'Name', before: 'Maria', after: 'Maria Santos'),
+        ],
+      ),
+    ]);
+
+    expect(find.text('Show details'), findsOneWidget);
+    expect(find.text('Name'), findsNothing);
+
+    await tester.tap(find.text('Show details'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hide details'), findsOneWidget);
+    expect(find.text('Name'), findsOneWidget);
+    expect(find.text('Maria'), findsOneWidget);
+    expect(find.text('Maria Santos'), findsOneWidget);
+    expect(find.text('Record id'), findsOneWidget);
+    expect(find.text('customer-1'), findsOneWidget);
+    expect(find.text('Logged at'), findsOneWidget);
+  });
+
+  testWidgets('audit log tile expands entries without recorded details', (
+    tester,
+  ) async {
+    await _pumpPage(tester, [
+      AuditLogEntry(
+        id: '1',
+        action: AuditAction.customerCreated,
+        entityId: 'customer-1',
+        summary: 'Added customer Maria Santos',
+        createdAt: DateTime.utc(2030, 1, 1, 10),
+      ),
+    ]);
+
+    await tester.tap(find.text('Show details'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Record'), findsOneWidget);
+    expect(find.text('Customer'), findsOneWidget);
+    expect(find.text('customer_updated'), findsNothing);
+    expect(find.text('customer_created'), findsOneWidget);
   });
 }
 

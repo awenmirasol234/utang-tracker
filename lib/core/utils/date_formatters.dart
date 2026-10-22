@@ -63,6 +63,27 @@ class DateFormatters {
     return DateFormat.yMMMMd(canonicalLocale).format(date.toLocal());
   }
 
+  /// Absolute date and time, for records where the exact moment matters.
+  static String fullTimestamp(
+    DateTime value, {
+    required String locale,
+    required bool use24HourFormat,
+  }) {
+    final canonicalLocale = Intl.canonicalizedLocale(locale);
+    final localValue = value.toLocal();
+    final date = DateFormat.yMMMMd(canonicalLocale).format(localValue);
+    final String time;
+    if (use24HourFormat) {
+      time = DateFormat.Hm(canonicalLocale).format(localValue);
+    } else {
+      time = DateFormat.jm(canonicalLocale).format(localValue);
+    }
+    final localizedTime = time
+        .replaceAll('\u00a0', ' ')
+        .replaceAll('\u202f', ' ');
+    return '$date$_timestampSeparator$localizedTime';
+  }
+
   static bool isSameLocalDay(DateTime first, DateTime second) {
     final localA = first.toLocal();
     final localB = second.toLocal();

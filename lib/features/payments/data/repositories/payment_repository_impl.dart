@@ -1,10 +1,13 @@
 import 'package:drift/drift.dart';
+import 'package:utang_tracker/core/audit/audit_details.dart';
 import 'package:utang_tracker/core/audit/audit_log_writer.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_change_detail.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
 import 'package:utang_tracker/core/utils/local_date_time.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';
@@ -163,6 +166,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       paymentDate,
       savedAt,
     ).toUtc();
+    final normalizedNotes = emptyToNull(notes);
 
     await _db.transaction(() async {
       final debt =
@@ -194,7 +198,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
               amount: amount.centavos,
               paymentDate: savedPaymentDate,
               paymentMethod: paymentMethod.trim(),
-              notes: Value(emptyToNull(notes)),
+              notes: Value(normalizedNotes),
               createdAt: now,
             ),
           );
@@ -227,6 +231,21 @@ class PaymentRepositoryImpl implements PaymentRepository {
         summary:
             'Paid by ${customer?.name ?? 'Customer'} (${amount.format()})',
         createdAt: now,
+        details: [
+          AuditChangeDetail(field: 'Amount', after: amount.format()),
+          AuditChangeDetail(field: 'Method', after: paymentMethod.trim()),
+          AuditChangeDetail(
+            field: 'Payment date',
+            after: DateFormatters.dayKey(savedPaymentDate),
+          ),
+          if (normalizedNotes != null)
+            AuditChangeDetail(field: 'Notes', after: normalizedNotes),
+          ...auditChange(
+            field: 'Remaining balance',
+            before: balance.format(),
+            after: newBalance.format(),
+          ),
+        ],
         uuid: _uuid,
       );
     });

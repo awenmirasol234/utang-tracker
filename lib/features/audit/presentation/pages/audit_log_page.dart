@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
+import 'package:utang_tracker/core/domain/audit_change_detail.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
@@ -8,6 +9,7 @@ import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
+import 'package:utang_tracker/features/audit/domain/entities/audit_log_entry.dart';
 import 'package:utang_tracker/features/audit/presentation/providers/audit_log_providers.dart';
 
 class AuditLogPage extends ConsumerWidget {
@@ -46,50 +48,187 @@ class AuditLogPage extends ConsumerWidget {
               ),
               itemCount: entries.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, index) {
-                final entry = entries[index];
-                return AppCard(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _ActionIcon(action: entry.action),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              entry.action.label,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              entry.summary,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              context.smartTimestamp(entry.createdAt),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textMuted,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+              itemBuilder: (context, index) => _AuditLogTile(entry: entries[index]),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _AuditLogTile extends StatefulWidget {
+  const _AuditLogTile({required this.entry});
+
+  final AuditLogEntry entry;
+
+  @override
+  State<_AuditLogTile> createState() => _AuditLogTileState();
+}
+
+class _AuditLogTileState extends State<_AuditLogTile> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final entry = widget.entry;
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ActionIcon(action: entry.action),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.action.label,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      entry.summary,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      context.smartTimestamp(entry.createdAt),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const Divider(height: 1),
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Row(
+                children: [
+                  Icon(
+                    _expanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    _expanded ? 'Hide details' : 'Show details',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: AppColors.primaryDark,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded) ...[
+            const Divider(height: 1),
+            const SizedBox(height: AppSpacing.sm),
+            ...entry.details.map((detail) => _buildChange(context, detail)),
+            ..._buildMetadata(context, entry),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChange(BuildContext context, AuditChangeDetail detail) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            detail.field,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          _buildChangeValue(context, detail),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChangeValue(BuildContext context, AuditChangeDetail detail) {
+    final valueStyle = Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary);
+    final beforeStyle = Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary);
+
+    if (detail.before == null) {
+      return Text(detail.after ?? '', style: valueStyle);
+    }
+    if (detail.after == null) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(child: Text(detail.before!, style: beforeStyle)),
+          Text(' (removed)', style: beforeStyle),
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(child: Text(detail.before!, style: beforeStyle)),
+        const Text(' \u2192 '),
+        Flexible(child: Text(detail.after!, style: valueStyle)),
+      ],
+    );
+  }
+
+  List<Widget> _buildMetadata(BuildContext context, AuditLogEntry entry) {
+    return [
+      _buildMetadataRow(context, 'Record', entry.action.entityLabel),
+      _buildMetadataRow(context, 'Record id', entry.entityId),
+      _buildMetadataRow(context, 'Action', entry.action.value),
+      _buildMetadataRow(context, 'Logged at', context.fullTimestamp(entry.createdAt)),
+    ];
+  }
+
+  Widget _buildMetadataRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary),
+          ),
+        ],
       ),
     );
   }

@@ -34,7 +34,7 @@ INSERT INTO debt_items (
 
     expect(item.unit, DebtItemUnits.piece);
     expect(item.price, 10000);
-    expect(database.schemaVersion, 7);
+    expect(database.schemaVersion, 8);
   });
 
   test('schema 4 custom units and subtotals migrate without changes', () async {
@@ -195,6 +195,27 @@ INSERT INTO audit_logs (id, action, entity_id, summary, created_at) VALUES
         'Paid by Maria Santos (₱20.00)',
       ],
     );
+  });
+
+  test('schema 8 adds the audit details column', () async {
+    final executor = NativeDatabase.memory(
+      setup: (database) {
+        _createVersion6Tables(database);
+        database.execute('''
+INSERT INTO audit_logs (id, action, entity_id, summary, created_at) VALUES
+  ('log-1', 'customer_created', 'customer-1', 'Added customer Maria Santos', 0);
+''');
+        database.execute('PRAGMA user_version = 7;');
+      },
+    );
+    final database = AppDatabase(executor);
+    addTearDown(database.close);
+
+    final rows = await database.select(database.auditLogs).get();
+
+    expect(rows.length, 1);
+    expect(rows.first.summary, 'Added customer Maria Santos');
+    expect(rows.first.details, isNull);
   });
 }
 
