@@ -78,6 +78,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
       _saving = true;
     });
 
+    Customer? created;
     try {
       final repo = ref.read(customerRepositoryProvider);
       if (widget.isEditing && _existing != null) {
@@ -93,7 +94,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         );
         invalidateBusinessData(ref, customerId: _existing!.id);
       } else {
-        final created = await repo.create(
+        created = await repo.create(
           name: name,
           phone: _phoneController.text,
           notes: _notesController.text,
@@ -113,7 +114,11 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         context,
         successMessage,
       );
-      context.pop();
+      if (created == null) {
+        context.pop();
+      } else {
+        context.pop(created);
+      }
     } on ConflictException catch (conflictException) {
       if (!mounted) return;
       setState(() => _nameError = conflictException.message);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
@@ -9,6 +10,7 @@ import 'package:utang_tracker/core/theme/app_theme.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
+import 'package:utang_tracker/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.dart';
 
@@ -464,6 +466,65 @@ void main() {
     expect(checkIn(reopenedMariaTile), findsNothing);
     expect(juanCheck, findsOneWidget);
     expect(tester.widget<Icon>(juanCheck).color, AppColors.primaryDark);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('customer added from the picker is selected automatically', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final database = AppDatabase.forTesting();
+    addTearDown(database.close);
+
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const DebtFormPage()),
+        GoRoute(
+          path: '/customers/new',
+          builder: (_, _) => const CustomerFormPage(),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(database)],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Select customer'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppModalBottomSheet), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Add customer'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Name *',
+        ),
+        matching: find.byType(TextField),
+      ),
+      'Bela',
+    );
+
+    final saveButton = find.widgetWithText(ElevatedButton, 'Add customer');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AppModalBottomSheet), findsNothing);
+    expect(find.text('Bela'), findsOneWidget);
+    expect(find.text('Select customer'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

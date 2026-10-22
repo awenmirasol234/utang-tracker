@@ -898,8 +898,10 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
       footer: TextButton.icon(
         onPressed: () async {
           final router = GoRouter.of(context);
-          Navigator.of(context).pop();
-          await router.push('/customers/new');
+          final created = await router.push<Customer>('/customers/new');
+          if (!context.mounted) return;
+          if (created == null) return;
+          Navigator.of(context).pop(created);
         },
         icon: const Icon(Icons.person_add_outlined),
         label: const Text('Add customer'),
