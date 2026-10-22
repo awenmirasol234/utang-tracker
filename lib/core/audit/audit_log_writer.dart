@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:utang_tracker/core/audit/audit_details.dart';
+import 'package:utang_tracker/core/audit/audit_details_codec.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/audit_action.dart';
 import 'package:utang_tracker/core/domain/audit_change_detail.dart';

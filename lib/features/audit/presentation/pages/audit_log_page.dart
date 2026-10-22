@@ -241,43 +241,48 @@ class _ActionIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final IconData icon;
-    final Color color;
-    final Color backgroundColor;
-    switch (action) {
-      case AuditAction.customerCreated:
-        icon = Icons.person_add_alt_rounded;
-        color = AppColors.primaryDark;
-        backgroundColor = AppColors.primaryLight;
-      case AuditAction.customerUpdated:
-        icon = Icons.edit_note_rounded;
-        color = AppColors.primaryDark;
-        backgroundColor = AppColors.primaryLight;
-      case AuditAction.customerDeleted:
-        icon = Icons.person_remove_rounded;
-        color = AppColors.danger;
-        backgroundColor = AppColors.unpaidBg;
-      case AuditAction.debtCreated:
-        icon = Icons.receipt_long_rounded;
-        color = AppColors.partial;
-        backgroundColor = AppColors.partialBg;
-      case AuditAction.debtUpdated:
-        icon = Icons.edit_note_rounded;
-        color = AppColors.partial;
-        backgroundColor = AppColors.partialBg;
-      case AuditAction.debtItemsAdded:
-        icon = Icons.add_shopping_cart_rounded;
-        color = AppColors.partial;
-        backgroundColor = AppColors.partialBg;
-      case AuditAction.paymentRecorded:
-        icon = Icons.payments_rounded;
-        color = AppColors.paid;
-        backgroundColor = AppColors.paidBg;
-      case AuditAction.unknown:
-        icon = Icons.help_outline_rounded;
-        color = AppColors.textSecondary;
-        backgroundColor = AppColors.primaryLight;
-    }
+    final (icon, color, backgroundColor) = switch (action) {
+      AuditAction.customerCreated => (
+        Icons.person_add_alt_rounded,
+        AppColors.primaryDark,
+        AppColors.primaryLight,
+      ),
+      AuditAction.customerUpdated => (
+        Icons.edit_note_rounded,
+        AppColors.primaryDark,
+        AppColors.primaryLight,
+      ),
+      AuditAction.customerDeleted => (
+        Icons.person_remove_rounded,
+        AppColors.danger,
+        AppColors.unpaidBg,
+      ),
+      AuditAction.debtCreated => (
+        Icons.receipt_long_rounded,
+        AppColors.partial,
+        AppColors.partialBg,
+      ),
+      AuditAction.debtUpdated => (
+        Icons.edit_note_rounded,
+        AppColors.partial,
+        AppColors.partialBg,
+      ),
+      AuditAction.debtItemsAdded => (
+        Icons.add_shopping_cart_rounded,
+        AppColors.partial,
+        AppColors.partialBg,
+      ),
+      AuditAction.paymentRecorded => (
+        Icons.payments_rounded,
+        AppColors.paid,
+        AppColors.paidBg,
+      ),
+      AuditAction.unknown => (
+        Icons.help_outline_rounded,
+        AppColors.textSecondary,
+        AppColors.primaryLight,
+      ),
+    };
 
     return Container(
       width: 42,

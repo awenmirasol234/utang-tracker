@@ -12,13 +12,14 @@ enum DebtSortOrder {
 
 List<Debt> applySort(List<Debt> debts, DebtSortOrder sort) {
   final sorted = List<Debt>.from(debts);
-  switch (sort) {
-    case DebtSortOrder.newest:
-      sorted.sort((first, second) => second.transactionDate.compareTo(first.transactionDate));
-    case DebtSortOrder.highestBalance:
-      sorted.sort((first, second) => second.balance.centavos.compareTo(first.balance.centavos));
-    case DebtSortOrder.lowestBalance:
-      sorted.sort((first, second) => first.balance.centavos.compareTo(second.balance.centavos));
-  }
+  final int Function(Debt first, Debt second) comparator = switch (sort) {
+    DebtSortOrder.newest => (first, second) =>
+      second.transactionDate.compareTo(first.transactionDate),
+    DebtSortOrder.highestBalance => (first, second) =>
+      second.balance.centavos.compareTo(first.balance.centavos),
+    DebtSortOrder.lowestBalance => (first, second) =>
+      first.balance.centavos.compareTo(second.balance.centavos),
+  };
+  sorted.sort(comparator);
   return sorted;
 }

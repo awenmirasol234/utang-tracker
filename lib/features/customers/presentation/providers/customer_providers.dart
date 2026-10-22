@@ -79,20 +79,17 @@ List<Customer> applyCustomerSort(
   CustomerSortOrder sort,
 ) {
   final sorted = List<Customer>.from(customers);
-  switch (sort) {
-    case CustomerSortOrder.nameAsc:
-      sorted.sort(
-        (first, second) => first.name.toLowerCase().compareTo(second.name.toLowerCase()),
-      );
-    case CustomerSortOrder.nameDesc:
-      sorted.sort(
-        (first, second) => second.name.toLowerCase().compareTo(first.name.toLowerCase()),
-      );
-    case CustomerSortOrder.newest:
-      sorted.sort((first, second) => second.createdAt.compareTo(first.createdAt));
-    case CustomerSortOrder.oldest:
-      sorted.sort((first, second) => first.createdAt.compareTo(second.createdAt));
-  }
+  final int Function(Customer first, Customer second) comparator = switch (sort) {
+    CustomerSortOrder.nameAsc => (first, second) =>
+      first.name.toLowerCase().compareTo(second.name.toLowerCase()),
+    CustomerSortOrder.nameDesc => (first, second) =>
+      second.name.toLowerCase().compareTo(first.name.toLowerCase()),
+    CustomerSortOrder.newest => (first, second) =>
+      second.createdAt.compareTo(first.createdAt),
+    CustomerSortOrder.oldest => (first, second) =>
+      first.createdAt.compareTo(second.createdAt),
+  };
+  sorted.sort(comparator);
   return sorted;
 }
 

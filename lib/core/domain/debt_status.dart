@@ -14,14 +14,9 @@ enum DebtStatus {
     );
   }
 
-  String get label {
-    switch (this) {
-      case DebtStatus.unpaid:
-        return 'Unpaid';
-      case DebtStatus.partial:
-        return 'Partial';
-      case DebtStatus.paid:
-        return 'Paid';
-    }
-  }
+  String get label => switch (this) {
+    DebtStatus.unpaid => 'Unpaid',
+    DebtStatus.partial => 'Partial',
+    DebtStatus.paid => 'Paid',
+  };
 }

@@ -57,6 +57,12 @@ class DebtItemUnits {
     return value.trim();
   }
 
+  /// Formats a quantity without a trailing decimal when it is a whole number.
+  static String formatQuantity(double quantity) {
+    if (quantity % 1 == 0) return quantity.toInt().toString();
+    return quantity.toString();
+  }
+
   static String normalize(String value) {
     final trimmed = value.trim();
     for (final option in common) {

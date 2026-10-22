@@ -57,7 +57,7 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
     String quantityText;
     String priceText;
     if (existing != null) {
-      quantityText = _formatQuantity(existing.quantity);
+      quantityText = DebtItemUnits.formatQuantity(existing.quantity);
       priceText = existing.price.pesos.toStringAsFixed(2);
     } else {
       quantityText = '1';
@@ -78,11 +78,6 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
     _quantityController.dispose();
     _priceController.dispose();
     super.dispose();
-  }
-
-  String _formatQuantity(double quantity) {
-    if (quantity % 1 == 0) return quantity.toInt().toString();
-    return quantity.toString();
   }
 
   Future<void> _pickUnit() async {

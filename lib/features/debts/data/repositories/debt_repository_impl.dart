@@ -502,7 +502,7 @@ class DebtRepositoryImpl implements DebtRepository {
         item.unit,
         item.quantity,
       );
-      return '${item.productName} x${formatQuantity(item.quantity)} '
+      return '${item.productName} x${DebtItemUnits.formatQuantity(item.quantity)} '
           '$unitName (${item.price.format()})';
     }).join(', ');
     String label = '${items.length} items';

@@ -428,7 +428,7 @@ class _DebtItemRow extends StatelessWidget {
     final descriptionStyle = textTheme.bodyMedium!;
     final subtotalStyle = textTheme.bodyLarge!;
     final quantityAndUnit =
-        '${_formatQuantity(item.quantity)} '
+        '${DebtItemUnits.formatQuantity(item.quantity)} '
         '${DebtItemUnits.displayNameForQuantity(item.unit, item.quantity)}';
 
     return Padding(
@@ -471,9 +471,4 @@ class _DebtItemRow extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatQuantity(double quantity) {
-  if (quantity % 1 == 0) return quantity.toInt().toString();
-  return quantity.toString();
 }

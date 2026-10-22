@@ -254,7 +254,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          '${entry.productName} \u00b7 ${_formatQuantity(entry.quantity)} ${DebtItemUnits.displayNameForQuantity(entry.unit, entry.quantity)}',
+                          '${entry.productName} \u00b7 ${DebtItemUnits.formatQuantity(entry.quantity)} ${DebtItemUnits.displayNameForQuantity(entry.unit, entry.quantity)}',
                           style: Theme.of(dialogContext).textTheme.bodySmall
                               ?.copyWith(color: AppColors.textPrimary),
                         ),
@@ -375,11 +375,6 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     } finally {
       if (mounted) setState(() => _saving = false);
     }
-  }
-
-  String _formatQuantity(double quantity) {
-    if (quantity % 1 == 0) return quantity.toInt().toString();
-    return quantity.toString();
   }
 
   String _dueDateValue(BuildContext context) {
@@ -627,7 +622,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                     ),
                                     const SizedBox(height: AppSpacing.xs),
                                     Text(
-                                      '${_formatQuantity(_items[index].quantity)} ${DebtItemUnits.displayNameForQuantity(_items[index].unit, _items[index].quantity)}',
+                                      '${DebtItemUnits.formatQuantity(_items[index].quantity)} ${DebtItemUnits.displayNameForQuantity(_items[index].unit, _items[index].quantity)}',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
