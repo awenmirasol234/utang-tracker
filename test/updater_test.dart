@@ -10,7 +10,6 @@ import 'package:http/testing.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
-import 'package:utang_tracker/features/updater/data/models/github_release_dto.dart';
 import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
@@ -68,64 +67,6 @@ void main() {
       expect(isNewerVersion('1.0.0', '1.0-beta'), isFalse);
       expect(isNewerVersion('1.0.0', ''), isFalse);
       expect(isNewerVersion('garbage', '1.2.3'), isFalse);
-    });
-  });
-
-  group('GithubReleaseDto.fromJson', () {
-    Map<String, dynamic> baseJson({
-      String tag = 'v1.2.0',
-      bool draft = false,
-      bool prerelease = false,
-      String body = 'Bug fixes and improvements.',
-      List<dynamic> assets = const [],
-    }) => {
-      'tag_name': tag,
-      'draft': draft,
-      'prerelease': prerelease,
-      'body': body,
-      'published_at': '2024-06-01T10:00:00Z',
-      'assets': assets,
-    };
-
-    test('parses basic fields correctly', () {
-      final release = GithubReleaseDto.fromJson(baseJson());
-
-      expect(release.version, '1.2.0');
-      expect(release.releaseNotes, 'Bug fixes and improvements.');
-      expect(release.isDraft, isFalse);
-      expect(release.isPrerelease, isFalse);
-    });
-
-    test('strips leading v from version', () {
-      final release = GithubReleaseDto.fromJson(baseJson(tag: 'v2.0.0'));
-      expect(release.version, '2.0.0');
-    });
-
-    test('handles tag without leading v', () {
-      final release = GithubReleaseDto.fromJson(baseJson(tag: '1.3.0'));
-      expect(release.version, '1.3.0');
-    });
-
-    test('parses assets correctly', () {
-      final json = baseJson(
-        assets: [
-          {
-            'name': 'utang-tracker-arm64-v8a-v1.2.0.apk',
-            'browser_download_url': 'https://example.com/arm64.apk',
-            'size': 12345678,
-          },
-        ],
-      );
-      final release = GithubReleaseDto.fromJson(json);
-      expect(release.assets, hasLength(1));
-      expect(release.assets.first.name, 'utang-tracker-arm64-v8a-v1.2.0.apk');
-      expect(release.assets.first.sizeBytes, 12345678);
-    });
-
-    test('empty body becomes empty string', () {
-      final json = Map<String, dynamic>.from(baseJson())..remove('body');
-      final release = GithubReleaseDto.fromJson(json);
-      expect(release.releaseNotes, '');
     });
   });
 

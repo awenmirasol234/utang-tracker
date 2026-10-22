@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
+import 'package:utang_tracker/core/widgets/release_note_bullet.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/presentation/providers/update_providers.dart';
 
@@ -251,29 +252,8 @@ class _ReleaseNotesBody extends StatelessWidget {
             style: Theme.of(context).textTheme.labelMedium,
           ),
           const SizedBox(height: AppSpacing.xs),
-          for (final note in sections[index].notes) _ReleaseNoteBullet(note),
+          for (final note in sections[index].notes) ReleaseNoteBullet(note),
         ],
-      ],
-    );
-  }
-}
-
-class _ReleaseNoteBullet extends StatelessWidget {
-  const _ReleaseNoteBullet(this.note);
-
-  final String note;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: AppColors.textSecondary,
-      height: 1.6,
-    );
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('•  ', style: style),
-        Expanded(child: Text(note, style: style)),
       ],
     );
   }

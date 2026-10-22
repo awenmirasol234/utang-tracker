@@ -1,6 +1,6 @@
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 
-abstract interface class UpdateRepository {
+abstract class UpdateRepository {
   Future<AppRelease?> fetchLatestRelease();
 
   Future<String> downloadApk(

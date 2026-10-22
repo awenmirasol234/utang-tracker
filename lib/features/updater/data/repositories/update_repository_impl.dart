@@ -99,27 +99,12 @@ class UpdateRepositoryImpl implements UpdateRepository {
 
     if (rawResponse.statusCode == 404) {
       final tagOnlyNotes = "What's new in v$version";
-      final base = '${AppConstants.githubReleasesBaseUrl}/$tag';
-      final assets = [
-        ReleaseAsset(
-          name: '${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
-          browserDownloadUrl:
-              '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
-          sizeBytes: 0,
-        ),
-        ReleaseAsset(
-          name: '${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
-          browserDownloadUrl:
-              '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
-          sizeBytes: 0,
-        ),
-      ];
       return AppRelease(
         version: version,
         releaseNotes: tagOnlyNotes,
         isDraft: false,
         isPrerelease: false,
-        assets: assets,
+        assets: _apkAssetsForTag(tag),
       );
     }
     if (rawResponse.statusCode != 200) {
@@ -129,65 +114,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
     }
 
     final decoded = jsonDecode(rawResponse.body) as Map<String, dynamic>;
-    final effectiveVersion = version;
-    final date = decoded['date'] as String? ?? '';
-    final notesRaw = decoded['notes'] as Map<String, dynamic>?;
-
-    List<String> stringList(dynamic value) {
-      if (value is List) {
-        return value.whereType<String>().where((item) => item.isNotEmpty).toList();
-      }
-      return const [];
-    }
-
-    final added = stringList(notesRaw?['added']);
-    final changed = stringList(notesRaw?['changed']);
-    final fixed = stringList(notesRaw?['fixed']);
-
-    final buffer = StringBuffer()..writeln("What's new in v$effectiveVersion");
-    buffer.writeln();
-    if (date.isNotEmpty) {
-      buffer.writeln('Release date: $date');
-      buffer.writeln();
-    }
-
-    void writeSection(String title, List<String> items) {
-      if (items.isEmpty) return;
-      buffer.writeln('## $title');
-      for (final item in items) {
-        buffer.writeln('- $item');
-      }
-    }
-
-    writeSection('Added', added);
-    writeSection('Changed', changed);
-    writeSection('Fixed', fixed);
-
-    final releaseNotes = buffer.toString().trim();
-
-    final base = '${AppConstants.githubReleasesBaseUrl}/$tag';
-    final assets = [
-      ReleaseAsset(
-        name: '${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
-        browserDownloadUrl:
-            '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
-        sizeBytes: 0,
-      ),
-      ReleaseAsset(
-        name: '${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
-        browserDownloadUrl:
-            '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
-        sizeBytes: 0,
-      ),
-    ];
-
-    return AppRelease(
-      version: effectiveVersion,
-      releaseNotes: releaseNotes,
-      isDraft: false,
-      isPrerelease: false,
-      assets: assets,
-    );
+    return _releaseFromNotesJson(decoded, version);
   }
 
   Future<AppRelease?> _fetchFromRawMain() async {
@@ -219,6 +146,10 @@ class UpdateRepositoryImpl implements UpdateRepository {
       throw const AppException('Invalid release data: missing version.');
     }
 
+    return _releaseFromNotesJson(decoded, version);
+  }
+
+  AppRelease _releaseFromNotesJson(Map<String, dynamic> decoded, String version) {
     final date = decoded['date'] as String? ?? '';
     final notesRaw = decoded['notes'] as Map<String, dynamic>?;
 
@@ -252,32 +183,29 @@ class UpdateRepositoryImpl implements UpdateRepository {
     writeSection('Changed', changed);
     writeSection('Fixed', fixed);
 
-    final releaseNotes = buffer.toString().trim();
+    return AppRelease(
+      version: version,
+      releaseNotes: buffer.toString().trim(),
+      isDraft: false,
+      isPrerelease: false,
+      assets: _apkAssetsForTag('v$version'),
+    );
+  }
 
-    final tag = 'v$version';
+  List<ReleaseAsset> _apkAssetsForTag(String tag) {
     final base = '${AppConstants.githubReleasesBaseUrl}/$tag';
-    final assets = [
+    return [
       ReleaseAsset(
         name: '${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
-        browserDownloadUrl:
-            '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+        browserDownloadUrl: '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
         sizeBytes: 0,
       ),
       ReleaseAsset(
         name: '${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
-        browserDownloadUrl:
-            '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+        browserDownloadUrl: '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
         sizeBytes: 0,
       ),
     ];
-
-    return AppRelease(
-      version: version,
-      releaseNotes: releaseNotes,
-      isDraft: false,
-      isPrerelease: false,
-      assets: assets,
-    );
   }
 
   @override

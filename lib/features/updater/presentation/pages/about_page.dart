@@ -7,7 +7,10 @@ import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_logo.dart';
+import 'package:utang_tracker/core/widgets/app_snackbar.dart';
+import 'package:utang_tracker/core/widgets/release_note_bullet.dart';
 import 'package:utang_tracker/features/updater/presentation/providers/update_providers.dart';
 import 'package:utang_tracker/features/updater/presentation/widgets/update_bottom_sheet.dart';
 
@@ -50,13 +53,10 @@ class _AboutPageState extends ConsumerState<AboutPage> {
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
     if (state is UpdateError) {
-      messenger.showSnackBar(SnackBar(content: Text(state.message)));
+      AppSnackBar.error(context, state.message);
     } else {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('No new updates available.')),
-      );
+      AppSnackBar.info(context, 'No new updates available.');
     }
   }
 
@@ -81,86 +81,74 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           const SizedBox(height: AppSpacing.xxl),
           _SectionLabel('Updates'),
           const SizedBox(height: AppSpacing.sm),
-          _InfoCard(
-            children: [
-              _CheckForUpdatesRow(
-                isChecking: isChecking,
-                onTap: updateHandler,
-              ),
-            ],
+          AppCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                _CheckForUpdatesRow(
+                  isChecking: isChecking,
+                  onTap: updateHandler,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           _SectionLabel("What's new"),
           const SizedBox(height: AppSpacing.sm),
-          _InfoCard(
-            children: [
-              if (_releaseNotes case final releaseNotes?)
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        DateFormatters.fullDate(
-                          releaseNotes.date,
-                          locale: Localizations.localeOf(context).toString(),
-                        ),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      for (
-                        var index = 0;
-                        index < releaseNotes.sections.length;
-                        index++
-                      ) ...[
-                        if (index > 0) const SizedBox(height: AppSpacing.md),
+          AppCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                if (_releaseNotes case final releaseNotes?)
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          releaseNotes.sections[index].label,
-                          style: Theme.of(context).textTheme.labelMedium,
+                          DateFormatters.fullDate(
+                            releaseNotes.date,
+                            locale: Localizations.localeOf(context).toString(),
+                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
+                          ),
                         ),
-                        const SizedBox(height: AppSpacing.xs),
-                        for (final note in releaseNotes.sections[index].notes)
-                          _ReleaseNoteBullet(note),
+                        const SizedBox(height: AppSpacing.md),
+                        for (
+                          var index = 0;
+                          index < releaseNotes.sections.length;
+                          index++
+                        ) ...[
+                          if (index > 0)
+                            const SizedBox(height: AppSpacing.md),
+                          Text(
+                            releaseNotes.sections[index].label,
+                            style: Theme.of(context).textTheme.labelMedium,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          for (
+                            final note in releaseNotes.sections[index].notes
+                          )
+                            ReleaseNoteBullet(note),
+                        ],
                       ],
-                    ],
+                    ),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.all(AppSpacing.lg),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Release notes unavailable.'),
+                    ),
                   ),
-                )
-              else
-                const Padding(
-                  padding: EdgeInsets.all(AppSpacing.lg),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Release notes unavailable.'),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
-    );
-  }
-}
-
-class _ReleaseNoteBullet extends StatelessWidget {
-  const _ReleaseNoteBullet(this.note);
-
-  final String note;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: AppColors.textSecondary,
-      height: 1.6,
-    );
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('•  ', style: style),
-        Expanded(child: Text(note, style: style)),
-      ],
     );
   }
 }
@@ -259,25 +247,6 @@ class _SectionLabel extends StatelessWidget {
         color: AppColors.textMuted,
         letterSpacing: 1.1,
       ),
-    );
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outline),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(children: children),
     );
   }
 }
