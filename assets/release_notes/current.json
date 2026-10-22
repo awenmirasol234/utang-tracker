@@ -1,11 +1,11 @@
 {
-  "version": "1.0.51",
+  "version": "1.0.52",
   "date": "2026-10-22",
   "notes": {
-    "added": [],
-    "changed": [
-      "Removed the CSV export and import data feature from Settings"
+    "added": [
+      "Added an Audit Log in Settings that lists every change to customers, debts and payments"
     ],
+    "changed": [],
     "fixed": []
   }
 }
