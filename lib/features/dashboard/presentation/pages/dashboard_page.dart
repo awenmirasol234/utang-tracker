@@ -298,35 +298,24 @@ class _ActivityLedger extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        child: Column(
-          children: [
-            for (var index = 0; index < items.length; index++) ...[
-              _ActivityRow(
-                item: items[index],
-                onTap: () => context.push('/debts/${items[index].debtId}'),
-              ),
-              if (index != items.length - 1)
-                const Divider(
-                  height: AppSpacing.md,
-                  indent: 66,
-                  endIndent: AppSpacing.md,
-                ),
-            ],
-          ],
-        ),
-      ),
+    return Column(
+      children: [
+        for (var index = 0; index < items.length; index++) ...[
+          AppCard(
+            padding: EdgeInsets.zero,
+            onTap: () => context.push('/debts/${items[index].debtId}'),
+            child: _ActivityRow(item: items[index]),
+          ),
+          if (index != items.length - 1) const SizedBox(height: AppSpacing.sm),
+        ],
+      ],
     );
   }
 }
 
 class _ActivityRow extends StatelessWidget {
-  const _ActivityRow({required this.item, required this.onTap});
+  const _ActivityRow({required this.item});
   final RecentActivityItem item;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -343,65 +332,48 @@ class _ActivityRow extends StatelessWidget {
       background = AppColors.unpaidBg;
       icon = Icons.receipt_long_outlined;
     }
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: background,
-                borderRadius: BorderRadius.circular(11),
-              ),
-              child: Icon(
-                icon,
-                size: 19,
-                color: color,
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: BorderRadius.circular(11),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.customerName,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+            child: Icon(icon, size: 19, color: color),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.customerName,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: AppSpacing.sm),
-                      MoneyText(item.amount, color: color),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          context.smartTimestamp(item.date),
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        item.type.label,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    MoneyText(item.amount, color: color),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        context.smartTimestamp(item.date),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
@@ -409,13 +381,23 @@ class _ActivityRow extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      item.type.label,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

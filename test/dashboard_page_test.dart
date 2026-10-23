@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/domain/repositories/dashboard_repository.dart';
@@ -32,6 +33,14 @@ void main() {
           amount: Money.fromPesoString('125'),
           date: activityDate,
           paymentMethod: 'GCash',
+        ),
+        RecentActivityItem(
+          type: RecentActivityType.debt,
+          id: 'second-activity-id',
+          debtId: 'second-debt-id',
+          customerName: 'Juan Dela Cruz',
+          amount: Money.fromPesoString('300'),
+          date: DateTime(2026, 7, 14, 9, 10),
         ),
       ],
     );
@@ -77,6 +86,7 @@ void main() {
       tester.getTopRight(label).dx,
       closeTo(tester.getTopRight(amount).dx, 1),
     );
+    expect(find.byType(AppCard), findsNWidgets(2));
   });
 }
 
