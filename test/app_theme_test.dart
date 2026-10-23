@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
 
 void main() {
@@ -7,6 +8,28 @@ void main() {
     final titleStyle = AppTheme.light().appBarTheme.titleTextStyle;
 
     expect(titleStyle?.fontSize, 20);
+  });
+
+  test('shared surfaces use restrained depth', () {
+    final theme = AppTheme.light();
+
+    expect(theme.cardTheme.elevation, 1);
+    expect(theme.cardTheme.shadowColor, AppColors.shadow);
+    expect(theme.cardTheme.surfaceTintColor, AppColors.transparent);
+    expect(theme.listTileTheme.tileColor, AppColors.surfaceCard);
+    expect(theme.listTileTheme.selectedTileColor, AppColors.primaryLight);
+    expect(theme.textSelectionTheme.cursorColor, AppColors.primaryDark);
+    expect(theme.textSelectionTheme.selectionHandleColor, AppColors.primaryDark);
+  });
+
+  test('button elevation responds to interaction state', () {
+    final style = AppTheme.light().elevatedButtonTheme.style!;
+    final elevation = style.elevation!;
+
+    expect(elevation.resolve(<WidgetState>{}), 1);
+    expect(elevation.resolve({WidgetState.hovered}), 2);
+    expect(elevation.resolve({WidgetState.focused}), 2);
+    expect(elevation.resolve({WidgetState.pressed}), 0);
   });
 
   test('text theme defines the shared application type scale', () {

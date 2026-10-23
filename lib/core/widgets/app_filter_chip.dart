@@ -31,6 +31,8 @@ class AppFilterChip extends StatelessWidget {
       onSelected: (_) => onSelected(),
       showCheckmark: false,
       selectedColor: AppColors.primaryDark,
+      elevation: selected ? 1 : 0,
+      pressElevation: 2,
       labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: labelColor,
       ),

@@ -124,6 +124,11 @@ class AppTheme {
       colorScheme: base,
       scaffoldBackgroundColor: AppColors.surface,
       textTheme: textTheme,
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: AppColors.primaryDark,
+        selectionColor: AppColors.primaryLight,
+        selectionHandleColor: AppColors.primaryDark,
+      ),
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
@@ -141,7 +146,9 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surfaceCard,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: AppColors.shadow,
+        surfaceTintColor: AppColors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.outline),
@@ -197,16 +204,25 @@ class AppTheme {
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(64, AppSpacing.minTapTarget),
-          backgroundColor: AppColors.primaryDark,
-          foregroundColor: AppColors.textOnPrimary,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: textTheme.titleMedium,
-        ),
+        style:
+            ElevatedButton.styleFrom(
+              minimumSize: const Size(64, AppSpacing.minTapTarget),
+              backgroundColor: AppColors.primaryDark,
+              foregroundColor: AppColors.textOnPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              textStyle: textTheme.titleMedium,
+            ).copyWith(
+              elevation: WidgetStateProperty.resolveWith<double>((states) {
+                if (states.contains(WidgetState.pressed)) return 0;
+                if (states.contains(WidgetState.hovered) ||
+                    states.contains(WidgetState.focused)) {
+                  return 2;
+                }
+                return 1;
+              }),
+            ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -335,6 +351,9 @@ class AppTheme {
         ),
       ),
       listTileTheme: ListTileThemeData(
+        tileColor: AppColors.surfaceCard,
+        selectedTileColor: AppColors.primaryLight,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         titleTextStyle: textTheme.bodyLarge,
         subtitleTextStyle: textTheme.bodyMedium?.copyWith(
           color: AppColors.textSecondary,
