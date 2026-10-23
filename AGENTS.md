@@ -24,10 +24,10 @@
 
 ## Architecture
 
-- Data refresh is push-based: after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart` (9-27) — NOT Drift reactive streams. Register new list/detail providers there.
+- Data refresh is push-based: after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart` — NOT Drift reactive streams. Restore uses `invalidateBusinessDataFromRef(ref)`. Register new list/detail providers there.
 - DI: plain Riverpod `Provider`s in `lib/core/providers/core_providers.dart`; repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`
 - Repo tests use `AppDatabase.forTesting()` (in-memory SQLite); migration tests seed legacy schemas via raw SQL
 - Android method channels live in `android/.../MainActivity.kt`: updater (`com.example.utang_tracker/updater`); the updater permission flow uses deprecated onActivityResult
 - The updater also polls every 6h while the app is foregrounded (`lib/features/updater/presentation/widgets/update_auto_checker.dart`); a dismissed version only suppresses that automatic prompt, never a manual check
-- `android/key.properties` + keystores are gitignored; CI signs from GH secrets
+- `android/key.properties` + keystores are gitignored; CI signs from `SIGNING_KEY_BASE64`, `KEY_STORE_PASSWORD`, `KEY_PASSWORD`, and `KEY_ALIAS` GitHub Secrets. Release builds also require the `GOOGLE_DRIVE_SERVER_CLIENT_ID` GitHub repository Variable.
 - `.ignore` (not `.gitignore`) excludes generated `*.g.dart` from search tools

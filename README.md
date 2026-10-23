@@ -10,7 +10,7 @@ Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers
 - **Debts** - one debt = many `debt_items` (product, qty, unit, price), editable only while `paid_amount == 0`, items can be appended to a partially paid debt
 - **Payments** - record partial/full payments, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
-- **Cloud backup** - daily Google Drive backup and restore
+- **Cloud backup** - daily Google Drive backup when the app opens or resumes, plus manual backup and restore
 - **Overdue & notifications** - due-date aware
 - **Audit log** - Settings page lists every recorded change (customers, debts, payments); rows are written by the repositories
 - **Updater** - GitHub Releases check, in-app update sheet + About page
@@ -46,7 +46,7 @@ Full details, env setup, and subsystem docs → [`docs/SETUP.md`](docs/SETUP.md)
 ```
 lib/
   main.dart / app.dart                 # app entry
-  app/coordination.dart                # invalidateBusinessData (9-27)
+  app/coordination.dart                # central business-data invalidation helpers
   core/
     database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart (generated, committed)
     domain/ money.dart / debt_status.dart / audit_action.dart / audit_change_detail.dart
@@ -102,21 +102,39 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 ## Architecture Notes
 
-- **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart` — register new `FutureProvider`s there.
+- **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart`; restore uses `invalidateBusinessDataFromRef(ref)`. Register new business-data providers there.
 - **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`.
 - **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL.
 - **Method channels:** `MainActivity.kt` holds the updater channel; its install-permission flow uses deprecated `onActivityResult`.
-- **Signing:** `android/key.properties` + keystores gitignored; CI signs from `SIGNING_*` secrets.
+- **Signing:** local release builds use gitignored `android/key.properties` and a keystore. CI uses the `SIGNING_KEY_BASE64`, `KEY_STORE_PASSWORD`, `KEY_PASSWORD`, and `KEY_ALIAS` GitHub Secrets.
 
 ## Routes
 
 - `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`, `/cloud-backup`, `/about`, `/audit-log`.
 
+## Google Drive configuration
+
+Google Drive backup requires the public Web OAuth client ID at build time:
+
+```sh
+flutter run --dart-define=GOOGLE_DRIVE_SERVER_CLIENT_ID=<web-client-id>
+```
+
+For GitHub Actions releases, configure `GOOGLE_DRIVE_SERVER_CLIENT_ID` as a
+repository **Variable**. It is not a secret. CI also requires these GitHub
+**Secrets** for Android signing: `SIGNING_KEY_BASE64`, `KEY_STORE_PASSWORD`,
+`KEY_PASSWORD`, and `KEY_ALIAS`.
+
+Google Cloud must have the Drive API enabled, the OAuth consent screen
+configured, and Android OAuth credentials matching the app package and signing
+certificate fingerprints. The app uses Google account permissions and does not
+use a separate backup password.
+
 ## Release
 
 1. Bump `version` in **both** `pubspec.yaml` and `assets/release_notes/current.json`
 2. Tag `v<version>` - CI fails if `tag != pubspec != notes`
-3. Push tag -> `.github/workflows/release.yml` runs: `verify_version.py` (tag = pubspec = notes) -> `test_release_scripts.py` (validates note generation) -> `flutter analyze` -> `flutter test` -> `configure_signing.py` (GH secrets -> keystore) -> `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` with `GOOGLE_DRIVE_SERVER_CLIENT_ID` -> `prepare_release.py` + `generate_release_notes.py` -> GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`)
+3. Push tag -> `.github/workflows/release.yml` validates versions, runs tests, configures signing from the four signing Secrets, builds with the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable, and creates the GitHub Release.
 
 ```sh
 # example

@@ -70,7 +70,7 @@ flutter doctor      # Android toolchain must be green
 ```
 lib/
   main.dart / app.dart                 # app entry
-  app/coordination.dart                # invalidateBusinessData (9-27)
+  app/coordination.dart                # central business-data invalidation helpers
   core/database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart
   core/domain/ money.dart / debt_status.dart / audit_action.dart
   core/audit/ audit_log_writer.dart   # shared audit writer called by every repository write
@@ -122,10 +122,12 @@ State and navigation details are in §4.
   storePassword=<storePassword>
   keyPassword=<keyPassword>
   keyAlias=<keyAlias>
-  storeFile=../app/<your>.jks   # or absolute path; resolved via rootProject.file()
+  storeFile=app/<your>.jks      # or an absolute path; resolved from the android/ directory
   ```
   `android/app/build.gradle.kts:10-70` validates this at `taskGraph.whenReady` and throws `Release signing is not configured` if any of the four keys is missing when any `*Release*` task runs.
-- **CI:** `.github/workflows/release.yml` runs `.github/scripts/configure_signing.py` which materializes the keystore from `SIGNING_*` GitHub Secrets. No local `key.properties` needed in CI.
+- **CI:** `.github/workflows/release.yml` runs `.github/scripts/configure_signing.py` which materializes the keystore from GitHub Secrets. No local `key.properties` is needed in CI.
+  Required CI Secrets are `SIGNING_KEY_BASE64` (the complete keystore encoded as
+  base64), `KEY_STORE_PASSWORD`, `KEY_PASSWORD`, and `KEY_ALIAS`.
 
 ### 4.5 Navigation (go_router)
 
@@ -140,7 +142,8 @@ State and navigation details are in §4.
   ```dart
   invalidateBusinessData(ref, customerId: ..., debtId: ...);
   ```
-  from `lib/app/coordination.dart:9-27`. New list/detail providers must be registered there.
+  from `lib/app/coordination.dart`. Database restore uses
+  `invalidateBusinessDataFromRef(ref)`. New list/detail providers must be registered there.
 
 ### 4.7 Release process
 
@@ -155,16 +158,18 @@ Version is triple-locked — CI fails if any drift:
    git push origin v1.0.55
    ```
 4. Push tag triggers `.github/workflows/release.yml`:
-     `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` with `GOOGLE_DRIVE_SERVER_CLIENT_ID` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
+     `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` (four signing Secrets) → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` with the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
 
 ### 4.8 Google Drive cloud backup
 
 Cloud backup uses Google Sign-In and the Google Drive API. The app stores one
 latest SQLite backup per Google account and checks for an automatic backup once
-per day when the app opens or resumes. Restore replaces the local database
-after an explicit confirmation.
+per day when the app opens or resumes. Automatic failures are silent so they do
+not block startup or interrupt the user. Manual backup and restore show errors
+in the cloud-backup page. Restore replaces the local database after an explicit
+confirmation and refreshes the business-data providers.
 
-Before running a build with cloud backup:
+### Google Cloud setup
 
 1. Create or select a Google Cloud project.
 2. Enable the Google Drive API.
@@ -179,8 +184,23 @@ Before running a build with cloud backup:
 The client ID is not a secret, but it is environment-specific and must not be
 hardcoded in Dart source. Release and CI builds must provide the same
 `GOOGLE_DRIVE_SERVER_CLIENT_ID` define. Configure it as the GitHub Actions
-repository variable `GOOGLE_DRIVE_SERVER_CLIENT_ID` for release builds. Without this configuration, the app
-continues to run normally, but Google Drive sign-in and backup are unavailable.
+repository **Variable** `GOOGLE_DRIVE_SERVER_CLIENT_ID` for release builds.
+
+### Required CI configuration
+
+| GitHub setting | Name | Purpose |
+|---|---|---|
+| Repository Variable | `GOOGLE_DRIVE_SERVER_CLIENT_ID` | Public Web OAuth client ID passed with `--dart-define` |
+| Secret | `SIGNING_KEY_BASE64` | Base64-encoded Android release keystore |
+| Secret | `KEY_STORE_PASSWORD` | Keystore password |
+| Secret | `KEY_PASSWORD` | Signing key password |
+| Secret | `KEY_ALIAS` | Signing key alias |
+
+For local debug builds, only the Google Drive `--dart-define` is needed for
+cloud backup. For local release builds, also create `android/key.properties`
+and provide the keystore referenced by `storeFile`. Without the Google client
+ID or valid OAuth configuration, the app still runs, but Google Drive sign-in
+and backup are unavailable.
 
 Backups are SQLite files containing customer, debt, payment, and audit data.
 They are protected by the signed-in Google account and Drive permissions. The
@@ -206,6 +226,9 @@ flutter clean && flutter pub get   # after changing Gradle plugins
 | Symptom | Cause | Fix |
 |---|---|---|
 | **Release build fails: "Release signing is not configured"** | `android/key.properties` missing or incomplete. | Create `android/key.properties` with all four keys (`storePassword`, `keyPassword`, `keyAlias`, `storeFile`). Keystore file itself must exist at the `storeFile` path (also gitignored). In CI, secrets are injected by `configure_signing.py`. |
+| **Google Drive sign-in is unavailable** | Missing `GOOGLE_DRIVE_SERVER_CLIENT_ID`, disabled Drive API, or OAuth credentials do not match the package/signing certificate. | Build with the `--dart-define`, enable the Drive API, and verify the Android OAuth package name and SHA-1/SHA-256 fingerprints. |
+| **Automatic backup did not run** | The user is signed out, the backup already ran today, or the app was offline. | Open **Settings → Cloud backup**, sign in, and use **Back up now**. Automatic failures are retried on a later open or resume. |
+| **Restore fails** | The cloud file is missing, damaged, or incompatible with this app version. | Create a new backup or update the app. Restore validates the SQLite snapshot before replacing local data. |
 
 ### Where to find logs
 
