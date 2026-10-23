@@ -92,19 +92,6 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
   @override
   CloudBackupState build() => const CloudBackupState();
 
-  Future<void> load() async {
-    try {
-      final status = await _repository.getStatus();
-      state = state.copyWith(
-        status: status,
-        clearError: true,
-        clearSelectedBackup: true,
-      );
-    } catch (error) {
-      state = state.copyWith(error: userFacingError(error));
-    }
-  }
-
   Future<bool> signIn() async {
     if (state.isBusy) return false;
     state = state.copyWith(
@@ -238,7 +225,7 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
       final updatedStatus = await _repository.getStatus();
       state = state.copyWith(status: updatedStatus, clearSelectedBackup: true);
     } catch (_) {
-      // Automatic backups must never block app startup or interrupt the user.
+      // Automatic backups must never block the app or interrupt the user.
       try {
         final status = await _repository.getStatus();
         state = state.copyWith(status: status, clearSelectedBackup: true);

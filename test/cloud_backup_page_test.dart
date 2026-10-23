@@ -13,12 +13,13 @@ void main() {
   testWidgets('cloud backup page shows Google sign-in when disconnected', (
     tester,
   ) async {
+    final repository = _FakeCloudBackupRepository(
+      const BackupStatus(isSignedIn: false),
+    );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          cloudBackupRepositoryProvider.overrideWithValue(
-            const _FakeCloudBackupRepository(BackupStatus(isSignedIn: false)),
-          ),
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
           theme: AppTheme.light(),
@@ -31,31 +32,32 @@ void main() {
     expect(find.text('Protect your ledger'), findsOneWidget);
     expect(find.text('Sign in with Google'), findsOneWidget);
     expect(find.bySemanticsLabel('Google'), findsOneWidget);
+    expect(repository.statusCalls, 0);
   });
 
-  testWidgets('cloud backup page shows backup actions when connected', (
+  testWidgets('cloud backup page shows backup actions after sign-in', (
     tester,
   ) async {
+    final repository = _FakeCloudBackupRepository(
+      const BackupStatus(isSignedIn: false),
+      signInStatus: BackupStatus(
+        isSignedIn: true,
+        email: 'owner@example.com',
+        lastBackupAt: DateTime(2026, 10, 23, 10),
+        backups: [
+          BackupRecord(
+            id: 'backup-1',
+            name: 'backup.sqlite',
+            modifiedAt: DateTime(2026, 10, 23, 10),
+            sizeBytes: 1024,
+          ),
+        ],
+      ),
+    );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          cloudBackupRepositoryProvider.overrideWithValue(
-            _FakeCloudBackupRepository(
-              BackupStatus(
-                isSignedIn: true,
-                email: 'owner@example.com',
-                lastBackupAt: DateTime(2026, 10, 23, 10),
-                backups: [
-                  BackupRecord(
-                    id: 'backup-1',
-                    name: 'backup.sqlite',
-                    modifiedAt: DateTime(2026, 10, 23, 10),
-                    sizeBytes: 1024,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
           theme: AppTheme.light(),
@@ -65,7 +67,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Google Drive connected'), findsOneWidget);
+    await tester.tap(find.text('Sign in with Google'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Google Drive connected'), findsNWidgets(2));
     expect(find.text('Backup health'), findsOneWidget);
     expect(find.text('Backups stored: 1 of 5'), findsOneWidget);
     expect(find.text('Backup history'), findsOneWidget);
@@ -77,15 +82,20 @@ void main() {
 }
 
 class _FakeCloudBackupRepository implements CloudBackupRepository {
-  const _FakeCloudBackupRepository(this.status);
+  _FakeCloudBackupRepository(this.status, {this.signInStatus});
 
   final BackupStatus status;
+  final BackupStatus? signInStatus;
+  int statusCalls = 0;
 
   @override
-  Future<BackupStatus> getStatus() async => status;
+  Future<BackupStatus> getStatus() async {
+    statusCalls++;
+    return status;
+  }
 
   @override
-  Future<BackupStatus> signIn() async => status;
+  Future<BackupStatus> signIn() async => signInStatus ?? status;
 
   @override
   Future<void> signOut() async {}

@@ -6,11 +6,12 @@ import 'package:utang_tracker/features/backup/domain/entities/backup_interval.da
 import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/cloud_backup_repository.dart';
+import 'package:utang_tracker/features/backup/presentation/providers/cloud_backup_providers.dart';
 import 'package:utang_tracker/features/backup/presentation/widgets/cloud_backup_auto_checker.dart';
 
 void main() {
-  testWidgets('checks on startup and when the app resumes', (tester) async {
-    final repository = _LifecycleBackupRepository();
+  testWidgets('does not check Google Drive on startup', (tester) async {
+    final repository = _LifecycleBackupRepository(isSignedIn: false);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -21,6 +22,34 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+
+    expect(repository.statusCalls, 0);
+    expect(repository.backupCalls, 0);
+  });
+
+  testWidgets('checks after explicit sign-in and when the app resumes', (
+    tester,
+  ) async {
+    final repository = _LifecycleBackupRepository(isSignedIn: false);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          home: Column(
+            children: [
+              CloudBackupAutoChecker(child: SizedBox()),
+              _SignInButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sign in'));
     await tester.pumpAndSettle();
 
     expect(repository.statusCalls, 2);
@@ -39,6 +68,7 @@ void main() {
     tester,
   ) async {
     final repository = _LifecycleBackupRepository(
+      isSignedIn: false,
       interval: BackupInterval.weekly,
       lastBackupAt: DateTime.now().subtract(const Duration(days: 1)),
     );
@@ -48,10 +78,18 @@ void main() {
           cloudBackupRepositoryProvider.overrideWithValue(repository),
         ],
         child: const MaterialApp(
-          home: CloudBackupAutoChecker(child: SizedBox()),
+          home: Column(
+            children: [
+              CloudBackupAutoChecker(child: SizedBox()),
+              _SignInButton(),
+            ],
+          ),
         ),
       ),
     );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sign in'));
     await tester.pumpAndSettle();
 
     expect(repository.backupCalls, 0);
@@ -59,6 +97,7 @@ void main() {
 
   testWidgets('backs up after the weekly interval is due', (tester) async {
     final repository = _LifecycleBackupRepository(
+      isSignedIn: false,
       interval: BackupInterval.weekly,
       lastBackupAt: DateTime.now().subtract(const Duration(days: 8)),
     );
@@ -68,23 +107,46 @@ void main() {
           cloudBackupRepositoryProvider.overrideWithValue(repository),
         ],
         child: const MaterialApp(
-          home: CloudBackupAutoChecker(child: SizedBox()),
+          home: Column(
+            children: [
+              CloudBackupAutoChecker(child: SizedBox()),
+              _SignInButton(),
+            ],
+          ),
         ),
       ),
     );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sign in'));
     await tester.pumpAndSettle();
 
     expect(repository.backupCalls, 1);
   });
 }
 
+class _SignInButton extends ConsumerWidget {
+  const _SignInButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ElevatedButton(
+      onPressed: () => ref.read(cloudBackupNotifierProvider.notifier).signIn(),
+      child: const Text('Sign in'),
+    );
+  }
+}
+
 class _LifecycleBackupRepository implements CloudBackupRepository {
   _LifecycleBackupRepository({
+    required bool isSignedIn,
     this.interval = BackupInterval.daily,
     DateTime? lastBackupAt,
-  }) : lastBackupAt =
+  }) : isSignedIn = isSignedIn,
+       lastBackupAt =
            lastBackupAt ?? DateTime.now().subtract(const Duration(days: 1));
 
+  bool isSignedIn;
   int statusCalls = 0;
   int backupCalls = 0;
   final BackupInterval interval;
@@ -93,15 +155,14 @@ class _LifecycleBackupRepository implements CloudBackupRepository {
   @override
   Future<BackupStatus> getStatus() async {
     statusCalls++;
-    return BackupStatus(
-      isSignedIn: true,
-      lastBackupAt: lastBackupAt,
-      interval: interval,
-    );
+    return _status;
   }
 
   @override
-  Future<BackupStatus> signIn() async => _status;
+  Future<BackupStatus> signIn() async {
+    isSignedIn = true;
+    return _status;
+  }
 
   @override
   Future<void> signOut() async {}
@@ -119,8 +180,8 @@ class _LifecycleBackupRepository implements CloudBackupRepository {
   Future<BackupStatus> setInterval(BackupInterval interval) async => _status;
 
   BackupStatus get _status => BackupStatus(
-    isSignedIn: true,
-    lastBackupAt: DateTime.now(),
+    isSignedIn: isSignedIn,
+    lastBackupAt: lastBackupAt,
     interval: interval,
   );
 }

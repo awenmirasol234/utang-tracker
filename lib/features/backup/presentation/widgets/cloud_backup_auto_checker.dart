@@ -16,12 +16,25 @@ class _CloudBackupAutoCheckerState extends ConsumerState<CloudBackupAutoChecker>
     with WidgetsBindingObserver {
   bool _paused = false;
   bool _checking = false;
+  bool _sessionEnabled = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _check();
+    ref.listenManual<CloudBackupState>(cloudBackupNotifierProvider, (
+      previous,
+      next,
+    ) {
+      if (!next.status.isSignedIn) {
+        _sessionEnabled = false;
+        return;
+      }
+      final wasSignedIn = previous?.status.isSignedIn ?? false;
+      if (wasSignedIn) return;
+      _sessionEnabled = true;
+      _check();
+    });
   }
 
   @override
@@ -47,7 +60,7 @@ class _CloudBackupAutoCheckerState extends ConsumerState<CloudBackupAutoChecker>
   }
 
   Future<void> _check() async {
-    if (!mounted || _checking) return;
+    if (!mounted || !_sessionEnabled || _checking) return;
     _checking = true;
     try {
       await ref.read(cloudBackupNotifierProvider.notifier).backupIfDue();
