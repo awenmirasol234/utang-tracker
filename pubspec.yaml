@@ -64,6 +64,7 @@ flutter:
   assets:
     - assets/images/new-logo.png
     - assets/images/google-drive-logo.svg
+    - assets/images/google-drive-connected-logo.svg
     - assets/release_notes/
 
   fonts:

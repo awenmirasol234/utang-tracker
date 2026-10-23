@@ -101,7 +101,12 @@ class _BackupCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.cloud_done_outlined),
+              SvgPicture.asset(
+                'assets/images/google-drive-connected-logo.svg',
+                width: 24,
+                height: 24,
+                semanticsLabel: 'Google Drive',
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(

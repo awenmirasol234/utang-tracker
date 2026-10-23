@@ -72,6 +72,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Google Drive connected'), findsNWidgets(2));
+    expect(find.bySemanticsLabel('Google Drive'), findsOneWidget);
     expect(find.text('Last backup'), findsOneWidget);
     expect(find.text('Backup health'), findsNothing);
     expect(find.text('Backup history'), findsOneWidget);
