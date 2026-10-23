@@ -114,16 +114,23 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 ## Google Drive configuration
 
-Google Drive backup requires the public Web OAuth client ID at build time:
+Google Drive backup requires the public Web OAuth client ID at build time. For
+local builds, copy `config/local.json.example` to the ignored
+`config/local.json` and replace the placeholder:
 
 ```sh
-flutter run --dart-define=GOOGLE_DRIVE_SERVER_CLIENT_ID=<web-client-id>
+cp config/local.json.example config/local.json
+flutter run --dart-define-from-file=config/local.json
+flutter build apk --release --dart-define-from-file=config/local.json
 ```
 
 For GitHub Actions releases, configure `GOOGLE_DRIVE_SERVER_CLIENT_ID` as a
 repository **Variable**. It is not a secret. CI also requires these GitHub
 **Secrets** for Android signing: `SIGNING_KEY_BASE64`, `KEY_STORE_PASSWORD`,
 `KEY_PASSWORD`, and `KEY_ALIAS`.
+
+The local JSON file is ignored and must never be committed. CI supplies the
+same value through the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable.
 
 Google Cloud must have the Drive API enabled, the OAuth consent screen
 configured, and Android OAuth credentials matching the app package and signing

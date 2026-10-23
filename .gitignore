@@ -76,5 +76,6 @@ RELEASE_NOTES.md
 .env
 .env.*
 !.env.example
+/config/local.json
 __pycache__/
 __pycache__

@@ -176,9 +176,12 @@ confirmation and refreshes the business-data providers.
 3. Configure the OAuth consent screen and add the Drive file scope.
 4. Create an Android OAuth client for package `com.example.utang_tracker`.
 5. Add the SHA-1/SHA-256 fingerprints for every debug or release signing key.
-6. Create a Web application OAuth client and pass its client ID when building:
+6. Create a Web application OAuth client. For local builds, copy the ignored
+   configuration template and replace its placeholder:
    ```sh
-   flutter run --dart-define=GOOGLE_DRIVE_SERVER_CLIENT_ID=<web-client-id>
+   cp config/local.json.example config/local.json
+   flutter run --dart-define-from-file=config/local.json
+   flutter build apk --release --dart-define-from-file=config/local.json
    ```
 
 The client ID is not a secret, but it is environment-specific and must not be
@@ -196,11 +199,12 @@ repository **Variable** `GOOGLE_DRIVE_SERVER_CLIENT_ID` for release builds.
 | Secret | `KEY_PASSWORD` | Signing key password |
 | Secret | `KEY_ALIAS` | Signing key alias |
 
-For local debug builds, only the Google Drive `--dart-define` is needed for
-cloud backup. For local release builds, also create `android/key.properties`
-and provide the keystore referenced by `storeFile`. Without the Google client
-ID or valid OAuth configuration, the app still runs, but Google Drive sign-in
-and backup are unavailable.
+For local debug builds, use the ignored `config/local.json` file with
+`--dart-define-from-file`. For local release builds, also create
+`android/key.properties` and provide the keystore referenced by `storeFile`.
+Without the Google client ID or valid OAuth configuration, the app still runs,
+but Google Drive sign-in and backup are unavailable. Never commit
+`config/local.json`.
 
 Backups are SQLite files containing customer, debt, payment, and audit data.
 They are protected by the signed-in Google account and Drive permissions. The
