@@ -207,7 +207,7 @@ class _AuditLogTileState extends State<_AuditLogTile> {
       );
     }
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Flexible(
           child: Text(
@@ -215,7 +215,13 @@ class _AuditLogTileState extends State<_AuditLogTile> {
             style: beforeStyle,
           ),
         ),
-        const Text(' \u2192 '),
+        Text(
+          ' \u2192 ',
+          style: valueStyle?.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         Flexible(
           child: Text(
             _displayValue(context, detail.field, detail.after!),
