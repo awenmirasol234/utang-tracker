@@ -1,13 +1,16 @@
 {
-  "version": "1.0.55",
-  "date": "2026-10-22",
+  "version": "1.1.0",
+  "date": "2026-10-23",
   "notes": {
-    "added": [],
-    "changed": [
-      "Gave the input fields clearer example hints, such as a sample name and phone number",
-      "Used one search phrase in every search bar: Search by customer name",
-      "Said that the item price is the total for the item, not a price per unit"
+    "added": [
+      "Back up your ledger to Google Drive and restore it on the same account, with a daily automatic backup when the app opens",
+      "Copy a customer's phone number from their details page"
     ],
-    "fixed": []
+    "changed": [
+      "Release builds now require the Google Drive client configuration, so cloud backup works in published APKs"
+    ],
+    "fixed": [
+      "Cloud backup now shows clearer messages when sign-in, the network, or the download fails"
+    ]
   }
 }
