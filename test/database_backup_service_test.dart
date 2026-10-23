@@ -10,7 +10,10 @@ void main() {
   test('creates and validates a consistent database snapshot', () async {
     final database = AppDatabase.forTesting();
     addTearDown(database.close);
-    final service = DatabaseBackupService(database);
+    final service = DatabaseBackupService(
+      database,
+      temporaryDirectory: () async => Directory.systemTemp,
+    );
 
     final snapshot = await service.createSnapshot();
     addTearDown(() async {

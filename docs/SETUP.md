@@ -130,7 +130,7 @@ State and navigation details are in §4.
 ### 4.5 Navigation (go_router)
 
 - `lib/core/router/app_router.dart` + `lib/core/router/app_shell.dart`.
-- `go_router ^17.3.0`, `StatefulShellRoute.indexedStack` with 5 tabs: `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`. Top-level routes outside the shell: `/about`, `/audit-log`.
+- `go_router ^17.3.0`, `StatefulShellRoute.indexedStack` with 5 tabs: `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`. Top-level routes outside the shell: `/about`, `/audit-log`, `/cloud-backup`.
 - Add new top-level routes in `app_router.dart` and add the shell branch in `app_shell.dart`.
 
 ### 4.6 State (Riverpod) — push invalidation, not streams
@@ -155,14 +155,14 @@ Version is triple-locked — CI fails if any drift:
    git push origin v1.0.55
    ```
 4. Push tag triggers `.github/workflows/release.yml`:
-    `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
+     `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` with `GOOGLE_DRIVE_SERVER_CLIENT_ID` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
 
 ### 4.8 Google Drive cloud backup
 
 Cloud backup uses Google Sign-In and the Google Drive API. The app stores one
 latest SQLite backup per Google account and checks for an automatic backup once
-per day when the app opens. Restore replaces the local database after an
-explicit confirmation.
+per day when the app opens or resumes. Restore replaces the local database
+after an explicit confirmation.
 
 Before running a build with cloud backup:
 
@@ -178,7 +178,8 @@ Before running a build with cloud backup:
 
 The client ID is not a secret, but it is environment-specific and must not be
 hardcoded in Dart source. Release and CI builds must provide the same
-`GOOGLE_DRIVE_SERVER_CLIENT_ID` define. Without this configuration, the app
+`GOOGLE_DRIVE_SERVER_CLIENT_ID` define. Configure it as the GitHub Actions
+repository variable `GOOGLE_DRIVE_SERVER_CLIENT_ID` for release builds. Without this configuration, the app
 continues to run normally, but Google Drive sign-in and backup are unavailable.
 
 Backups are SQLite files containing customer, debt, payment, and audit data.

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/router/app_router.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
-import 'package:utang_tracker/features/backup/presentation/providers/cloud_backup_providers.dart';
 
 final List<Locale> _supportedLocales = kMaterialSupportedLanguages
     .map((languageCode) => Locale(languageCode))
@@ -19,14 +18,6 @@ class UtangTrackerApp extends ConsumerStatefulWidget {
 
 class _UtangTrackerAppState extends ConsumerState<UtangTrackerApp> {
   late final _router = createAppRouter();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(cloudBackupNotifierProvider.notifier).backupIfDue();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

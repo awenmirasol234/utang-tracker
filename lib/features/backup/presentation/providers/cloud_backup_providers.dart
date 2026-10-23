@@ -1,14 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/user_facing_error.dart';
-import 'package:utang_tracker/features/audit/presentation/providers/audit_log_providers.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/cloud_backup_repository.dart';
-import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
-import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
-import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
-import 'package:utang_tracker/features/notifications/presentation/providers/notification_providers.dart';
-import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
 
 enum BackupOperation { signingIn, backingUp, restoring, signingOut }
 
@@ -122,7 +117,7 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     try {
       final status = await _repository.restore();
       ref.invalidate(databaseProvider);
-      _invalidateBusinessData();
+      invalidateBusinessDataFromRef(ref);
       state = state.copyWith(status: status, clearOperation: true);
       return true;
     } catch (error) {
@@ -179,15 +174,5 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     return localBackupTime.year == now.year &&
         localBackupTime.month == now.month &&
         localBackupTime.day == now.day;
-  }
-
-  void _invalidateBusinessData() {
-    ref.invalidate(customersListProvider);
-    ref.invalidate(debtsListProvider);
-    ref.invalidate(paymentsListProvider);
-    ref.invalidate(paymentFilterOptionsProvider);
-    ref.invalidate(dashboardSummaryProvider);
-    ref.invalidate(debtNotificationsProvider);
-    ref.invalidate(auditLogEntriesProvider);
   }
 }

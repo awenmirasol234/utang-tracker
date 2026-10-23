@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
+import 'package:utang_tracker/features/backup/presentation/widgets/cloud_backup_auto_checker.dart';
 import 'package:utang_tracker/features/updater/presentation/widgets/update_auto_checker.dart';
 
 class AppShell extends StatelessWidget {
@@ -17,7 +18,9 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      body: UpdateAutoChecker(child: navigationShell),
+      body: CloudBackupAutoChecker(
+        child: UpdateAutoChecker(child: navigationShell),
+      ),
       bottomNavigationBar: DecoratedBox(
         decoration: const BoxDecoration(
           color: AppColors.surfaceCard,

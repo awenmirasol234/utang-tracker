@@ -1,20 +1,28 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/database/database_location.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 
 class DatabaseBackupService {
-  DatabaseBackupService(this._database);
+  DatabaseBackupService(
+    this._database, {
+    Future<Directory> Function()? temporaryDirectory,
+    Future<File> Function()? liveDatabaseFile,
+  }) : _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory,
+       _liveDatabaseFile = liveDatabaseFile ?? DatabaseLocation.liveFile;
 
   final AppDatabase _database;
+  final Future<Directory> Function() _temporaryDirectory;
+  final Future<File> Function() _liveDatabaseFile;
 
   Future<void> closeDatabase() => _database.close();
 
   Future<File> createSnapshot() async {
-    final temporaryDirectory = Directory.systemTemp;
+    final temporaryDirectory = await _temporaryDirectory();
     final snapshotPath = p.join(
       temporaryDirectory.path,
       'utang_tracker_backup_${DateTime.now().microsecondsSinceEpoch}.sqlite',
@@ -81,7 +89,7 @@ class DatabaseBackupService {
   }
 
   Future<void> replaceLiveDatabase(File snapshot) async {
-    final liveFile = await DatabaseLocation.liveFile();
+    final liveFile = await _liveDatabaseFile();
     final rollbackFile = File('${liveFile.path}.restore-rollback');
     final walFile = File('${liveFile.path}-wal');
     final shmFile = File('${liveFile.path}-shm');

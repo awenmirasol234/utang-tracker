@@ -60,7 +60,14 @@ jobs:
         run: python .github/scripts/configure_signing.py
 
       - name: Build ARM64 and ARM32 APKs
-        run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64
+        env:
+          GOOGLE_DRIVE_SERVER_CLIENT_ID: ${{ vars.GOOGLE_DRIVE_SERVER_CLIENT_ID }}
+        run: |
+          if [ -z "$GOOGLE_DRIVE_SERVER_CLIENT_ID" ]; then
+            echo "::error::GOOGLE_DRIVE_SERVER_CLIENT_ID is not configured."
+            exit 1
+          fi
+          flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --dart-define=GOOGLE_DRIVE_SERVER_CLIENT_ID=$GOOGLE_DRIVE_SERVER_CLIENT_ID
 
       - name: Prepare release files
         run: python .github/scripts/prepare_release.py

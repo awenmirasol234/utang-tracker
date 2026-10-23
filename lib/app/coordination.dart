@@ -25,3 +25,13 @@ void invalidateBusinessData(
     ref.invalidate(debtDetailProvider(debtId));
   }
 }
+
+void invalidateBusinessDataFromRef(Ref ref) {
+  ref.invalidate(customersListProvider);
+  ref.invalidate(debtsListProvider);
+  ref.invalidate(paymentsListProvider);
+  ref.invalidate(paymentFilterOptionsProvider);
+  ref.invalidate(dashboardSummaryProvider);
+  ref.invalidate(debtNotificationsProvider);
+  ref.invalidate(auditLogEntriesProvider);
+}
