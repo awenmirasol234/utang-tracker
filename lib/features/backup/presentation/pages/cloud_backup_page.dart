@@ -6,6 +6,8 @@ import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/presentation/providers/cloud_backup_providers.dart';
 
@@ -111,7 +113,9 @@ class _BackupCard extends ConsumerWidget {
             ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.md),
-          _LastBackup(status: state.status),
+          _BackupHealth(status: state.status),
+          const SizedBox(height: AppSpacing.lg),
+          _BackupIntervalPicker(state: state),
           const SizedBox(height: AppSpacing.lg),
           AppButton(
             label: 'Back up now',
@@ -125,14 +129,16 @@ class _BackupCard extends ConsumerWidget {
               AppSnackBar.success(context, 'Backup completed');
             }),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          _BackupHistory(state: state),
           const SizedBox(height: AppSpacing.sm),
           AppButton(
-            label: 'Restore latest backup',
+            label: 'Restore selected backup',
             variant: AppButtonVariant.secondary,
             icon: Icons.cloud_download_outlined,
             isLoading: state.operation == BackupOperation.restoring,
             onPressed: _enabledAction(
-              state.isBusy,
+              state.isBusy || state.selectedBackup == null,
               () => _confirmRestore(context, ref),
             ),
           ),
@@ -156,6 +162,8 @@ class _BackupCard extends ConsumerWidget {
   }
 
   Future<void> _confirmRestore(BuildContext context, WidgetRef ref) async {
+    final selectedBackup = ref.read(cloudBackupNotifierProvider).selectedBackup;
+    if (selectedBackup == null) return;
     final shouldRestore = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -186,20 +194,129 @@ class _BackupCard extends ConsumerWidget {
     AppSnackBar.success(context, 'Backup restored');
   }
 
-  VoidCallback? _enabledAction(bool busy, VoidCallback action) {
-    if (busy) return null;
+  VoidCallback? _enabledAction(bool disabled, VoidCallback action) {
+    if (disabled) return null;
     return action;
   }
 }
 
-class _LastBackup extends StatelessWidget {
-  const _LastBackup({required this.status});
+class _BackupHealth extends StatelessWidget {
+  const _BackupHealth({required this.status});
 
   final BackupStatus status;
 
   @override
   Widget build(BuildContext context) {
-    if (status.lastBackupAt == null) {
+    final latestBackup = _latestBackup(status);
+    final lastBackupText = _lastBackupText(context, status.lastBackupAt);
+    final sizeText = _sizeText(latestBackup?.sizeBytes);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Backup health', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'Last successful backup: $lastBackupText',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        Text(
+          'Latest backup size: $sizeText',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        Text(
+          'Backups stored: ${status.backups.length} of 5',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        if (status.lastBackupError != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Last backup failed: ${status.lastBackupError}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.danger),
+          ),
+        ],
+      ],
+    );
+  }
+
+  BackupRecord? _latestBackup(BackupStatus status) {
+    if (status.backups.isEmpty) return null;
+    return status.backups.first;
+  }
+
+  String _lastBackupText(BuildContext context, DateTime? value) {
+    if (value == null) return 'None yet';
+    return context.smartTimestamp(value);
+  }
+
+  String _sizeText(int? sizeBytes) {
+    if (sizeBytes == null) return 'Unavailable';
+    if (sizeBytes < 1024 * 1024) {
+      return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
+    }
+    return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+}
+
+class _BackupIntervalPicker extends ConsumerWidget {
+  const _BackupIntervalPicker({required this.state});
+
+  final CloudBackupState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return InputDecorator(
+      decoration: const InputDecoration(
+        labelText: 'Automatic backup interval',
+        border: OutlineInputBorder(),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<BackupInterval>(
+          value: state.status.interval,
+          isExpanded: true,
+          items: BackupInterval.values
+              .map(
+                (interval) => DropdownMenuItem<BackupInterval>(
+                  value: interval,
+                  child: Text(_intervalLabel(interval)),
+                ),
+              )
+              .toList(),
+          onChanged: _intervalChanged(ref),
+        ),
+      ),
+    );
+  }
+
+  String _intervalLabel(BackupInterval interval) {
+    switch (interval) {
+      case BackupInterval.daily:
+        return 'Daily';
+      case BackupInterval.weekly:
+        return 'Weekly';
+      case BackupInterval.manual:
+        return 'Manual only';
+    }
+  }
+
+  ValueChanged<BackupInterval?>? _intervalChanged(WidgetRef ref) {
+    if (state.isBusy) return null;
+    return (interval) {
+      if (interval == null) return;
+      ref.read(cloudBackupNotifierProvider.notifier).setInterval(interval);
+    };
+  }
+}
+
+class _BackupHistory extends ConsumerWidget {
+  const _BackupHistory({required this.state});
+
+  final CloudBackupState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (state.status.backups.isEmpty) {
       return Text(
         'No backup created yet',
         style: Theme.of(
@@ -207,12 +324,65 @@ class _LastBackup extends StatelessWidget {
         ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
       );
     }
-    return Text(
-      'Last backup: ${context.smartTimestamp(status.lastBackupAt!)}',
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: AppColors.textSecondary,
-        fontWeight: FontWeight.w500,
-      ),
+
+    final selectedBackup = state.selectedBackup;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Backup history', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: AppSpacing.xs),
+        ...state.status.backups.asMap().entries.map((entry) {
+          final index = entry.key;
+          final backup = entry.value;
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            selected: selectedBackup?.id == backup.id,
+            leading: Icon(_selectionIcon(selectedBackup?.id == backup.id)),
+            onTap: _backupChanged(ref, backup.id),
+            title: Text(_backupTitle(index)),
+            subtitle: Text(_backupDetails(context, backup)),
+          );
+        }),
+      ],
     );
+  }
+
+  String _backupTitle(int index) {
+    if (index == 0) return 'Latest backup';
+    return 'Backup ${index + 1}';
+  }
+
+  String _backupDetails(BuildContext context, BackupRecord backup) {
+    final parts = <String>[];
+    final modifiedAt = backup.modifiedAt;
+    if (modifiedAt != null) {
+      parts.add(context.smartTimestamp(modifiedAt));
+    } else {
+      parts.add('Date unavailable');
+    }
+    final sizeBytes = backup.sizeBytes;
+    if (sizeBytes != null) {
+      parts.add(_sizeText(sizeBytes));
+    }
+    return parts.join(' · ');
+  }
+
+  String _sizeText(int sizeBytes) {
+    if (sizeBytes < 1024 * 1024) {
+      return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
+    }
+    return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  IconData _selectionIcon(bool selected) {
+    if (selected) return Icons.radio_button_checked;
+    return Icons.radio_button_unchecked;
+  }
+
+  VoidCallback? _backupChanged(WidgetRef ref, String backupId) {
+    if (state.isBusy) return null;
+    return () {
+      ref.read(cloudBackupNotifierProvider.notifier).selectBackup(backupId);
+    };
   }
 }

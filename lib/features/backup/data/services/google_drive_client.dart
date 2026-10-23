@@ -14,6 +14,20 @@ class GoogleDriveAccount {
   final String email;
 }
 
+class GoogleDriveBackupFile {
+  const GoogleDriveBackupFile({
+    required this.id,
+    required this.name,
+    this.modifiedAt,
+    this.sizeBytes,
+  });
+
+  final String id;
+  final String name;
+  final DateTime? modifiedAt;
+  final int? sizeBytes;
+}
+
 abstract class GoogleDriveClient {
   Future<GoogleDriveAccount?> currentAccount();
 
@@ -21,16 +35,29 @@ abstract class GoogleDriveClient {
 
   Future<void> signOut();
 
-  Future<void> upload(File snapshot, {required bool interactive});
+  Future<List<GoogleDriveBackupFile>> listBackups();
 
-  Future<void> download(File destination, {required bool interactive});
+  Future<void> upload(
+    File snapshot, {
+    required String fileName,
+    required bool interactive,
+  });
+
+  Future<void> download(
+    File destination, {
+    required String backupId,
+    required bool interactive,
+  });
+
+  Future<void> delete(String backupId);
 }
 
 class GoogleDriveClientImpl implements GoogleDriveClient {
   GoogleDriveClientImpl({GoogleSignIn? signIn})
     : _signIn = signIn ?? GoogleSignIn.instance;
 
-  static const _backupFileName = 'utang_tracker_latest.sqlite';
+  static const _legacyBackupFileName = 'utang_tracker_latest.sqlite';
+  static const _backupFilePrefix = 'utang_tracker_backup_';
   static const _scopes = ['https://www.googleapis.com/auth/drive.file'];
   final GoogleSignIn _signIn;
   Future<void>? _initialization;
@@ -74,47 +101,82 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
   }
 
   @override
-  Future<void> upload(File snapshot, {required bool interactive}) async {
+  Future<List<GoogleDriveBackupFile>> listBackups() async {
     final account = await _requireAccount();
-    await _withDriveApi(
+    return _withDriveApi(
       account,
-      interactive: interactive,
+      interactive: false,
       action: (api) async {
-        final existingFile = await _findBackup(api);
-        final media = drive.Media(
-          snapshot.openRead(),
-          await snapshot.length(),
-          contentType: 'application/x-sqlite3',
-        );
-        if (existingFile == null) {
-          final metadata = drive.File()
-            ..name = _backupFileName
-            ..description = 'Utang Tracker database backup';
-          await api.files.create(metadata, uploadMedia: media);
-          return;
-        }
-        await api.files.update(
-          drive.File(),
-          existingFile.id!,
-          uploadMedia: media,
-        );
+        final backupFiles = <GoogleDriveBackupFile>[];
+        String? pageToken;
+        do {
+          final result = await api.files.list(
+            q: "trashed = false and (name = '$_legacyBackupFileName' or name contains '$_backupFilePrefix')",
+            spaces: 'drive',
+            pageSize: 100,
+            pageToken: pageToken,
+            $fields: 'nextPageToken,files(id,name,modifiedTime,size)',
+          );
+          final files = result.files ?? const <drive.File>[];
+          for (final file in files) {
+            final id = file.id;
+            final name = file.name;
+            if (id == null || name == null || !_isBackupFileName(name)) {
+              continue;
+            }
+            backupFiles.add(
+              GoogleDriveBackupFile(
+                id: id,
+                name: name,
+                modifiedAt: file.modifiedTime,
+                sizeBytes: int.tryParse(file.size ?? ''),
+              ),
+            );
+          }
+          pageToken = result.nextPageToken;
+        } while (pageToken != null);
+        return backupFiles;
       },
     );
   }
 
   @override
-  Future<void> download(File destination, {required bool interactive}) async {
+  Future<void> upload(
+    File snapshot, {
+    required String fileName,
+    required bool interactive,
+  }) async {
     final account = await _requireAccount();
     await _withDriveApi(
       account,
       interactive: interactive,
       action: (api) async {
-        final backupFile = await _findBackup(api);
-        if (backupFile == null || backupFile.id == null) {
-          throw const AppException('No Utang Tracker backup was found.');
-        }
+        final media = drive.Media(
+          snapshot.openRead(),
+          await snapshot.length(),
+          contentType: 'application/x-sqlite3',
+        );
+        final metadata = drive.File()
+          ..name = fileName
+          ..description = 'Utang Tracker database backup';
+        await api.files.create(metadata, uploadMedia: media);
+      },
+    );
+  }
+
+  @override
+  Future<void> download(
+    File destination, {
+    required String backupId,
+    required bool interactive,
+  }) async {
+    final account = await _requireAccount();
+    await _withDriveApi(
+      account,
+      interactive: interactive,
+      action: (api) async {
         final response = await api.files.get(
-          backupFile.id!,
+          backupId,
           downloadOptions: drive.DownloadOptions.fullMedia,
         );
         if (response is! drive.Media) {
@@ -124,6 +186,16 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
         await response.stream.pipe(sink);
         await sink.close();
       },
+    );
+  }
+
+  @override
+  Future<void> delete(String backupId) async {
+    final account = await _requireAccount();
+    await _withDriveApi(
+      account,
+      interactive: false,
+      action: (api) => api.files.delete(backupId),
     );
   }
 
@@ -176,16 +248,8 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
     return account;
   }
 
-  Future<drive.File?> _findBackup(drive.DriveApi api) async {
-    final result = await api.files.list(
-      q: "name = '$_backupFileName' and trashed = false",
-      spaces: 'drive',
-      pageSize: 1,
-      $fields: 'files(id,name,modifiedTime,size)',
-    );
-    final files = result.files;
-    if (files == null || files.isEmpty) return null;
-    return files.first;
+  bool _isBackupFileName(String name) {
+    return name == _legacyBackupFileName || name.startsWith(_backupFilePrefix);
   }
 
   Future<T> _withDriveApi<T>(

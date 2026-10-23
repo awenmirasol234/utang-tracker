@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/cloud_backup_repository.dart';
 import 'package:utang_tracker/features/backup/presentation/pages/cloud_backup_page.dart';
@@ -43,6 +45,14 @@ void main() {
                 email: 'owner@example.com',
                 lastBackupAt: DateTime(2026, 10, 23, 10),
                 hasCloudBackup: true,
+                backups: [
+                  BackupRecord(
+                    id: 'backup-1',
+                    name: 'backup.sqlite',
+                    modifiedAt: DateTime(2026, 10, 23, 10),
+                    sizeBytes: 1024,
+                  ),
+                ],
               ),
             ),
           ),
@@ -57,7 +67,7 @@ void main() {
 
     expect(find.text('Google Drive connected'), findsOneWidget);
     expect(find.text('Back up now'), findsOneWidget);
-    expect(find.text('Restore latest backup'), findsOneWidget);
+    expect(find.text('Restore selected backup'), findsOneWidget);
     expect(find.text('Sign out'), findsOneWidget);
   });
 }
@@ -80,5 +90,8 @@ class _FakeCloudBackupRepository implements CloudBackupRepository {
   Future<BackupStatus> backup({required bool interactive}) async => status;
 
   @override
-  Future<BackupStatus> restore() async => status;
+  Future<BackupStatus> restore(BackupRecord backup) async => status;
+
+  @override
+  Future<BackupStatus> setInterval(BackupInterval interval) async => status;
 }

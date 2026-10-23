@@ -162,12 +162,15 @@ Version is triple-locked — CI fails if any drift:
 
 ### 4.8 Google Drive cloud backup
 
-Cloud backup uses Google Sign-In and the Google Drive API. The app stores one
-latest SQLite backup per Google account and checks for an automatic backup once
-per day when the app opens or resumes. Automatic failures are silent so they do
-not block startup or interrupt the user. Manual backup and restore show errors
-in the cloud-backup page. Restore replaces the local database after an explicit
-confirmation and refreshes the business-data providers.
+Cloud backup uses Google Sign-In and the Google Drive API. The app keeps the
+five newest SQLite backups per Google account and checks for an automatic backup
+when the app opens or resumes. Users can choose daily, weekly, or manual-only
+automatic backups. Automatic failures are silent so they do not block startup
+or interrupt the user. Manual backup and restore show errors in the cloud-backup
+page. The page shows backup health, file size, stored backup count, and backup
+history. Restore replaces the local database after an explicit confirmation and
+refreshes the business-data providers. The existing `utang_tracker_latest.sqlite`
+file is included in history when upgrading to the history format.
 
 ### Google Cloud setup
 
@@ -235,7 +238,7 @@ flutter clean && flutter pub get   # after changing Gradle plugins
 |---|---|---|
 | **Release build fails: "Release signing is not configured"** | `android/key.properties` missing or incomplete. | Create `android/key.properties` with all four keys (`storePassword`, `keyPassword`, `keyAlias`, `storeFile`). Keystore file itself must exist at the `storeFile` path (also gitignored). In CI, secrets are injected by `configure_signing.py`. |
 | **Google Drive sign-in is unavailable** | Missing `GOOGLE_DRIVE_SERVER_CLIENT_ID`, disabled Drive API, or OAuth credentials do not match the package/signing certificate. | Build with the `--dart-define`, enable the Drive API, and verify the Android OAuth package name and SHA-1/SHA-256 fingerprints. |
-| **Automatic backup did not run** | The user is signed out, the backup already ran today, or the app was offline. | Open **Settings → Cloud backup**, sign in, and use **Back up now**. Automatic failures are retried on a later open or resume. |
+| **Automatic backup did not run** | The user is signed out, the selected interval is not due, automatic backups are set to manual-only, or the app was offline. | Open **Settings → Cloud backup**, sign in, choose an interval, and use **Back up now** if needed. Automatic failures are retried on a later open or resume. |
 | **Restore fails** | The cloud file is missing, damaged, or incompatible with this app version. | Create a new backup or update the app. Restore validates the SQLite snapshot before replacing local data. |
 
 ### Where to find logs

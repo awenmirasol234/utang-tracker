@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/cloud_backup_repository.dart';
 import 'package:utang_tracker/features/backup/presentation/widgets/cloud_backup_auto_checker.dart';
@@ -32,18 +34,49 @@ void main() {
     expect(repository.statusCalls, 4);
     expect(repository.backupCalls, 2);
   });
+
+  testWidgets('does not back up before the weekly interval is due', (
+    tester,
+  ) async {
+    final repository = _LifecycleBackupRepository(
+      interval: BackupInterval.weekly,
+      lastBackupAt: DateTime.now().subtract(const Duration(days: 1)),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          home: CloudBackupAutoChecker(child: SizedBox()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.backupCalls, 0);
+  });
 }
 
 class _LifecycleBackupRepository implements CloudBackupRepository {
+  _LifecycleBackupRepository({
+    this.interval = BackupInterval.daily,
+    DateTime? lastBackupAt,
+  }) : lastBackupAt =
+           lastBackupAt ?? DateTime.now().subtract(const Duration(days: 1));
+
   int statusCalls = 0;
   int backupCalls = 0;
+  final BackupInterval interval;
+  final DateTime lastBackupAt;
 
   @override
   Future<BackupStatus> getStatus() async {
     statusCalls++;
     return BackupStatus(
       isSignedIn: true,
-      lastBackupAt: DateTime.now().subtract(const Duration(days: 1)),
+      lastBackupAt: lastBackupAt,
+      interval: interval,
     );
   }
 
@@ -60,8 +93,14 @@ class _LifecycleBackupRepository implements CloudBackupRepository {
   }
 
   @override
-  Future<BackupStatus> restore() async => _status;
+  Future<BackupStatus> restore(BackupRecord backup) async => _status;
 
-  BackupStatus get _status =>
-      BackupStatus(isSignedIn: true, lastBackupAt: DateTime.now());
+  @override
+  Future<BackupStatus> setInterval(BackupInterval interval) async => _status;
+
+  BackupStatus get _status => BackupStatus(
+    isSignedIn: true,
+    lastBackupAt: DateTime.now(),
+    interval: interval,
+  );
 }

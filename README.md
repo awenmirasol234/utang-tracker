@@ -10,7 +10,7 @@ Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers
 - **Debts** - one debt = many `debt_items` (product, qty, unit, price), editable only while `paid_amount == 0`, items can be appended to a partially paid debt
 - **Payments** - record partial/full payments, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
-- **Cloud backup** - daily Google Drive backup when the app opens or resumes, plus manual backup and restore
+- **Cloud backup** - configurable daily, weekly, or manual Google Drive backups when the app opens or resumes, with five-backup history and restore
 - **Overdue & notifications** - due-date aware
 - **Audit log** - Settings page lists every recorded change (customers, debts, payments); rows are written by the repositories
 - **Updater** - GitHub Releases check, in-app update sheet + About page
@@ -114,8 +114,10 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 ## Google Drive configuration
 
-Google Drive backup requires the public Web OAuth client ID at build time. For
-local builds, copy `config/local.json.example` to the ignored
+Google Drive backup requires the public Web OAuth client ID at build time. The
+app keeps the five newest backups per Google account and lets users choose
+daily, weekly, or manual-only automatic backups. Automatic checks happen when
+the app opens or resumes. For local builds, copy `config/local.json.example` to the ignored
 `config/local.json` and replace the placeholder:
 
 ```sh

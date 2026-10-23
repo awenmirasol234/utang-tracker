@@ -2,23 +2,44 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/user_facing_error.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/cloud_backup_repository.dart';
 
-enum BackupOperation { signingIn, backingUp, restoring, signingOut }
+enum BackupOperation {
+  signingIn,
+  backingUp,
+  restoring,
+  signingOut,
+  updatingInterval,
+}
 
 class CloudBackupState {
   const CloudBackupState({
     this.status = const BackupStatus(isSignedIn: false),
     this.operation,
     this.error,
+    this.selectedBackupId,
   });
 
   final BackupStatus status;
   final BackupOperation? operation;
   final String? error;
+  final String? selectedBackupId;
 
   bool get isBusy => operation != null;
+
+  BackupRecord? get selectedBackup {
+    if (status.backups.isEmpty) return null;
+    final selectedId = selectedBackupId;
+    if (selectedId != null) {
+      for (final backup in status.backups) {
+        if (backup.id == selectedId) return backup;
+      }
+    }
+    return status.backups.first;
+  }
 
   CloudBackupState copyWith({
     BackupStatus? status,
@@ -26,6 +47,8 @@ class CloudBackupState {
     bool clearOperation = false,
     String? error,
     bool clearError = false,
+    String? selectedBackupId,
+    bool clearSelectedBackup = false,
   }) {
     BackupOperation? nextOperation = this.operation;
     if (clearOperation) {
@@ -41,10 +64,18 @@ class CloudBackupState {
       nextError = error;
     }
 
+    String? nextSelectedBackupId = this.selectedBackupId;
+    if (clearSelectedBackup) {
+      nextSelectedBackupId = null;
+    } else if (selectedBackupId != null) {
+      nextSelectedBackupId = selectedBackupId;
+    }
+
     return CloudBackupState(
       status: status ?? this.status,
       operation: nextOperation,
       error: nextError,
+      selectedBackupId: nextSelectedBackupId,
     );
   }
 }
@@ -64,7 +95,11 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
   Future<void> load() async {
     try {
       final status = await _repository.getStatus();
-      state = state.copyWith(status: status, clearError: true);
+      state = state.copyWith(
+        status: status,
+        clearError: true,
+        clearSelectedBackup: true,
+      );
     } catch (error) {
       state = state.copyWith(error: userFacingError(error));
     }
@@ -78,7 +113,11 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     );
     try {
       final status = await _repository.signIn();
-      state = state.copyWith(status: status, clearOperation: true);
+      state = state.copyWith(
+        status: status,
+        clearOperation: true,
+        clearSelectedBackup: true,
+      );
       return true;
     } catch (error) {
       state = state.copyWith(
@@ -97,7 +136,11 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     );
     try {
       final status = await _repository.backup(interactive: interactive);
-      state = state.copyWith(status: status, clearOperation: true);
+      state = state.copyWith(
+        status: status,
+        clearOperation: true,
+        clearSelectedBackup: true,
+      );
       return true;
     } catch (error) {
       state = state.copyWith(
@@ -110,12 +153,14 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
 
   Future<bool> restore() async {
     if (state.isBusy) return false;
+    final backup = state.selectedBackup;
+    if (backup == null) return false;
     state = state.copyWith(
       operation: BackupOperation.restoring,
       clearError: true,
     );
     try {
-      final status = await _repository.restore();
+      final status = await _repository.restore(backup);
       ref.invalidate(databaseProvider);
       invalidateBusinessDataFromRef(ref);
       state = state.copyWith(status: status, clearOperation: true);
@@ -141,6 +186,7 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
       state = state.copyWith(
         status: const BackupStatus(isSignedIn: false),
         clearOperation: true,
+        clearSelectedBackup: true,
       );
       return true;
     } catch (error) {
@@ -152,27 +198,61 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     }
   }
 
+  Future<bool> setInterval(BackupInterval interval) async {
+    if (state.isBusy || state.status.interval == interval) return false;
+    state = state.copyWith(
+      operation: BackupOperation.updatingInterval,
+      clearError: true,
+    );
+    try {
+      final status = await _repository.setInterval(interval);
+      state = state.copyWith(status: status, clearOperation: true);
+      return true;
+    } catch (error) {
+      state = state.copyWith(
+        error: userFacingError(error),
+        clearOperation: true,
+      );
+      return false;
+    }
+  }
+
+  void selectBackup(String backupId) {
+    if (state.isBusy) return;
+    for (final backup in state.status.backups) {
+      if (backup.id == backupId) {
+        state = state.copyWith(selectedBackupId: backupId);
+        return;
+      }
+    }
+  }
+
   Future<void> backupIfDue() async {
     try {
       final status = await _repository.getStatus();
-      state = state.copyWith(status: status);
-      if (!status.isSignedIn || _wasBackedUpToday(status.lastBackupAt)) {
+      state = state.copyWith(status: status, clearSelectedBackup: true);
+      if (!status.isSignedIn || !_isBackupDue(status)) {
         return;
       }
       await _repository.backup(interactive: false);
       final updatedStatus = await _repository.getStatus();
-      state = state.copyWith(status: updatedStatus);
+      state = state.copyWith(status: updatedStatus, clearSelectedBackup: true);
     } catch (_) {
       // Automatic backups must never block app startup or interrupt the user.
     }
   }
 
-  bool _wasBackedUpToday(DateTime? lastBackupAt) {
-    if (lastBackupAt == null) return false;
+  bool _isBackupDue(BackupStatus status) {
+    if (status.interval == BackupInterval.manual) return false;
+    final lastBackupAt = status.lastBackupAt;
+    if (lastBackupAt == null) return true;
     final now = DateTime.now();
     final localBackupTime = lastBackupAt.toLocal();
-    return localBackupTime.year == now.year &&
-        localBackupTime.month == now.month &&
-        localBackupTime.day == now.day;
+    if (status.interval == BackupInterval.daily) {
+      return localBackupTime.year != now.year ||
+          localBackupTime.month != now.month ||
+          localBackupTime.day != now.day;
+    }
+    return now.difference(localBackupTime) >= const Duration(days: 7);
   }
 }
