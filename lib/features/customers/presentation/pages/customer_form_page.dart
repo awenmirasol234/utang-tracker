@@ -112,10 +112,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
       } else {
         successMessage = 'Customer added';
       }
-      AppSnackBar.success(
-        context,
-        successMessage,
-      );
+      AppSnackBar.success(context, successMessage);
       if (created == null) {
         context.pop();
       } else {
@@ -247,7 +244,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
             AppTextField(
               controller: _phoneController,
               label: 'Phone',
-              hint: '0917 123 4567',
+              hint: '09171234567',
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               onChanged: (_) => _markDirty(),
@@ -259,12 +256,9 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                 AppTextField.buildLabel(context, 'Notes'),
                 IconButton(
                   tooltip: notesTooltip,
-                  onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
-                  icon: Icon(
-                    notesIcon,
-                    size: 20,
-                    color: AppColors.textMuted,
-                  ),
+                  onPressed: () =>
+                      setState(() => _notesExpanded = !_notesExpanded),
+                  icon: Icon(notesIcon, size: 20, color: AppColors.textMuted),
                   padding: const EdgeInsets.all(AppSpacing.md),
                   constraints: const BoxConstraints(
                     minWidth: 44,
@@ -286,11 +280,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               ),
             ],
             const SizedBox(height: AppSpacing.xl),
-            AppButton(
-              label: saveLabel,
-              onPressed: _save,
-              isLoading: _saving,
-            ),
+            AppButton(label: saveLabel, onPressed: _save, isLoading: _saving),
           ],
         ),
       ),
