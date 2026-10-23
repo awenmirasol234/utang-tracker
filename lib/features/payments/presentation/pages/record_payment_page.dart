@@ -11,6 +11,7 @@ import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
@@ -21,7 +22,6 @@ import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
-import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
 
 class RecordPaymentPage extends ConsumerStatefulWidget {
   const RecordPaymentPage({super.key, this.initialDebtId});
@@ -101,7 +101,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     setState(() {
       _debtId = debt.id;
       _selectedDebt = debt;
-      _amountController.text = debt.balance.pesos.toStringAsFixed(2);
+      _amountController.text = debt.balance.toPesoString();
       _debtError = null;
       _amountError = null;
       _error = null;
@@ -178,7 +178,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 
     setState(() => _saving = true);
     try {
-      await ref.read(recordPaymentUseCaseProvider)(
+      await ref.read(paymentRepositoryProvider).recordPayment(
         debtId: _debtId!,
         amount: amount!,
         paymentDate: _paymentDate,
@@ -199,7 +199,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       setState(() => _error = appException.message);
     } catch (caughtError) {
       if (!mounted) return;
-      setState(() => _error = caughtError.toString());
+      setState(() => _error = userFacingError(caughtError));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -550,7 +550,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Text(
-            _error.toString(),
+            userFacingError(_error!),
             textAlign: TextAlign.center,
             style: Theme.of(
               context,

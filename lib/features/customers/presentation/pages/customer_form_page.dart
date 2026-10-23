@@ -6,6 +6,7 @@ import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
@@ -128,7 +129,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
       AppSnackBar.error(context, appException.message);
     } catch (caughtError) {
       if (!mounted) return;
-      AppSnackBar.error(context, caughtError.toString());
+      AppSnackBar.error(context, userFacingError(caughtError));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -145,7 +146,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         ),
         error: (error, stackTrace) => Scaffold(
           appBar: AppBar(title: const Text('Edit customer')),
-          body: ErrorView(message: error.toString()),
+          body: ErrorView(message: userFacingError(error)),
         ),
         data: (data) {
           if (data == null) {

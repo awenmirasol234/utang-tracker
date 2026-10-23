@@ -108,10 +108,10 @@ void main() {
       expect(find.text('Bugas'), findsOneWidget);
       expect(find.text('2 pieces'), findsOneWidget);
 
-      expect(find.text(Money.fromPesos(75.50).format()), findsWidgets);
+      expect(find.text(Money.fromPesoString('75.50').format()), findsWidgets);
       expect(find.text('No items'), findsNothing);
 
-      expect(find.text(Money.fromPesos(75.50).format()), findsNWidgets(2));
+      expect(find.text(Money.fromPesoString('75.50').format()), findsNWidgets(2));
 
       await tester.tap(find.widgetWithText(TextButton, 'Add item'));
       await tester.pumpAndSettle();
@@ -174,9 +174,9 @@ void main() {
       expect(find.text('Bugas'), findsOneWidget);
       expect(find.text('Kape'), findsOneWidget);
       expect(find.text('1 sachet'), findsOneWidget);
-      expect(find.text(Money.fromPesos(12.00).format()), findsOneWidget);
+      expect(find.text(Money.fromPesoString('12.00').format()), findsOneWidget);
 
-      expect(find.text(Money.fromPesos(87.50).format()), findsOneWidget);
+      expect(find.text(Money.fromPesoString('87.50').format()), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

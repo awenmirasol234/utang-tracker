@@ -36,12 +36,12 @@ void main() {
           productName: 'Bigas',
           quantity: 2,
           unit: DebtItemUnits.kilogram,
-          price: Money.fromPesos(50),
+          price: Money.fromPesoString('50'),
         ),
         DebtItemInput(
           productName: 'Noodles',
           quantity: 3,
-          price: Money.fromPesos(10),
+          price: Money.fromPesoString('10'),
         ),
       ],
     );
@@ -57,7 +57,7 @@ void main() {
 
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(20),
+      amount: Money.fromPesoString('20'),
       paymentDate: DateTime.now(),
       paymentMethod: 'Cash',
     );
@@ -69,7 +69,7 @@ void main() {
 
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(40),
+      amount: Money.fromPesoString('40'),
       paymentDate: DateTime.now(),
       paymentMethod: 'GCash',
     );
@@ -81,7 +81,7 @@ void main() {
     expect(
       () => payments.recordPayment(
         debtId: debt.id,
-        amount: Money.fromPesos(1),
+      amount: Money.fromPesoString('1'),
         paymentDate: DateTime.now(),
         paymentMethod: 'Cash',
       ),
@@ -103,7 +103,7 @@ void main() {
         DebtItemInput(
           productName: 'Rice',
           quantity: 1,
-          price: Money.fromPesos(50),
+          price: Money.fromPesoString('50'),
         ),
       ],
     );
@@ -122,7 +122,7 @@ void main() {
         DebtItemInput(
           productName: 'Rice',
           quantity: 1,
-          price: Money.fromPesos(60),
+          price: Money.fromPesoString('60'),
         ),
       ],
     );
@@ -145,7 +145,7 @@ void main() {
         DebtItemInput(
           productName: 'Rice',
           quantity: 1,
-          price: Money.fromPesos(50),
+          price: Money.fromPesoString('50'),
         ),
       ],
     );
@@ -153,7 +153,7 @@ void main() {
     savedAt = DateTime(2026, 7, 20, 16, 17, 18);
     final payment = await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(20),
+      amount: Money.fromPesoString('20'),
       paymentDate: DateTime(2026, 6, 8),
       paymentMethod: 'Cash',
     );
@@ -173,7 +173,7 @@ void main() {
         DebtItemInput(
           productName: 'Soda',
           quantity: 1,
-          price: Money.fromPesos(20),
+          price: Money.fromPesoString('20'),
         ),
       ],
     );
@@ -181,7 +181,7 @@ void main() {
     expect(
       () => payments.recordPayment(
         debtId: debt.id,
-        amount: Money.fromPesos(50),
+      amount: Money.fromPesoString('50'),
         paymentDate: DateTime.now(),
         paymentMethod: 'Cash',
       ),
@@ -198,7 +198,7 @@ void main() {
         DebtItemInput(
           productName: 'Soda',
           quantity: 1,
-          price: Money.fromPesos(20),
+          price: Money.fromPesoString('20'),
         ),
       ],
     );
@@ -227,7 +227,7 @@ void main() {
         DebtItemInput(
           productName: 'Soda',
           quantity: 1,
-          price: Money.fromPesos(20),
+          price: Money.fromPesoString('20'),
         ),
       ],
     );
@@ -235,7 +235,7 @@ void main() {
     await expectLater(
       () => payments.recordPayment(
         debtId: debt.id,
-        amount: Money.fromPesos(5),
+      amount: Money.fromPesoString('5'),
         paymentDate: DateTime.now(),
         paymentMethod: '   ',
       ),
@@ -254,13 +254,13 @@ void main() {
         DebtItemInput(
           productName: 'Rice',
           quantity: 1,
-          price: Money.fromPesos(10),
+          price: Money.fromPesoString('10'),
         ),
       ],
     );
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(10),
+      amount: Money.fromPesoString('10'),
       paymentDate: DateTime.now(),
       paymentMethod: 'Cash',
     );
@@ -283,7 +283,7 @@ void main() {
         DebtItemInput(
           productName: 'Item',
           quantity: 1,
-          price: Money.fromPesos(10),
+          price: Money.fromPesoString('10'),
         ),
       ],
     );
@@ -319,14 +319,14 @@ void main() {
         DebtItemInput(
           productName: 'Item',
           quantity: 1,
-          price: Money.fromPesos(10),
+          price: Money.fromPesoString('10'),
         ),
       ],
     );
 
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(10),
+      amount: Money.fromPesoString('10'),
       paymentDate: DateTime.now(),
       paymentMethod: 'Cash',
     );

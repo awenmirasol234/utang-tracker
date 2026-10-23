@@ -36,19 +36,19 @@ void main() {
           productName: 'Softdrinks',
           quantity: 2,
           unit: DebtItemUnits.bottle,
-          price: Money.fromPesos(50),
+          price: Money.fromPesoString('50'),
         ),
         DebtItemInput(
           productName: 'Candy',
           quantity: 2,
           unit: DebtItemUnits.piece,
-          price: Money.fromPesos(20),
+          price: Money.fromPesoString('20'),
         ),
         DebtItemInput(
           productName: 'Premium long-grain rice refill',
           quantity: 0.5,
           unit: DebtItemUnits.kilogram,
-          price: Money.fromPesos(80.25),
+          price: Money.fromPesoString('80.25'),
         ),
       ],
     );
@@ -162,7 +162,7 @@ void main() {
           productName: 'Rice',
           quantity: 1,
           unit: DebtItemUnits.kilogram,
-          price: Money.fromPesos(80),
+          price: Money.fromPesoString('80'),
         ),
       ],
     );
@@ -208,13 +208,13 @@ void main() {
           productName: 'Rice',
           quantity: 1,
           unit: DebtItemUnits.kilogram,
-          price: Money.fromPesos(80),
+          price: Money.fromPesoString('80'),
         ),
       ],
     );
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(30),
+      amount: Money.fromPesoString('30'),
       paymentDate: DateTime(2026, 7, 16),
       paymentMethod: 'Cash',
     );
@@ -297,13 +297,13 @@ void main() {
         DebtItemInput(
           productName: 'Rice',
           quantity: 1,
-          price: Money.fromPesos(80),
+          price: Money.fromPesoString('80'),
         ),
       ],
     );
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(80),
+      amount: Money.fromPesoString('80'),
       paymentDate: DateTime(2026, 7, 16),
       paymentMethod: 'Cash',
     );

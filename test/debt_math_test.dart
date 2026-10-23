@@ -6,29 +6,32 @@ import 'package:utang_tracker/core/utils/debt_math.dart';
 void main() {
   group('debt math', () {
     test('total is sum of custom item prices', () {
-      final total = computeTotal([Money.fromPesos(50), Money.fromPesos(25.50)]);
+      final total = computeTotal([
+        Money.fromPesoString('50'),
+        Money.fromPesoString('25.50'),
+      ]);
       expect(total.centavos, 7550);
     });
 
     test('status derivation', () {
       expect(
         deriveStatus(
-          totalAmount: Money.fromPesos(100),
+          totalAmount: Money.fromPesoString('100'),
           paidAmount: Money.zero(),
         ),
         DebtStatus.unpaid,
       );
       expect(
         deriveStatus(
-          totalAmount: Money.fromPesos(100),
-          paidAmount: Money.fromPesos(40),
+          totalAmount: Money.fromPesoString('100'),
+          paidAmount: Money.fromPesoString('40'),
         ),
         DebtStatus.partial,
       );
       expect(
         deriveStatus(
-          totalAmount: Money.fromPesos(100),
-          paidAmount: Money.fromPesos(100),
+          totalAmount: Money.fromPesoString('100'),
+          paidAmount: Money.fromPesoString('100'),
         ),
         DebtStatus.paid,
       );
@@ -64,8 +67,15 @@ void main() {
     });
 
     test('formats with peso symbol', () {
-      final formatted = Money.fromPesos(1500).format();
+      final formatted = Money.fromPesoString('1500').format();
       expect(formatted.contains('1,500'), isTrue);
+    });
+
+    test('formats a centavo amount for text input without floating point', () {
+      final amount = Money.fromPesoString('1,250.50');
+
+      expect(amount.toPesoString(), '1250.50');
+      expect(amount.format(), '₱1,250.50');
     });
   });
 }

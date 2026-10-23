@@ -56,7 +56,7 @@ lib/
     theme/ widgets/ utils/ constants/ error/
   features/
     customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 feature dirs
-      domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, payments, updater)
+      domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, updater)
       data/repositories (impl - enforces business rules) + data/repositories/*_mappers.dart
       presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel (com.example.utang_tracker/updater)

@@ -9,6 +9,7 @@ import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
@@ -381,7 +382,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       setState(() => _error = appException.message);
     } catch (caughtError) {
       if (!mounted) return;
-      setState(() => _error = caughtError.toString());
+      setState(() => _error = userFacingError(caughtError));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -472,7 +473,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         ),
         error: (error, stackTrace) => Scaffold(
           appBar: AppBar(title: const Text('Edit debt')),
-          body: ErrorView(message: error.toString()),
+          body: ErrorView(message: userFacingError(error)),
         ),
         data: (data) {
           if (data == null) {
@@ -929,7 +930,7 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Text(
-            _error.toString(),
+            userFacingError(_error!),
             textAlign: TextAlign.center,
             style: Theme.of(
               context,

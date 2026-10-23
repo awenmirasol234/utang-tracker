@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
@@ -40,7 +41,7 @@ class DashboardPage extends ConsumerWidget {
       body: async.when(
         loading: () => const LoadingIndicator(message: 'Opening your ledger'),
         error: (error, stackTrace) => ErrorView(
-          message: error.toString(),
+          message: userFacingError(error),
           onRetry: () => ref.invalidate(dashboardSummaryProvider),
         ),
         data: (summary) {

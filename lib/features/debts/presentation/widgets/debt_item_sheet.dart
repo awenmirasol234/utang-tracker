@@ -58,7 +58,7 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
     String priceText;
     if (existing != null) {
       quantityText = DebtItemUnits.formatQuantity(existing.quantity);
-      priceText = existing.price.pesos.toStringAsFixed(2);
+      priceText = existing.price.toPesoString();
     } else {
       quantityText = '1';
       priceText = '';

@@ -67,8 +67,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       throw const AppException('No internet connection.');
     } on TimeoutException {
       throw const AppException('Network request timed out.');
-    } on http.ClientException catch (clientException) {
-      throw AppException('Network error: ${clientException.message}');
+    } on http.ClientException {
+      throw const AppException('Network request failed. Please try again.');
     }
 
     if (tag.isEmpty || !tag.startsWith('v')) {
@@ -93,8 +93,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       throw const AppException('No internet connection.');
     } on TimeoutException {
       throw const AppException('Network request timed out.');
-    } on http.ClientException catch (clientException) {
-      throw AppException('Network error: ${clientException.message}');
+    } on http.ClientException {
+      throw const AppException('Network request failed. Please try again.');
     }
 
     if (rawResponse.statusCode == 404) {
@@ -129,8 +129,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       throw const AppException('No internet connection.');
     } on TimeoutException {
       throw const AppException('Network request timed out.');
-    } on http.ClientException catch (clientException) {
-      throw AppException('Network error: ${clientException.message}');
+    } on http.ClientException {
+      throw const AppException('Network request failed. Please try again.');
     }
 
     if (response.statusCode == 404) return null;
@@ -237,8 +237,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       throw const AppException('No internet connection.');
     } on TimeoutException {
       throw const AppException('Download timed out.');
-    } on http.ClientException catch (clientException) {
-      throw AppException('Download failed: ${clientException.message}');
+    } on http.ClientException {
+      throw const AppException('Download failed. Please try again.');
     }
 
     if (response.statusCode != 200) {
@@ -258,7 +258,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
     } catch (caughtError) {
       await sink.close();
       if (await file.exists()) await file.delete();
-      throw AppException('Download interrupted: $caughtError');
+      throw const AppException('Download interrupted. Please try again.');
     }
 
     await sink.close();

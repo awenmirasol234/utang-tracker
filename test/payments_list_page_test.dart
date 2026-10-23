@@ -19,7 +19,7 @@ void main() {
     final payment = _payment(
       id: 'payment-id',
       debtId: 'debt-id',
-      amount: 125,
+       amount: '125',
       paymentDate: paymentDate,
       paymentMethod: 'Cash',
       customerName: 'Maria Santos',
@@ -194,7 +194,7 @@ Future<ProviderContainer> _pumpPage(
 Payment _payment({
   required String id,
   String debtId = 'debt-id',
-  double amount = 125,
+  String amount = '125',
   DateTime? paymentDate,
   String paymentMethod = 'Cash',
   String customerName = 'Customer',
@@ -203,7 +203,7 @@ Payment _payment({
   return Payment(
     id: id,
     debtId: debtId,
-    amount: Money.fromPesos(amount),
+    amount: Money.fromPesoString(amount),
     paymentDate: date,
     paymentMethod: paymentMethod,
     createdAt: date,

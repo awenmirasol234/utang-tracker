@@ -25,15 +25,9 @@ class Money {
     return Money._(centavos);
   }
 
-  factory Money.fromPesos(double pesos) {
-    return Money._((pesos * 100).round());
-  }
-
   factory Money.zero() => const Money._(0);
 
   final int centavos;
-
-  double get pesos => centavos / 100.0;
 
   bool get isZero => centavos == 0;
   bool get isPositive => centavos > 0;
@@ -47,13 +41,31 @@ class Money {
   bool operator >=(Money other) => centavos >= other.centavos;
   bool operator <=(Money other) => centavos <= other.centavos;
 
-  static final _format = NumberFormat.currency(
-    locale: 'en_PH',
-    symbol: '₱',
-    decimalDigits: 2,
-  );
+  static final _wholeFormat = NumberFormat.decimalPattern('en_PH');
 
-  String format() => _format.format(pesos);
+  String toPesoString() {
+    var absoluteCentavos = centavos;
+    var sign = '';
+    if (absoluteCentavos < 0) {
+      sign = '-';
+      absoluteCentavos = -absoluteCentavos;
+    }
+    final pesos = absoluteCentavos ~/ 100;
+    final centavosText = (absoluteCentavos % 100).toString().padLeft(2, '0');
+    return '$sign$pesos.$centavosText';
+  }
+
+  String format() {
+    var absoluteCentavos = centavos;
+    var sign = '';
+    if (absoluteCentavos < 0) {
+      sign = '-';
+      absoluteCentavos = -absoluteCentavos;
+    }
+    final pesos = absoluteCentavos ~/ 100;
+    final centavosText = (absoluteCentavos % 100).toString().padLeft(2, '0');
+    return '$sign₱${_wholeFormat.format(pesos)}.$centavosText';
+  }
 
   @override
   String toString() => format();

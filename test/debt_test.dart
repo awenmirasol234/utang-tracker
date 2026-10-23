@@ -14,9 +14,9 @@ void main() {
     return Debt(
       id: 'debt-1',
       customerId: 'customer-1',
-      totalAmount: Money.fromPesos(100),
+      totalAmount: Money.fromPesoString('100'),
       paidAmount: Money.zero(),
-      balance: balance ?? Money.fromPesos(50),
+      balance: balance ?? Money.fromPesoString('50'),
       status: status,
       transactionDate: DateTime(2026, 7, 1),
       dueDate: dueDate,

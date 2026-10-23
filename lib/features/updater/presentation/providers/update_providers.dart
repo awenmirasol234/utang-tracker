@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 import 'package:utang_tracker/features/updater/domain/usecases/check_for_updates.dart';
@@ -129,10 +130,10 @@ class UpdateNotifier extends Notifier<UpdateState> {
       );
     } on AppException catch (appException) {
       final isNetwork =
-          appException.message.contains('internet') || appException.message.contains('Network error');
+          appException.message.contains('internet') || appException.message.contains('Network');
       state = UpdateError(message: appException.message, isNetworkError: isNetwork);
     } catch (caughtError) {
-      state = UpdateError(message: 'Unexpected error: $caughtError');
+      state = UpdateError(message: userFacingError(caughtError));
     } finally {
       _busy = false;
     }
@@ -157,7 +158,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
           appException.message.contains('internet') || appException.message.contains('interrupted');
       state = UpdateError(message: appException.message, isNetworkError: isNetwork);
     } catch (caughtError) {
-      state = UpdateError(message: 'Download failed: $caughtError');
+      state = UpdateError(message: userFacingError(caughtError));
     } finally {
       _busy = false;
     }

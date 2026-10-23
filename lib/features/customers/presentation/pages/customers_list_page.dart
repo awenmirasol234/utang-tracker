@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
@@ -97,7 +98,7 @@ class CustomersListPage extends ConsumerWidget {
             child: customersAsync.when(
               loading: () => const LoadingIndicator(),
               error: (error, stackTrace) => ErrorView(
-                message: error.toString(),
+                message: userFacingError(error),
                 onRetry: () => ref.invalidate(customersListProvider),
               ),
               data: (customers) {

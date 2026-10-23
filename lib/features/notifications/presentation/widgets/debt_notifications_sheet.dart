@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
@@ -35,7 +36,7 @@ class _DebtNotificationsSheet extends ConsumerWidget {
       child: notifications.when(
         loading: () => const LoadingIndicator(message: 'Checking due dates'),
         error: (error, _) => ErrorView(
-          message: error.toString(),
+          message: userFacingError(error),
           onRetry: () => ref.read(debtNotificationsProvider.notifier).refresh(),
         ),
         data: (feed) => _NotificationLedger(feed: feed),

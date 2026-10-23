@@ -59,7 +59,7 @@ flutter doctor      # Android toolchain must be green
 7. **Verify:**
    ```sh
    flutter analyze   # must print "No issues found!"
-   flutter test      # 126 tests expected. CI runs analyze then test in that order.
+   flutter test      # CI runs analyze then test in that order.
    flutter test test/<file>.dart   # single file
    ```
 
@@ -79,7 +79,7 @@ lib/
   core/router/ app_router.dart / app_shell.dart   # go_router StatefulShellRoute.indexedStack (5 tabs)
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
   features/customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 dirs
-    domain/entities + domain/repositories (interface) + domain/usecases
+    domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, updater)
     data/repositories (impl) + data/repositories/*_mappers.dart
     presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater

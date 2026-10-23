@@ -32,13 +32,13 @@ void main() {
         DebtItemInput(
           productName: 'Groceries',
           quantity: 1,
-          price: Money.fromPesos(200),
+          price: Money.fromPesoString('200'),
         ),
       ],
     );
     final payment = await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(50),
+          amount: Money.fromPesoString('50'),
       paymentDate: DateTime(2026, 7, 15, 14, 5),
       paymentMethod: 'Cash',
     );

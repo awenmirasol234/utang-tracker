@@ -64,9 +64,9 @@ Debt _debt(
   return Debt(
     id: debtId,
     customerId: 'customer-$debtId',
-    totalAmount: Money.fromPesos(100),
+    totalAmount: Money.fromPesoString('100'),
     paidAmount: Money.zero(),
-    balance: balance ?? Money.fromPesos(100),
+    balance: balance ?? Money.fromPesoString('100'),
     status: status,
     transactionDate: date,
     dueDate: dueDate,

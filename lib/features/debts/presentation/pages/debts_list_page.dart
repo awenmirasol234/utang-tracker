@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_filter_chip.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
@@ -128,7 +129,7 @@ class DebtsListPage extends ConsumerWidget {
             child: debtsAsync.when(
               loading: () => const LoadingIndicator(),
               error: (error, stackTrace) => ErrorView(
-                message: error.toString(),
+                message: userFacingError(error),
                 onRetry: () => ref.invalidate(debtsListProvider),
               ),
               data: (debts) {

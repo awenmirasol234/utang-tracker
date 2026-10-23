@@ -9,15 +9,21 @@ import 'package:utang_tracker/features/debts/domain/repositories/debt_repository
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
-  DashboardRepositoryImpl(this._customers, this._debts, this._payments);
+  DashboardRepositoryImpl(
+    this._customers,
+    this._debts,
+    this._payments, {
+    DateTime Function()? now,
+  }) : _now = now ?? DateTime.now;
 
   final CustomerRepository _customers;
   final DebtRepository _debts;
   final PaymentRepository _payments;
+  final DateTime Function() _now;
 
   @override
   Future<DashboardSummary> getDashboardData() async {
-    final now = DateTime.now();
+    final now = _now();
     final start = startOfLocalDay(now);
     final end = endOfLocalDay(now);
 

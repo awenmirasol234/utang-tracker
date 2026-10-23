@@ -65,7 +65,7 @@ void main() {
           DebtItemInput(
             productName: 'Bigas',
             quantity: 2,
-            price: Money.fromPesos(50),
+            price: Money.fromPesoString('50'),
           ),
         ],
       );
@@ -76,7 +76,7 @@ void main() {
           DebtItemInput(
             productName: 'Bigas',
             quantity: 3,
-            price: Money.fromPesos(50),
+            price: Money.fromPesoString('50'),
           ),
         ],
       );
@@ -86,13 +86,13 @@ void main() {
           DebtItemInput(
             productName: 'Noodles',
             quantity: 1,
-            price: Money.fromPesos(10),
+            price: Money.fromPesoString('10'),
           ),
         ],
       );
       await payments.recordPayment(
         debtId: debt.id,
-        amount: Money.fromPesos(20),
+        amount: Money.fromPesoString('20'),
         paymentDate: DateTime.now(),
         paymentMethod: 'Cash',
       );
@@ -179,7 +179,7 @@ void main() {
           DebtItemInput(
             productName: 'Bigas',
             quantity: 2,
-            price: Money.fromPesos(50),
+            price: Money.fromPesoString('50'),
           ),
         ],
       );
@@ -190,13 +190,13 @@ void main() {
           DebtItemInput(
             productName: 'Bigas',
             quantity: 3,
-            price: Money.fromPesos(80),
+            price: Money.fromPesoString('80'),
           ),
         ],
       );
       await payments.recordPayment(
         debtId: debt.id,
-        amount: Money.fromPesos(20),
+        amount: Money.fromPesoString('20'),
         paymentDate: DateTime.now(),
         paymentMethod: 'Cash',
       );

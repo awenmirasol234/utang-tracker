@@ -9,6 +9,7 @@ import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
+import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
@@ -39,7 +40,7 @@ class DebtDetailPage extends ConsumerWidget {
       error: (error, stackTrace) => Scaffold(
         appBar: AppBar(title: const Text('Debt')),
         body: ErrorView(
-          message: error.toString(),
+          message: userFacingError(error),
           onRetry: () => ref.invalidate(debtDetailProvider(debtId)),
         ),
       ),
@@ -290,7 +291,7 @@ class DebtDetailPage extends ConsumerWidget {
       AppSnackBar.error(context, appException.message);
     } catch (caughtError) {
       if (!context.mounted) return;
-      AppSnackBar.error(context, caughtError.toString());
+      AppSnackBar.error(context, userFacingError(caughtError));
     }
   }
 

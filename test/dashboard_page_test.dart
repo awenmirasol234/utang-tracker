@@ -29,7 +29,7 @@ void main() {
           id: 'activity-id',
           debtId: 'debt-id',
           customerName: 'Maria Santos',
-          amount: Money.fromPesos(125),
+          amount: Money.fromPesoString('125'),
           date: activityDate,
           paymentMethod: 'GCash',
         ),
@@ -58,7 +58,7 @@ void main() {
       ),
     );
     final label = find.text('Payment');
-    final amount = find.text(Money.fromPesos(125).format());
+    final amount = find.text(Money.fromPesoString('125').format());
 
     expect(dateAndTime, findsOneWidget);
     expect(tester.widget<Text>(dateAndTime).style?.fontWeight, FontWeight.w500);

@@ -124,7 +124,7 @@ void main() {
 
     await payments.recordPayment(
       debtId: debtId,
-      amount: Money.fromPesos(50),
+      amount: Money.fromPesoString('50'),
       paymentDate: DateTime.now(),
       paymentMethod: 'Cash',
     );

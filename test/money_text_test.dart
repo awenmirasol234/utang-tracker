@@ -8,7 +8,7 @@ void main() {
   testWidgets('amounts use the shared Poppins semibold treatment', (
     tester,
   ) async {
-    final amount = Money.fromPesos(125);
+    final amount = Money.fromPesoString('125');
 
     await tester.pumpWidget(
       MaterialApp(
