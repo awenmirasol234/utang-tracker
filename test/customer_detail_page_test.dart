@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
@@ -24,7 +25,10 @@ void main() {
     final customers = CustomerRepositoryImpl(database);
     final debts = DebtRepositoryImpl(database);
     final payments = PaymentRepositoryImpl(database);
-    final customer = await customers.create(name: 'Maria Santos');
+    final customer = await customers.create(
+      name: 'Maria Santos',
+      phone: '0917 123 4567',
+    );
     final debt = await debts.create(
       customerId: customer.id,
       transactionDate: DateTime(2026, 7, 14, 9, 30),
@@ -38,7 +42,7 @@ void main() {
     );
     final payment = await payments.recordPayment(
       debtId: debt.id,
-          amount: Money.fromPesoString('50'),
+      amount: Money.fromPesoString('50'),
       paymentDate: DateTime(2026, 7, 15, 14, 5),
       paymentMethod: 'Cash',
     );
@@ -63,7 +67,24 @@ void main() {
     expect(tabBar.unselectedLabelColor, isNull);
     expect(find.byKey(const PageStorageKey('debt-history')), findsOneWidget);
     expect(find.byKey(const PageStorageKey('payment-history')), findsNothing);
+    expect(find.byTooltip('Copy phone number'), findsOneWidget);
     expect(find.text('Cash'), findsNothing);
+
+    final platformMessenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    platformMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (_) async => null,
+    );
+    addTearDown(
+      () => platformMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await tester.tap(find.byTooltip('Copy phone number'));
+    await tester.pumpAndSettle();
+    expect(find.text('Phone number copied'), findsOneWidget);
 
     final debtTimestamp = find.text(
       DateFormatters.smartTimestamp(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
@@ -6,6 +7,7 @@ import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
+import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
@@ -148,7 +150,19 @@ class _CustomerSummaryCard extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Text(customer.phone!),
+                Expanded(child: Text(customer.phone!)),
+                IconButton(
+                  tooltip: 'Copy phone number',
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.copy_outlined, size: 18),
+                  onPressed: () async {
+                    await Clipboard.setData(
+                      ClipboardData(text: customer.phone!),
+                    );
+                    if (!context.mounted) return;
+                    AppSnackBar.success(context, 'Phone number copied');
+                  },
+                ),
               ],
             ),
           ],
