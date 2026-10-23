@@ -62,16 +62,15 @@ class _BackupCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Protect your ledger',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Connect Google Drive to back up and restore your database.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            Row(
+              children: [
+                const Icon(Icons.cloud_off_outlined),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  'Not connected',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
             AppButton(
@@ -100,19 +99,31 @@ class _BackupCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Google Drive connected',
-            style: Theme.of(context).textTheme.titleMedium,
+          Row(
+            children: [
+              const Icon(Icons.cloud_done_outlined),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Google Drive connected',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      state.status.email ?? 'Google account',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            state.status.email ?? 'Google account',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _BackupHealth(status: state.status),
+          const SizedBox(height: AppSpacing.lg),
+          _LastBackupSummary(status: state.status),
           const SizedBox(height: AppSpacing.lg),
           _BackupIntervalPicker(state: state),
           const SizedBox(height: AppSpacing.lg),
@@ -128,32 +139,30 @@ class _BackupCard extends ConsumerWidget {
               AppSnackBar.success(context, 'Backup completed');
             }),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          _BackupHistory(state: state),
-          const SizedBox(height: AppSpacing.sm),
-          AppButton(
-            label: 'Restore selected backup',
-            variant: AppButtonVariant.secondary,
-            icon: Icons.cloud_download_outlined,
-            isLoading: state.operation == BackupOperation.restoring,
-            onPressed: _enabledAction(
-              state.isBusy || state.selectedBackup == null,
-              () => _confirmRestore(context, ref),
+          if (state.status.backups.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            _BackupHistory(
+              state: state,
+              onRestore: () => _confirmRestore(context, ref),
             ),
-          ),
+          ],
           const SizedBox(height: AppSpacing.sm),
-          AppButton(
-            label: 'Sign out',
-            variant: AppButtonVariant.secondary,
-            icon: Icons.logout_rounded,
-            isLoading: state.operation == BackupOperation.signingOut,
-            onPressed: _enabledAction(state.isBusy, () async {
-              final success = await ref
-                  .read(cloudBackupNotifierProvider.notifier)
-                  .signOut();
-              if (!success || !context.mounted) return;
-              AppSnackBar.info(context, 'Google Drive disconnected');
-            }),
+          Align(
+            alignment: Alignment.centerRight,
+            child: AppButton(
+              label: 'Sign out',
+              variant: AppButtonVariant.secondary,
+              icon: Icons.logout_rounded,
+              expanded: false,
+              isLoading: state.operation == BackupOperation.signingOut,
+              onPressed: _enabledAction(state.isBusy, () async {
+                final success = await ref
+                    .read(cloudBackupNotifierProvider.notifier)
+                    .signOut();
+                if (!success || !context.mounted) return;
+                AppSnackBar.info(context, 'Google Drive disconnected');
+              }),
+            ),
           ),
         ],
       ),
@@ -186,32 +195,23 @@ class _BackupCard extends ConsumerWidget {
   }
 }
 
-class _BackupHealth extends StatelessWidget {
-  const _BackupHealth({required this.status});
+class _LastBackupSummary extends StatelessWidget {
+  const _LastBackupSummary({required this.status});
 
   final BackupStatus status;
 
   @override
   Widget build(BuildContext context) {
-    final latestBackup = _latestBackup(status);
     final lastBackupText = _lastBackupText(context, status.lastBackupAt);
-    final sizeText = _formatSize(latestBackup?.sizeBytes);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Backup health', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          'Last successful backup: $lastBackupText',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        Text(
-          'Latest backup size: $sizeText',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        Text(
-          'Backups stored: ${status.backups.length} of ${BackupStatus.maxBackups}',
-          style: Theme.of(context).textTheme.bodySmall,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Last backup', style: Theme.of(context).textTheme.titleSmall),
+            Text(lastBackupText, style: Theme.of(context).textTheme.bodySmall),
+          ],
         ),
         if (status.lastBackupError != null) ...[
           const SizedBox(height: AppSpacing.xs),
@@ -224,11 +224,6 @@ class _BackupHealth extends StatelessWidget {
         ],
       ],
     );
-  }
-
-  BackupRecord? _latestBackup(BackupStatus status) {
-    if (status.backups.isEmpty) return null;
-    return status.backups.first;
   }
 
   String _lastBackupText(BuildContext context, DateTime? value) {
@@ -274,27 +269,22 @@ class _BackupIntervalPicker extends ConsumerWidget {
 }
 
 class _BackupHistory extends ConsumerWidget {
-  const _BackupHistory({required this.state});
+  const _BackupHistory({required this.state, required this.onRestore});
 
   final CloudBackupState state;
+  final VoidCallback onRestore;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (state.status.backups.isEmpty) {
-      return Text(
-        'No backup created yet',
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
-      );
-    }
-
     final selectedBackup = state.selectedBackup;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: EdgeInsets.zero,
+      title: const Text('Backup history'),
+      subtitle: Text(
+        '${state.status.backups.length} of ${BackupStatus.maxBackups} backups',
+      ),
       children: [
-        Text('Backup history', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: AppSpacing.xs),
         ...state.status.backups.asMap().entries.map((entry) {
           final index = entry.key;
           final backup = entry.value;
@@ -307,6 +297,16 @@ class _BackupHistory extends ConsumerWidget {
             subtitle: Text(_backupDetails(context, backup)),
           );
         }),
+        AppButton(
+          label: 'Restore selected backup',
+          variant: AppButtonVariant.secondary,
+          icon: Icons.cloud_download_outlined,
+          isLoading: state.operation == BackupOperation.restoring,
+          onPressed: _enabledAction(
+            state.isBusy || selectedBackup == null,
+            onRestore,
+          ),
+        ),
       ],
     );
   }
@@ -317,18 +317,9 @@ class _BackupHistory extends ConsumerWidget {
   }
 
   String _backupDetails(BuildContext context, BackupRecord backup) {
-    final parts = <String>[];
     final modifiedAt = backup.modifiedAt;
-    if (modifiedAt != null) {
-      parts.add(context.smartTimestamp(modifiedAt));
-    } else {
-      parts.add('Date unavailable');
-    }
-    final sizeBytes = backup.sizeBytes;
-    if (sizeBytes != null) {
-      parts.add(_formatSize(sizeBytes));
-    }
-    return parts.join(' · ');
+    if (modifiedAt == null) return 'Date unavailable';
+    return context.smartTimestamp(modifiedAt);
   }
 
   IconData _selectionIcon(bool selected) {
@@ -342,12 +333,9 @@ class _BackupHistory extends ConsumerWidget {
       ref.read(cloudBackupNotifierProvider.notifier).selectBackup(backupId);
     };
   }
-}
 
-String _formatSize(int? sizeBytes) {
-  if (sizeBytes == null) return 'Unavailable';
-  if (sizeBytes < 1024 * 1024) {
-    return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
+  VoidCallback? _enabledAction(bool disabled, VoidCallback action) {
+    if (disabled) return null;
+    return action;
   }
-  return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
 }

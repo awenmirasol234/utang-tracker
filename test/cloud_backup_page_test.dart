@@ -29,7 +29,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Protect your ledger'), findsOneWidget);
+    expect(find.text('Not connected'), findsOneWidget);
+    expect(find.text('Protect your ledger'), findsNothing);
     expect(find.text('Sign in with Google'), findsOneWidget);
     expect(find.bySemanticsLabel('Google'), findsOneWidget);
     expect(repository.statusCalls, 0);
@@ -71,11 +72,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Google Drive connected'), findsNWidgets(2));
-    expect(find.text('Backup health'), findsOneWidget);
-    expect(find.text('Backups stored: 1 of 5'), findsOneWidget);
+    expect(find.text('Last backup'), findsOneWidget);
+    expect(find.text('Backup health'), findsNothing);
     expect(find.text('Backup history'), findsOneWidget);
     expect(find.text('Daily'), findsOneWidget);
     expect(find.text('Back up now'), findsOneWidget);
+    expect(find.text('Restore selected backup'), findsNothing);
+
+    await tester.tap(find.text('Backup history'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Restore selected backup'), findsOneWidget);
     expect(find.text('Sign out'), findsOneWidget);
   });
