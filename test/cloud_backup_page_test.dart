@@ -44,7 +44,6 @@ void main() {
                 isSignedIn: true,
                 email: 'owner@example.com',
                 lastBackupAt: DateTime(2026, 10, 23, 10),
-                hasCloudBackup: true,
                 backups: [
                   BackupRecord(
                     id: 'backup-1',
@@ -66,6 +65,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Google Drive connected'), findsOneWidget);
+    expect(find.text('Backup health'), findsOneWidget);
+    expect(find.text('Backups stored: 1 of 5'), findsOneWidget);
+    expect(find.text('Backup history'), findsOneWidget);
+    expect(find.text('Daily'), findsOneWidget);
     expect(find.text('Back up now'), findsOneWidget);
     expect(find.text('Restore selected backup'), findsOneWidget);
     expect(find.text('Sign out'), findsOneWidget);

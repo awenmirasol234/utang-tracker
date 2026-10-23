@@ -239,6 +239,12 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
       state = state.copyWith(status: updatedStatus, clearSelectedBackup: true);
     } catch (_) {
       // Automatic backups must never block app startup or interrupt the user.
+      try {
+        final status = await _repository.getStatus();
+        state = state.copyWith(status: status, clearSelectedBackup: true);
+      } catch (_) {
+        // Keep the previous status if the refresh also fails.
+      }
     }
   }
 
@@ -253,6 +259,12 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
           localBackupTime.month != now.month ||
           localBackupTime.day != now.day;
     }
-    return now.difference(localBackupTime) >= const Duration(days: 7);
+    final dueDate = DateTime(
+      localBackupTime.year,
+      localBackupTime.month,
+      localBackupTime.day + 7,
+    );
+    final today = DateTime(now.year, now.month, now.day);
+    return !today.isBefore(dueDate);
   }
 }

@@ -6,6 +6,7 @@ import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
+import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
@@ -164,28 +165,15 @@ class _BackupCard extends ConsumerWidget {
   Future<void> _confirmRestore(BuildContext context, WidgetRef ref) async {
     final selectedBackup = ref.read(cloudBackupNotifierProvider).selectedBackup;
     if (selectedBackup == null) return;
-    final shouldRestore = await showDialog<bool>(
+    final shouldRestore = await showConfirmationDialog(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Restore backup?'),
-          content: const Text(
-            'This will replace the data currently on this device. This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Restore'),
-            ),
-          ],
-        );
-      },
+      title: 'Restore backup?',
+      message:
+          'This will replace the data currently on this device. This action cannot be undone.',
+      confirmLabel: 'Restore',
+      isDestructive: true,
     );
-    if (shouldRestore != true || !context.mounted) return;
+    if (!shouldRestore || !context.mounted) return;
 
     final success = await ref
         .read(cloudBackupNotifierProvider.notifier)
@@ -209,7 +197,7 @@ class _BackupHealth extends StatelessWidget {
   Widget build(BuildContext context) {
     final latestBackup = _latestBackup(status);
     final lastBackupText = _lastBackupText(context, status.lastBackupAt);
-    final sizeText = _sizeText(latestBackup?.sizeBytes);
+    final sizeText = _formatSize(latestBackup?.sizeBytes);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -224,7 +212,7 @@ class _BackupHealth extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
-          'Backups stored: ${status.backups.length} of 5',
+          'Backups stored: ${status.backups.length} of ${BackupStatus.maxBackups}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         if (status.lastBackupError != null) ...[
@@ -249,14 +237,6 @@ class _BackupHealth extends StatelessWidget {
     if (value == null) return 'None yet';
     return context.smartTimestamp(value);
   }
-
-  String _sizeText(int? sizeBytes) {
-    if (sizeBytes == null) return 'Unavailable';
-    if (sizeBytes < 1024 * 1024) {
-      return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
-    }
-    return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-  }
 }
 
 class _BackupIntervalPicker extends ConsumerWidget {
@@ -267,10 +247,7 @@ class _BackupIntervalPicker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return InputDecorator(
-      decoration: const InputDecoration(
-        labelText: 'Automatic backup interval',
-        border: OutlineInputBorder(),
-      ),
+      decoration: const InputDecoration(labelText: 'Automatic backup interval'),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<BackupInterval>(
           value: state.status.interval,
@@ -279,7 +256,7 @@ class _BackupIntervalPicker extends ConsumerWidget {
               .map(
                 (interval) => DropdownMenuItem<BackupInterval>(
                   value: interval,
-                  child: Text(_intervalLabel(interval)),
+                  child: Text(interval.label),
                 ),
               )
               .toList(),
@@ -287,17 +264,6 @@ class _BackupIntervalPicker extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _intervalLabel(BackupInterval interval) {
-    switch (interval) {
-      case BackupInterval.daily:
-        return 'Daily';
-      case BackupInterval.weekly:
-        return 'Weekly';
-      case BackupInterval.manual:
-        return 'Manual only';
-    }
   }
 
   ValueChanged<BackupInterval?>? _intervalChanged(WidgetRef ref) {
@@ -362,16 +328,9 @@ class _BackupHistory extends ConsumerWidget {
     }
     final sizeBytes = backup.sizeBytes;
     if (sizeBytes != null) {
-      parts.add(_sizeText(sizeBytes));
+      parts.add(_formatSize(sizeBytes));
     }
     return parts.join(' · ');
-  }
-
-  String _sizeText(int sizeBytes) {
-    if (sizeBytes < 1024 * 1024) {
-      return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
-    }
-    return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   IconData _selectionIcon(bool selected) {
@@ -385,4 +344,12 @@ class _BackupHistory extends ConsumerWidget {
       ref.read(cloudBackupNotifierProvider.notifier).selectBackup(backupId);
     };
   }
+}
+
+String _formatSize(int? sizeBytes) {
+  if (sizeBytes == null) return 'Unavailable';
+  if (sizeBytes < 1024 * 1024) {
+    return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
+  }
+  return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
 }

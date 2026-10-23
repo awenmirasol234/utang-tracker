@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -18,11 +19,10 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
   }) : _client = client ?? GoogleDriveClientImpl(),
        _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
 
-  static const _maxBackups = 5;
   static const _lastBackupKeyPrefix = 'cloud_backup_last_';
-  static const _hasBackupKeyPrefix = 'cloud_backup_exists_';
   static const _intervalKeyPrefix = 'cloud_backup_interval_';
   static const _lastErrorKeyPrefix = 'cloud_backup_error_';
+  static const _cacheKeyPrefix = 'cloud_backup_cache_';
 
   final DatabaseBackupService _databaseBackupService;
   final GoogleDriveClient _client;
@@ -58,8 +58,6 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
         interactive: interactive,
       );
       await _saveBackupSuccess(account.id);
-      await _removeOldBackups();
-      return await _status(account);
     } catch (error) {
       await _saveBackupFailure(account.id, error);
       rethrow;
@@ -68,6 +66,13 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
         await snapshot.delete();
       }
     }
+
+    try {
+      await _removeOldBackups();
+    } catch (_) {
+      // Retention cleanup must never invalidate the uploaded backup.
+    }
+    return _status(account);
   }
 
   @override
@@ -78,7 +83,13 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
     }
 
     final availableBackups = await _client.listBackups();
-    final selectedBackup = _findBackup(availableBackups, backup.id);
+    BackupRecord? selectedBackup;
+    for (final availableBackup in availableBackups) {
+      if (availableBackup.id == backup.id) {
+        selectedBackup = _toRecord(availableBackup);
+        break;
+      }
+    }
     if (selectedBackup == null) {
       throw const AppException(
         'The selected cloud backup is no longer available.',
@@ -125,36 +136,89 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
       return const BackupStatus(isSignedIn: false);
     }
     final preferences = await SharedPreferences.getInstance();
-    final cloudFiles = await _client.listBackups();
-    cloudFiles.sort(_compareFiles);
-    final backups = cloudFiles
-        .map(
-          (file) => BackupRecord(
-            id: file.id,
-            name: file.name,
-            modifiedAt: file.modifiedAt,
-            sizeBytes: file.sizeBytes,
-          ),
-        )
-        .toList(growable: false);
+    final backups = await _loadBackups(account.id, preferences);
     final lastBackupAt = _lastBackupAt(account.id, backups, preferences);
     return BackupStatus(
       isSignedIn: true,
       email: account.email,
       lastBackupAt: lastBackupAt,
-      hasCloudBackup: backups.isNotEmpty,
       backups: backups,
       interval: _readInterval(preferences.getString(_intervalKey(account.id))),
       lastBackupError: preferences.getString(_lastErrorKey(account.id)),
     );
   }
 
+  Future<List<BackupRecord>> _loadBackups(
+    String accountId,
+    SharedPreferences preferences,
+  ) async {
+    try {
+      final cloudFiles = await _client.listBackups();
+      cloudFiles.sort(_compareFiles);
+      final backups = cloudFiles.map(_toRecord).toList(growable: false);
+      await preferences.setString(
+        _cacheKey(accountId),
+        jsonEncode(
+          backups
+              .map(
+                (backup) => {
+                  'id': backup.id,
+                  'name': backup.name,
+                  'modifiedAt': backup.modifiedAt?.toIso8601String(),
+                  'sizeBytes': backup.sizeBytes,
+                },
+              )
+              .toList(),
+        ),
+      );
+      return backups;
+    } catch (_) {
+      return _readCachedBackups(preferences.getString(_cacheKey(accountId)));
+    }
+  }
+
+  List<BackupRecord> _readCachedBackups(String? value) {
+    if (value == null) return const [];
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is! List) return const [];
+      final backups = <BackupRecord>[];
+      for (final item in decoded) {
+        if (item is! Map) continue;
+        final id = item['id'];
+        final name = item['name'];
+        if (id is! String || name is! String) continue;
+        final modifiedAtValue = item['modifiedAt'];
+        DateTime? modifiedAt;
+        if (modifiedAtValue is String) {
+          modifiedAt = DateTime.tryParse(modifiedAtValue);
+        }
+        final sizeValue = item['sizeBytes'];
+        int? sizeBytes;
+        if (sizeValue is int) {
+          sizeBytes = sizeValue;
+        }
+        backups.add(
+          BackupRecord(
+            id: id,
+            name: name,
+            modifiedAt: modifiedAt,
+            sizeBytes: sizeBytes,
+          ),
+        );
+      }
+      return backups;
+    } catch (_) {
+      return const [];
+    }
+  }
+
   Future<void> _removeOldBackups() async {
     final backups = await _client.listBackups();
     backups.sort(_compareFiles);
-    if (backups.length <= _maxBackups) return;
+    if (backups.length <= BackupStatus.maxBackups) return;
 
-    for (var index = _maxBackups; index < backups.length; index++) {
+    for (var index = BackupStatus.maxBackups; index < backups.length; index++) {
       await _client.delete(backups[index].id);
     }
   }
@@ -165,7 +229,6 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
       _lastBackupKey(accountId),
       DateTime.now().toIso8601String(),
     );
-    await preferences.setBool(_hasBackupKey(accountId), true);
     await preferences.remove(_lastErrorKey(accountId));
   }
 
@@ -205,21 +268,13 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
     return BackupInterval.daily;
   }
 
-  BackupRecord? _findBackup(
-    List<GoogleDriveBackupFile> backups,
-    String backupId,
-  ) {
-    for (final backup in backups) {
-      if (backup.id == backupId) {
-        return BackupRecord(
-          id: backup.id,
-          name: backup.name,
-          modifiedAt: backup.modifiedAt,
-          sizeBytes: backup.sizeBytes,
-        );
-      }
-    }
-    return null;
+  BackupRecord _toRecord(GoogleDriveBackupFile file) {
+    return BackupRecord(
+      id: file.id,
+      name: file.name,
+      modifiedAt: file.modifiedAt,
+      sizeBytes: file.sizeBytes,
+    );
   }
 
   int _compareFiles(GoogleDriveBackupFile left, GoogleDriveBackupFile right) {
@@ -238,9 +293,9 @@ class GoogleDriveBackupRepository implements CloudBackupRepository {
 
   String _lastBackupKey(String accountId) => '$_lastBackupKeyPrefix$accountId';
 
-  String _hasBackupKey(String accountId) => '$_hasBackupKeyPrefix$accountId';
-
   String _intervalKey(String accountId) => '$_intervalKeyPrefix$accountId';
 
   String _lastErrorKey(String accountId) => '$_lastErrorKeyPrefix$accountId';
+
+  String _cacheKey(String accountId) => '$_cacheKeyPrefix$accountId';
 }

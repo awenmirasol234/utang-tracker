@@ -154,6 +154,66 @@ void main() {
     expect(status.backups.single.name, 'utang_tracker_latest.sqlite');
   });
 
+  test('keeps a successful backup when retention cleanup fails', () async {
+    final now = DateTime.now();
+    final client = _FakeGoogleDriveClient(
+      account: const GoogleDriveAccount(
+        id: 'account-1',
+        email: 'owner@example.com',
+      ),
+      backups: List<GoogleDriveBackupFile>.generate(
+        5,
+        (index) => GoogleDriveBackupFile(
+          id: 'backup-$index',
+          name: 'utang_tracker_backup_$index.sqlite',
+          modifiedAt: now.subtract(Duration(days: 5 - index)),
+          sizeBytes: 1024,
+        ),
+      ),
+      deleteError: const AppException('delete failed'),
+    );
+    final repository = GoogleDriveBackupRepository(
+      backupService,
+      client: client,
+      temporaryDirectory: () async => temporaryDirectory,
+    );
+
+    final status = await repository.backup(interactive: false);
+
+    expect(status.hasCloudBackup, isTrue);
+    expect(status.lastBackupError, isNull);
+    expect(client.backups, hasLength(6));
+  });
+
+  test('falls back to cached backups when Drive is unavailable', () async {
+    final backup = GoogleDriveBackupFile(
+      id: 'backup-1',
+      name: 'utang_tracker_backup_1.sqlite',
+      modifiedAt: DateTime(2026, 10, 22),
+      sizeBytes: 2048,
+    );
+    final client = _FakeGoogleDriveClient(
+      account: const GoogleDriveAccount(
+        id: 'account-1',
+        email: 'owner@example.com',
+      ),
+      backups: [backup],
+    );
+    final repository = GoogleDriveBackupRepository(
+      backupService,
+      client: client,
+      temporaryDirectory: () async => temporaryDirectory,
+    );
+
+    await repository.getStatus();
+    client.listError = const AppException('No internet connection.');
+
+    final status = await repository.getStatus();
+
+    expect(status.backups.single.id, 'backup-1');
+    expect(status.lastBackupAt, backup.modifiedAt);
+  });
+
   test('downloads and replaces the local database', () async {
     final cloudSnapshot = await backupService.createSnapshot();
     final liveFile = File('${temporaryDirectory.path}/live.sqlite');
@@ -199,20 +259,27 @@ class _FakeGoogleDriveClient implements GoogleDriveClient {
     required this.account,
     this.uploadError,
     this.downloadSource,
+    this.deleteError,
     List<GoogleDriveBackupFile>? backups,
   }) : backups = backups ?? [];
 
   final GoogleDriveAccount account;
   final AppException? uploadError;
   final File? downloadSource;
+  final AppException? deleteError;
   final List<GoogleDriveBackupFile> backups;
+  AppException? listError;
   String? uploadedSnapshotPath;
   bool uploadedSnapshotExisted = false;
   bool? lastInteractive;
   bool? downloadInteractive;
 
   @override
-  Future<List<GoogleDriveBackupFile>> listBackups() async => backups;
+  Future<List<GoogleDriveBackupFile>> listBackups() async {
+    final error = listError;
+    if (error != null) throw error;
+    return backups;
+  }
 
   @override
   Future<GoogleDriveAccount?> currentAccount() async => account;
@@ -256,6 +323,8 @@ class _FakeGoogleDriveClient implements GoogleDriveClient {
 
   @override
   Future<void> delete(String backupId) async {
+    final error = deleteError;
+    if (error != null) throw error;
     backups.removeWhere((backup) => backup.id == backupId);
   }
 }

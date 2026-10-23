@@ -56,6 +56,26 @@ void main() {
 
     expect(repository.backupCalls, 0);
   });
+
+  testWidgets('backs up after the weekly interval is due', (tester) async {
+    final repository = _LifecycleBackupRepository(
+      interval: BackupInterval.weekly,
+      lastBackupAt: DateTime.now().subtract(const Duration(days: 8)),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          home: CloudBackupAutoChecker(child: SizedBox()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.backupCalls, 1);
+  });
 }
 
 class _LifecycleBackupRepository implements CloudBackupRepository {

@@ -7,26 +7,27 @@ class BackupStatus extends Equatable {
     required this.isSignedIn,
     this.email,
     this.lastBackupAt,
-    this.hasCloudBackup = false,
     this.backups = const [],
     this.interval = BackupInterval.daily,
     this.lastBackupError,
   });
 
+  static const int maxBackups = 5;
+
   final bool isSignedIn;
   final String? email;
   final DateTime? lastBackupAt;
-  final bool hasCloudBackup;
   final List<BackupRecord> backups;
   final BackupInterval interval;
   final String? lastBackupError;
+
+  bool get hasCloudBackup => backups.isNotEmpty;
 
   @override
   List<Object?> get props => [
     isSignedIn,
     email,
     lastBackupAt,
-    hasCloudBackup,
     backups,
     interval,
     lastBackupError,
