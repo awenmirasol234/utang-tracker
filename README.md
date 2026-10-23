@@ -141,7 +141,7 @@ use a separate backup password.
 
 1. Bump `version` in **both** `pubspec.yaml` and `assets/release_notes/current.json`
 2. Tag `v<version>` - CI fails if `tag != pubspec != notes`
-3. Push tag -> `.github/workflows/release.yml` validates versions, runs tests, configures signing from the four signing Secrets, builds with the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable, and creates the GitHub Release.
+3. Push tag -> `.github/workflows/release.yml` validates versions, runs the release-configuration preflight, configures signing from the four signing Secrets, builds with the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable, and creates the GitHub Release.
 
 ```sh
 # example

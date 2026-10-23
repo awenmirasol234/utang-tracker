@@ -158,7 +158,7 @@ Version is triple-locked — CI fails if any drift:
    git push origin v1.0.55
    ```
 4. Push tag triggers `.github/workflows/release.yml`:
-     `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` (four signing Secrets) → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` with the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
+     `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `check_release_configuration.py` → `flutter analyze` → `flutter test` → `configure_signing.py` (four signing Secrets) → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` with the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (6 helpers in `.github/scripts/`).
 
 ### 4.8 Google Drive cloud backup
 

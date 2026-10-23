@@ -30,6 +30,15 @@ jobs:
       - name: Test release note generation
         run: python .github/scripts/test_release_scripts.py
 
+      - name: Check release configuration
+        env:
+          SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          GOOGLE_DRIVE_SERVER_CLIENT_ID: ${{ vars.GOOGLE_DRIVE_SERVER_CLIENT_ID }}
+        run: python .github/scripts/check_release_configuration.py
+
       - name: Set up Java
         uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
         with:
@@ -62,12 +71,7 @@ jobs:
       - name: Build ARM64 and ARM32 APKs
         env:
           GOOGLE_DRIVE_SERVER_CLIENT_ID: ${{ vars.GOOGLE_DRIVE_SERVER_CLIENT_ID }}
-        run: |
-          if [ -z "$GOOGLE_DRIVE_SERVER_CLIENT_ID" ]; then
-            echo "::error::GOOGLE_DRIVE_SERVER_CLIENT_ID is not configured."
-            exit 1
-          fi
-          flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --dart-define=GOOGLE_DRIVE_SERVER_CLIENT_ID=$GOOGLE_DRIVE_SERVER_CLIENT_ID
+        run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --dart-define=GOOGLE_DRIVE_SERVER_CLIENT_ID=$GOOGLE_DRIVE_SERVER_CLIENT_ID
 
       - name: Prepare release files
         run: python .github/scripts/prepare_release.py

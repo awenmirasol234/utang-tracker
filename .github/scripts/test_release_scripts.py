@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-import os
-import sys
+import base64
 import json
+import os
 import re
-import subprocess
-import tempfile
 import shutil
+import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 def main():
@@ -73,6 +74,69 @@ def main():
         )
         generate_notes(empty_json, test_dir / "empty")
         assert_no_category_headings(test_dir / "empty" / "RELEASE_NOTES.md")
+
+        configuration_script = (
+            repo_root / ".github" / "scripts" / "check_release_configuration.py"
+        )
+        required_names = (
+            "SIGNING_KEY_BASE64",
+            "KEY_STORE_PASSWORD",
+            "KEY_PASSWORD",
+            "KEY_ALIAS",
+            "GOOGLE_DRIVE_SERVER_CLIENT_ID",
+        )
+
+        def check_configuration(values):
+            env = os.environ.copy()
+            for name in required_names:
+                env.pop(name, None)
+            env.update(values)
+            return subprocess.run(
+                [sys.executable, str(configuration_script)],
+                cwd=repo_root,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+
+        valid_configuration = {
+            "SIGNING_KEY_BASE64": base64.b64encode(b"test keystore").decode(),
+            "KEY_STORE_PASSWORD": "store-password",
+            "KEY_PASSWORD": "key-password",
+            "KEY_ALIAS": "utang-tracker",
+            "GOOGLE_DRIVE_SERVER_CLIENT_ID": "client-id.apps.googleusercontent.com",
+        }
+        valid_result = check_configuration(valid_configuration)
+        if valid_result.returncode != 0:
+            print(valid_result.stdout, file=sys.stdout)
+            print(valid_result.stderr, file=sys.stderr)
+            sys.exit(valid_result.returncode)
+
+        missing_result = check_configuration(
+            {
+                **valid_configuration,
+                "KEY_ALIAS": "",
+            }
+        )
+        if missing_result.returncode == 0 or "KEY_ALIAS" not in missing_result.stdout:
+            print("Missing release configuration was not detected.")
+            sys.exit(1)
+
+        invalid_result = check_configuration(
+            {
+                **valid_configuration,
+                "SIGNING_KEY_BASE64": "not-base64",
+                "GOOGLE_DRIVE_SERVER_CLIENT_ID": "not-a-client-id",
+            }
+        )
+        if (
+            invalid_result.returncode == 0
+            or "SIGNING_KEY_BASE64 is not valid base64" not in invalid_result.stdout
+            or "GOOGLE_DRIVE_SERVER_CLIENT_ID" not in invalid_result.stdout
+        ):
+            print("Invalid release configuration was not detected.")
+            sys.exit(1)
+
         print("Release script tests passed.")
     finally:
         shutil.rmtree(str(test_dir), ignore_errors=True)
