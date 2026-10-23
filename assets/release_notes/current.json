@@ -4,7 +4,7 @@
   "notes": {
     "added": [
       "Browse your five latest cloud backups and restore any one of them",
-      "Backup health shows the last backup time, latest size, backups stored, and the last error",
+      "See the last backup time and any recent backup error",
       "Choose daily, weekly, or manual-only automatic backups"
     ],
     "changed": [

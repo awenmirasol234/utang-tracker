@@ -149,13 +149,13 @@ State and navigation details are in §4.
 
 Version is triple-locked — CI fails if any drift:
 
-1. Bump `version: 1.0.55+54` in `pubspec.yaml` (semver + build number).
-2. Bump `version: "1.0.55"` in `assets/release_notes/current.json` (same semver, no `+build`).
-3. Tag `v<version>` where `<version>` is the semver from `pubspec.yaml` (e.g. `v1.0.55`):
+1. Bump `version: <semver>+<build>` in `pubspec.yaml`.
+2. Bump `version: "<semver>"` in `assets/release_notes/current.json` (same semver, no `+build`).
+3. Tag `v<semver>` where `<semver>` is the semver from `pubspec.yaml`:
    ```sh
-   git commit -m "release: v1.0.55"
-   git tag v1.0.55
-   git push origin v1.0.55
+   git commit -m "release: v<semver>"
+   git tag v<semver>
+   git push origin v<semver>
    ```
 4. Push tag triggers `.github/workflows/release.yml`:
      `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `check_release_configuration.py` → `flutter analyze` → `flutter test` → `configure_signing.py` (four signing Secrets) → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` with the `GOOGLE_DRIVE_SERVER_CLIENT_ID` repository Variable → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (6 helpers in `.github/scripts/`).
@@ -163,14 +163,16 @@ Version is triple-locked — CI fails if any drift:
 ### 4.8 Google Drive cloud backup
 
 Cloud backup uses Google Sign-In and the Google Drive API. The app keeps the
-five newest SQLite backups per Google account and checks for an automatic backup
-when the app opens or resumes. Users can choose daily, weekly, or manual-only
-automatic backups. Automatic failures are silent so they do not block startup
-or interrupt the user. Manual backup and restore show errors in the cloud-backup
-page. The page shows backup health, file size, stored backup count, and backup
-history. Restore replaces the local database after an explicit confirmation and
-refreshes the business-data providers. The existing `utang_tracker_latest.sqlite`
-file is included in history when upgrading to the history format.
+five newest SQLite backups per Google account. Users can choose daily, weekly,
+or manual-only automatic backups. Automatic backup starts only after explicit
+sign-in during the current app session, runs when due, and checks again when
+the app resumes. Automatic failures are silent so they do not block startup or
+interrupt the user. Manual backup and restore show errors in the cloud-backup
+page. The page shows the last backup status, interval settings, and collapsible
+backup history. Restore replaces the local database after an explicit
+confirmation and refreshes the business-data providers. The existing
+`utang_tracker_latest.sqlite` file is included in history when upgrading to
+the history format.
 
 ### Google Cloud setup
 
@@ -238,7 +240,7 @@ flutter clean && flutter pub get   # after changing Gradle plugins
 |---|---|---|
 | **Release build fails: "Release signing is not configured"** | `android/key.properties` missing or incomplete. | Create `android/key.properties` with all four keys (`storePassword`, `keyPassword`, `keyAlias`, `storeFile`). Keystore file itself must exist at the `storeFile` path (also gitignored). In CI, secrets are injected by `configure_signing.py`. |
 | **Google Drive sign-in is unavailable** | Missing `GOOGLE_DRIVE_SERVER_CLIENT_ID`, disabled Drive API, or OAuth credentials do not match the package/signing certificate. | Build with the `--dart-define`, enable the Drive API, and verify the Android OAuth package name and SHA-1/SHA-256 fingerprints. |
-| **Automatic backup did not run** | The user is signed out, the selected interval is not due, automatic backups are set to manual-only, or the app was offline. | Open **Settings → Cloud backup**, sign in, choose an interval, and use **Back up now** if needed. Automatic failures are retried on a later open or resume. |
+| **Automatic backup did not run** | The user is signed out, the selected interval is not due, automatic backups are set to manual-only, or the app was offline. | Open **Settings → Cloud backup**, sign in during the current app session, choose an interval, and use **Back up now** if needed. Automatic failures are retried on a later resume during that session. |
 | **Restore fails** | The cloud file is missing, damaged, or incompatible with this app version. | Create a new backup or update the app. Restore validates the SQLite snapshot before replacing local data. |
 
 ### Where to find logs

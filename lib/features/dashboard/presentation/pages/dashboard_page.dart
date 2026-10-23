@@ -25,7 +25,7 @@ class DashboardPage extends ConsumerWidget {
     final notifications = ref.watch(debtNotificationsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Home"),
+        title: const Text('Home'),
         actions: [
           _NotificationAction(
             notifications: notifications,

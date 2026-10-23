@@ -22,4 +22,5 @@ release-assets/
 
 # Secrets / local config (never search)
 android/key.properties
+/config/local.json
 RELEASE_NOTES.md
