@@ -121,7 +121,7 @@ local builds, copy `config/local.json.example` to the ignored
 ```sh
 cp config/local.json.example config/local.json
 flutter run --dart-define-from-file=config/local.json
-flutter build apk --release --dart-define-from-file=config/local.json
+python tool/build_android_release.py
 ```
 
 For GitHub Actions releases, configure `GOOGLE_DRIVE_SERVER_CLIENT_ID` as a

@@ -181,7 +181,7 @@ confirmation and refreshes the business-data providers.
    ```sh
    cp config/local.json.example config/local.json
    flutter run --dart-define-from-file=config/local.json
-   flutter build apk --release --dart-define-from-file=config/local.json
+   python tool/build_android_release.py
    ```
 
 The client ID is not a secret, but it is environment-specific and must not be
@@ -205,6 +205,10 @@ For local debug builds, use the ignored `config/local.json` file with
 Without the Google client ID or valid OAuth configuration, the app still runs,
 but Google Drive sign-in and backup are unavailable. Never commit
 `config/local.json`.
+
+The `tool/build_android_release.py` script validates the local OAuth
+configuration, signing properties, and referenced keystore before building the
+release APK. It supports Windows, macOS, and Linux.
 
 Backups are SQLite files containing customer, debt, payment, and audit data.
 They are protected by the signed-in Google account and Drive permissions. The

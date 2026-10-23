@@ -11,6 +11,7 @@
 - After editing drift tables: `dart run build_runner build --delete-conflicting-outputs` — `lib/core/database/app_database.g.dart` is generated AND committed
 - Verify before committing: `flutter analyze` then `flutter test` (matches CI order)
 - Single test: `flutter test test/<file>.dart`
+- Local Android release: `python tool/build_android_release.py` (validates local config and signing before building the APK)
 - Release: bump version in BOTH `pubspec.yaml` and `assets/release_notes/current.json`, then tag `v<version>`. CI fails if tag ≠ pubspec version ≠ notes version.
 
 ## Data rules (enforced in repository impls, not SQL)

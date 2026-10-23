@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import base64
+import importlib.util
 import json
 import os
 import re
@@ -135,6 +136,45 @@ def main():
             or "GOOGLE_DRIVE_SERVER_CLIENT_ID" not in invalid_result.stdout
         ):
             print("Invalid release configuration was not detected.")
+            sys.exit(1)
+
+        local_release_script = repo_root / "tool" / "build_android_release.py"
+        module_spec = importlib.util.spec_from_file_location(
+            "build_android_release",
+            local_release_script,
+        )
+        local_release_module = importlib.util.module_from_spec(module_spec)
+        module_spec.loader.exec_module(local_release_module)
+        local_release_root = test_dir / "local-release"
+        (local_release_root / "config").mkdir(parents=True)
+        (local_release_root / "android").mkdir()
+        (local_release_root / "config" / "local.json").write_text(
+            json.dumps(
+                {
+                    "GOOGLE_DRIVE_SERVER_CLIENT_ID": (
+                        "client-id.apps.googleusercontent.com"
+                    )
+                }
+            ),
+            encoding="utf-8",
+        )
+        (local_release_root / "android" / "key.properties").write_text(
+            "storePassword=store-password\n"
+            "keyPassword=key-password\n"
+            "keyAlias=utang-tracker\n"
+            "storeFile=app/release.keystore\n",
+            encoding="utf-8",
+        )
+        (local_release_root / "android" / "app").mkdir()
+        (local_release_root / "android" / "app" / "release.keystore").write_bytes(
+            b"test keystore"
+        )
+        local_errors = local_release_module.validate_local_configuration(
+            local_release_root
+        )
+        if local_errors:
+            print("Valid local release configuration was rejected.")
+            print("\n".join(local_errors))
             sys.exit(1)
 
         print("Release script tests passed.")
