@@ -12,6 +12,7 @@ class AppButton extends StatelessWidget {
     this.variant = AppButtonVariant.primary,
     this.isLoading = false,
     this.icon,
+    this.leading,
     this.expanded = true,
   });
 
@@ -20,6 +21,7 @@ class AppButton extends StatelessWidget {
   final AppButtonVariant variant;
   final bool isLoading;
   final IconData? icon;
+  final Widget? leading;
   final bool expanded;
 
   @override
@@ -35,18 +37,16 @@ class AppButton extends StatelessWidget {
       child = SizedBox(
         width: 22,
         height: 22,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: progressColor,
-        ),
+        child: CircularProgressIndicator(strokeWidth: 2, color: progressColor),
       );
     } else {
       child = Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (icon != null) ...[
-            Icon(icon, size: 20),
+          if (icon != null || leading != null) ...[
+            ?leading,
+            if (icon != null) Icon(icon, size: 20),
             const SizedBox(width: AppSpacing.sm),
           ],
           Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
@@ -60,10 +60,14 @@ class AppButton extends StatelessWidget {
     }
 
     final button = switch (variant) {
-      AppButtonVariant.primary =>
-        ElevatedButton(onPressed: effectiveOnPressed, child: child),
-      AppButtonVariant.secondary =>
-        OutlinedButton(onPressed: effectiveOnPressed, child: child),
+      AppButtonVariant.primary => ElevatedButton(
+        onPressed: effectiveOnPressed,
+        child: child,
+      ),
+      AppButtonVariant.secondary => OutlinedButton(
+        onPressed: effectiveOnPressed,
+        child: child,
+      ),
       AppButtonVariant.danger => ElevatedButton(
         onPressed: effectiveOnPressed,
         style: ElevatedButton.styleFrom(

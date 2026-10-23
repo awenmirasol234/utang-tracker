@@ -13,6 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  flutter_svg: ^2.2.0
   shared_preferences: ^2.5.3
   google_sign_in: ^7.2.0
   googleapis: ^17.0.0
@@ -62,6 +63,7 @@ flutter:
 
   assets:
     - assets/images/new-logo.png
+    - assets/images/google-drive-logo.svg
     - assets/release_notes/
 
   fonts:
@@ -75,4 +77,3 @@ flutter:
           weight: 600
         - asset: assets/fonts/Poppins-Bold.ttf
           weight: 700
-

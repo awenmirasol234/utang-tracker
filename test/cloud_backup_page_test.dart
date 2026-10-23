@@ -30,6 +30,7 @@ void main() {
 
     expect(find.text('Protect your ledger'), findsOneWidget);
     expect(find.text('Sign in with Google'), findsOneWidget);
+    expect(find.bySemanticsLabel('Google'), findsOneWidget);
   });
 
   testWidgets('cloud backup page shows backup actions when connected', (

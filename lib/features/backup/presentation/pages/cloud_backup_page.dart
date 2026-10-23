@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
@@ -83,7 +84,12 @@ class _BackupCard extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             AppButton(
               label: 'Sign in with Google',
-              icon: Icons.account_circle_outlined,
+              leading: SvgPicture.asset(
+                'assets/images/google-drive-logo.svg',
+                width: 20,
+                height: 20,
+                semanticsLabel: 'Google',
+              ),
               isLoading: state.operation == BackupOperation.signingIn,
               onPressed: _enabledAction(state.isBusy, () async {
                 final success = await ref
