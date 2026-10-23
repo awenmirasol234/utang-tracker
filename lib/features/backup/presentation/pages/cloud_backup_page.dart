@@ -7,6 +7,7 @@ import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
+import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart';
@@ -244,23 +245,36 @@ class _BackupIntervalPicker extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return InputDecorator(
-      decoration: const InputDecoration(labelText: 'Automatic backup interval'),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<BackupInterval>(
-          value: state.status.interval,
-          isExpanded: true,
-          items: BackupInterval.values
-              .map(
-                (interval) => DropdownMenuItem<BackupInterval>(
-                  value: interval,
-                  child: Text(interval.label),
-                ),
-              )
-              .toList(),
-          onChanged: _intervalChanged(ref),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppTextField.buildLabel(context, 'Automatic backup interval'),
+        const SizedBox(height: AppSpacing.sm),
+        InputDecorator(
+          decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.lg,
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<BackupInterval>(
+              value: state.status.interval,
+              isExpanded: true,
+              isDense: true,
+              items: BackupInterval.values
+                  .map(
+                    (interval) => DropdownMenuItem<BackupInterval>(
+                      value: interval,
+                      child: Text(interval.label),
+                    ),
+                  )
+                  .toList(),
+              onChanged: _intervalChanged(ref),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 

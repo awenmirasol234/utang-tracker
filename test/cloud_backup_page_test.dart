@@ -73,6 +73,10 @@ void main() {
 
     expect(find.text('Google Drive connected'), findsNWidgets(2));
     expect(find.bySemanticsLabel('Google Drive'), findsOneWidget);
+    expect(
+      tester.getSize(find.byType(InputDecorator)).height,
+      closeTo(56, 0.1),
+    );
     expect(find.text('Last backup'), findsOneWidget);
     expect(find.text('Backup health'), findsNothing);
     expect(find.text('Backup history'), findsOneWidget);
