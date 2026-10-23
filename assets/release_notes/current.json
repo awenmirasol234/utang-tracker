@@ -1,16 +1,18 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "date": "2026-10-23",
   "notes": {
     "added": [
-      "Back up your ledger to Google Drive and restore it on the same account, with a daily automatic backup when the app opens",
-      "Copy a customer's phone number from their details page"
+      "Browse your five latest cloud backups and restore any one of them",
+      "Backup health shows the last backup time, latest size, backups stored, and the last error",
+      "Choose daily, weekly, or manual-only automatic backups"
     ],
     "changed": [
-      "Release builds now require the Google Drive client configuration, so cloud backup works in published APKs"
+      "Cloud backup now shows history and settings on one screen",
+      "The cloud backup sign-in button shows the Google icon"
     ],
     "fixed": [
-      "Cloud backup now shows clearer messages when sign-in, the network, or the download fails"
+      "Backups are more reliable, with clearer messages when sign-in, the network, or the download fails"
     ]
   }
 }
