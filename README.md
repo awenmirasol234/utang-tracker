@@ -118,7 +118,13 @@ Google Drive backup requires the public Web OAuth client ID at build time. The
 app keeps the five newest backups per Google account and lets users choose
 daily, weekly, or manual-only automatic backups. Automatic backup starts after
 explicit sign-in during the current app session and checks again when the app
-resumes. For local builds, copy `config/local.json.example` to the ignored
+resumes.
+
+Backups are stored in the `Utang Tracker Backups` folder in the user's Google
+Drive. On first use after this change, existing root-level Utang Tracker backup
+files are moved into that folder.
+
+For local builds, copy `config/local.json.example` to the ignored
 `config/local.json` and replace the placeholder:
 
 ```sh

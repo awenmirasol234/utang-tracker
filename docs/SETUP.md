@@ -172,7 +172,9 @@ page. The page shows the last backup status, interval settings, and collapsible
 backup history. Restore replaces the local database after an explicit
 confirmation and refreshes the business-data providers. The existing
 `utang_tracker_latest.sqlite` file is included in history when upgrading to
-the history format.
+the history format. Backups are stored in the `Utang Tracker Backups` folder
+in the user's Google Drive. Existing root-level Utang Tracker backup files are
+moved into that folder on first use after this change.
 
 ### Google Cloud setup
 

@@ -6,6 +6,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/features/backup/data/services/google_drive_backup_folder.dart';
 
 class GoogleDriveAccount {
   const GoogleDriveAccount({required this.id, required this.email});
@@ -56,10 +57,9 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
   GoogleDriveClientImpl({GoogleSignIn? signIn})
     : _signIn = signIn ?? GoogleSignIn.instance;
 
-  static const _legacyBackupFileName = 'utang_tracker_latest.sqlite';
-  static const _backupFilePrefix = 'utang_tracker_backup_';
   static const _scopes = ['https://www.googleapis.com/auth/drive.file'];
   final GoogleSignIn _signIn;
+  final _backupFolder = const GoogleDriveBackupFolder();
   Future<void>? _initialization;
   GoogleSignInAccount? _account;
   bool _attemptedLightweightAuthentication = false;
@@ -107,11 +107,12 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
       account,
       interactive: false,
       action: (api) async {
+        final folderId = await _backupFolder.ensure(api);
         final backupFiles = <GoogleDriveBackupFile>[];
         String? pageToken;
         do {
           final result = await api.files.list(
-            q: "trashed = false and (name = '$_legacyBackupFileName' or name contains '$_backupFilePrefix')",
+            q: _backupFolder.backupQuery(folderId),
             spaces: 'drive',
             pageSize: 100,
             pageToken: pageToken,
@@ -121,7 +122,9 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
           for (final file in files) {
             final id = file.id;
             final name = file.name;
-            if (id == null || name == null || !_isBackupFileName(name)) {
+            if (id == null ||
+                name == null ||
+                !_backupFolder.isBackupFileName(name)) {
               continue;
             }
             backupFiles.add(
@@ -151,6 +154,7 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
       account,
       interactive: interactive,
       action: (api) async {
+        final folderId = await _backupFolder.ensure(api);
         final media = drive.Media(
           snapshot.openRead(),
           await snapshot.length(),
@@ -158,6 +162,7 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
         );
         final metadata = drive.File()
           ..name = fileName
+          ..parents = [folderId]
           ..description = 'Utang Tracker database backup';
         await api.files.create(metadata, uploadMedia: media);
       },
@@ -246,10 +251,6 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
       throw const AppException('Sign in to Google Drive before continuing.');
     }
     return account;
-  }
-
-  bool _isBackupFileName(String name) {
-    return name == _legacyBackupFileName || name.startsWith(_backupFilePrefix);
   }
 
   Future<T> _withDriveApi<T>(
