@@ -1,12 +1,12 @@
 {
-  "version": "1.2.1",
+  "version": "1.2.2",
   "date": "2026-10-23",
   "notes": {
     "added": [],
     "changed": [
-      "Interactive cards, buttons, and filters now provide subtle lift and press feedback",
-      "The dashboard balance summary has stronger visual hierarchy",
-      "List tiles and input fields use clearer surface and focus styling"
+      "Google Drive backups are stored in the Utang Tracker Backups folder, with existing root-level backups migrated automatically",
+      "The Google Drive connection flow explains account selection and Drive permission prompts",
+      "The connected Google Drive state uses clearer branding and consistent backup interval sizing"
     ],
     "fixed": []
   }
