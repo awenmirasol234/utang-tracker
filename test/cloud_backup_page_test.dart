@@ -31,7 +31,13 @@ void main() {
 
     expect(find.text('Not connected'), findsOneWidget);
     expect(find.text('Protect your ledger'), findsNothing);
-    expect(find.text('Sign in with Google'), findsOneWidget);
+    expect(
+      find.text(
+        'Choose your Google account, then allow Drive access for backups.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Connect Google Drive'), findsOneWidget);
     expect(find.bySemanticsLabel('Google'), findsOneWidget);
     expect(repository.statusCalls, 0);
   });
@@ -68,7 +74,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Sign in with Google'));
+    await tester.tap(find.text('Connect Google Drive'));
     await tester.pumpAndSettle();
 
     expect(find.text('Google Drive connected'), findsNWidgets(2));

@@ -74,8 +74,15 @@ class _BackupCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Choose your Google account, then allow Drive access for backups.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: AppSpacing.lg),
             AppButton(
-              label: 'Sign in with Google',
+              label: 'Connect Google Drive',
               leading: SvgPicture.asset(
                 'assets/images/google-drive-logo.svg',
                 width: 20,
