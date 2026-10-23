@@ -208,7 +208,7 @@ but Google Drive sign-in and backup are unavailable. Never commit
 
 The `tool/build_android_release.py` script validates the local OAuth
 configuration, signing properties, and referenced keystore before building the
-release APK. It supports Windows, macOS, and Linux.
+ARM and ARM64 split release APKs. It supports Windows, macOS, and Linux.
 
 Backups are SQLite files containing customer, debt, payment, and audit data.
 They are protected by the signed-in Google account and Drive permissions. The

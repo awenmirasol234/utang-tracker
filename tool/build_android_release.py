@@ -93,11 +93,15 @@ def main():
         "build",
         "apk",
         "--release",
+        "--split-per-abi",
+        "--target-platform",
+        "android-arm,android-arm64",
         "--dart-define-from-file=config/local.json",
     ]
     print("Local Android release configuration passed.", flush=True)
     print(
         "Running: flutter build apk --release "
+        "--split-per-abi --target-platform android-arm,android-arm64 "
         "--dart-define-from-file=config/local.json",
         flush=True,
     )
@@ -105,11 +109,18 @@ def main():
     if result.returncode != 0:
         return result.returncode
 
-    artifact = repo_root / "build" / "app" / "outputs" / "flutter-apk" / "app-release.apk"
-    if not artifact.is_file():
-        print(f"error: Expected APK was not created: {artifact}")
+    artifact_directory = repo_root / "build" / "app" / "outputs" / "flutter-apk"
+    artifacts = (
+        artifact_directory / "app-armeabi-v7a-release.apk",
+        artifact_directory / "app-arm64-v8a-release.apk",
+    )
+    missing_artifacts = [artifact for artifact in artifacts if not artifact.is_file()]
+    if missing_artifacts:
+        for artifact in missing_artifacts:
+            print(f"error: Expected APK was not created: {artifact}")
         return 1
-    print(f"Android release APK: {artifact}")
+    for artifact in artifacts:
+        print(f"Android release APK: {artifact}")
     return 0
 
 
