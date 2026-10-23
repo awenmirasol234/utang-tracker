@@ -78,7 +78,7 @@ lib/
   mappers: features/customers|debts|payments|audit/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart / audit_mappers.dart)
   core/router/ app_router.dart / app_shell.dart   # go_router StatefulShellRoute.indexedStack (5 tabs)
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
-  features/customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 dirs
+  features/customers|debts|payments|dashboard|notifications|audit|backup|updater|settings  # 9 dirs
     domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, updater)
     data/repositories (impl) + data/repositories/*_mappers.dart
     presentation/pages + presentation/providers + presentation/widgets
@@ -155,7 +155,35 @@ Version is triple-locked — CI fails if any drift:
    git push origin v1.0.55
    ```
 4. Push tag triggers `.github/workflows/release.yml`:
-   `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
+    `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
+
+### 4.8 Google Drive cloud backup
+
+Cloud backup uses Google Sign-In and the Google Drive API. The app stores one
+latest SQLite backup per Google account and checks for an automatic backup once
+per day when the app opens. Restore replaces the local database after an
+explicit confirmation.
+
+Before running a build with cloud backup:
+
+1. Create or select a Google Cloud project.
+2. Enable the Google Drive API.
+3. Configure the OAuth consent screen and add the Drive file scope.
+4. Create an Android OAuth client for package `com.example.utang_tracker`.
+5. Add the SHA-1/SHA-256 fingerprints for every debug or release signing key.
+6. Create a Web application OAuth client and pass its client ID when building:
+   ```sh
+   flutter run --dart-define=GOOGLE_DRIVE_SERVER_CLIENT_ID=<web-client-id>
+   ```
+
+The client ID is not a secret, but it is environment-specific and must not be
+hardcoded in Dart source. Release and CI builds must provide the same
+`GOOGLE_DRIVE_SERVER_CLIENT_ID` define. Without this configuration, the app
+continues to run normally, but Google Drive sign-in and backup are unavailable.
+
+Backups are SQLite files containing customer, debt, payment, and audit data.
+They are protected by the signed-in Google account and Drive permissions. The
+app does not add a separate backup password in this version.
 
 ---
 

@@ -10,6 +10,7 @@ Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers
 - **Debts** - one debt = many `debt_items` (product, qty, unit, price), editable only while `paid_amount == 0`, items can be appended to a partially paid debt
 - **Payments** - record partial/full payments, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
+- **Cloud backup** - daily Google Drive backup and restore
 - **Overdue & notifications** - due-date aware
 - **Audit log** - Settings page lists every recorded change (customers, debts, payments); rows are written by the repositories
 - **Updater** - GitHub Releases check, in-app update sheet + About page
@@ -55,7 +56,7 @@ lib/
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
   features/
-    customers|debts|payments|dashboard|notifications|audit|updater|settings  # 8 feature dirs
+    customers|debts|payments|dashboard|notifications|audit|backup|updater|settings  # 9 feature dirs
       domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, updater)
       data/repositories (impl - enforces business rules) + data/repositories/*_mappers.dart
       presentation/pages + presentation/providers + presentation/widgets

@@ -25,6 +25,10 @@ class AppConstants {
 
   static const String updaterChannel = 'com.example.utang_tracker/updater';
 
+  static const String googleDriveServerClientId = String.fromEnvironment(
+    'GOOGLE_DRIVE_SERVER_CLIENT_ID',
+  );
+
   /// How often the app polls for updates while it is in the foreground.
   static const Duration updateCheckInterval = Duration(hours: 6);
 

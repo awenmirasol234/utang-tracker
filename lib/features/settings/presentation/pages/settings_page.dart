@@ -27,6 +27,13 @@ class SettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           _MenuItem(
+            icon: Icons.cloud_outlined,
+            title: 'Cloud backup',
+            subtitle: 'Back up and restore with Google Drive',
+            onTap: () => context.push('/cloud-backup'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _MenuItem(
             icon: Icons.info_outline_rounded,
             title: 'About',
             subtitle: 'App version and updates',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/router/app_shell.dart';
 import 'package:utang_tracker/features/audit/presentation/pages/audit_log_page.dart';
+import 'package:utang_tracker/features/backup/presentation/pages/cloud_backup_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_detail_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customers_list_page.dart';
@@ -140,6 +141,11 @@ GoRouter createAppRouter() {
         path: '/audit-log',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AuditLogPage(),
+      ),
+      GoRoute(
+        path: '/cloud-backup',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CloudBackupPage(),
       ),
     ],
   );

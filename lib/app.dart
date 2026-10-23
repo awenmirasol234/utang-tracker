@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/router/app_router.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
+import 'package:utang_tracker/features/backup/presentation/providers/cloud_backup_providers.dart';
 
 final List<Locale> _supportedLocales = kMaterialSupportedLanguages
     .map((languageCode) => Locale(languageCode))
     .toList(growable: false);
 
-class UtangTrackerApp extends StatefulWidget {
+class UtangTrackerApp extends ConsumerStatefulWidget {
   const UtangTrackerApp({super.key});
 
   @override
-  State<UtangTrackerApp> createState() => _UtangTrackerAppState();
+  ConsumerState<UtangTrackerApp> createState() => _UtangTrackerAppState();
 }
 
-class _UtangTrackerAppState extends State<UtangTrackerApp> {
+class _UtangTrackerAppState extends ConsumerState<UtangTrackerApp> {
   late final _router = createAppRouter();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(cloudBackupNotifierProvider.notifier).backupIfDue();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

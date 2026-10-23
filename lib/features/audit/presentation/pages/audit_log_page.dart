@@ -217,8 +217,8 @@ class _AuditLogTileState extends State<_AuditLogTile> {
         ),
         Text(
           ' \u2192 ',
-          style: valueStyle?.copyWith(
-            fontSize: 16,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            color: valueStyle?.color,
             fontWeight: FontWeight.w600,
           ),
         ),
