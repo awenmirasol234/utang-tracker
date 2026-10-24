@@ -185,11 +185,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         paymentMethod: AppConstants.defaultPaymentMethod,
         notes: _notesController.text,
       );
-      invalidateBusinessData(
-        ref,
-        customerId: _selectedDebt?.customerId,
-        debtId: _debtId,
-      );
+      notifyBusinessDataChanged(ref);
       if (!mounted) return;
       _isDirty = false;
       AppSnackBar.success(context, 'Payment recorded');

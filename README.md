@@ -102,7 +102,7 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 ## Architecture Notes
 
-- **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart`; restore uses `invalidateBusinessDataFromRef(ref)`. Register new business-data providers there.
+- **Push refresh, not streams:** after writes call `notifyBusinessDataChanged(ref)` from `lib/app/coordination.dart`; it bumps `dataVersionProvider`, which business list/detail providers watch to rebuild.
 - **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`.
 - **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL.
 - **Method channels:** `MainActivity.kt` holds the updater channel; its install-permission flow uses deprecated `onActivityResult`.

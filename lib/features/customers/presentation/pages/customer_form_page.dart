@@ -94,14 +94,14 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
             updatedAt: _existing!.updatedAt,
           ),
         );
-        invalidateBusinessData(ref, customerId: _existing!.id);
+        notifyBusinessDataChanged(ref);
       } else {
         created = await repo.create(
           name: name,
           phone: _phoneController.text,
           notes: _notesController.text,
         );
-        invalidateBusinessData(ref, customerId: created.id);
+        notifyBusinessDataChanged(ref);
       }
 
       if (!mounted) return;
@@ -213,7 +213,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                     await ref
                         .read(customerRepositoryProvider)
                         .delete(widget.customerId!);
-                    invalidateBusinessData(ref);
+                    notifyBusinessDataChanged(ref);
                     if (!mounted) return;
                     AppSnackBar.success(context, 'Customer deleted');
                     context.pop();

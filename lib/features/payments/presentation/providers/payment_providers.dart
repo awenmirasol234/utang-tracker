@@ -77,6 +77,7 @@ class PaymentFilterOptions {
 final paymentFilterOptionsProvider = FutureProvider<PaymentFilterOptions>((
   ref,
 ) async {
+  ref.watch(dataVersionProvider);
   final payments = await ref.watch(paymentRepositoryProvider).getAll();
   final methods =
       payments
@@ -100,6 +101,7 @@ final paymentsListProvider =
 class PaymentsListNotifier extends AsyncNotifier<List<Payment>> {
   @override
   Future<List<Payment>> build() async {
+    ref.watch(dataVersionProvider);
     final filters = ref.watch(paymentFiltersProvider);
     final payments = await ref.watch(paymentRepositoryProvider).getAll();
     return _applyFilters(payments, filters);

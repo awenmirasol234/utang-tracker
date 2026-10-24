@@ -1,39 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:utang_tracker/features/audit/presentation/providers/audit_log_providers.dart';
-import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
-import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
-import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
-import 'package:utang_tracker/features/notifications/presentation/providers/notification_providers.dart';
-import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 
-void invalidateBusinessData(
-  WidgetRef ref, {
-  String? customerId,
-  String? debtId,
-}) {
-  ref.invalidate(customersListProvider);
-  ref.invalidate(debtsListProvider);
-  ref.invalidate(paymentsListProvider);
-  ref.invalidate(paymentFilterOptionsProvider);
-  ref.invalidate(dashboardSummaryProvider);
-  ref.invalidate(debtNotificationsProvider);
-  ref.invalidate(auditLogEntriesProvider);
-  if (customerId != null) {
-    ref.invalidate(customerDetailProvider(customerId));
-  }
-  if (debtId != null) {
-    ref.invalidate(debtDetailProvider(debtId));
-  }
+/// Call after any business write (from UI code) so watching providers rebuild.
+void notifyBusinessDataChanged(WidgetRef ref) {
+  ref.read(dataVersionProvider.notifier).bump();
 }
 
-void invalidateBusinessDataFromRef(Ref ref) {
-  ref.invalidate(customersListProvider);
-  ref.invalidate(debtsListProvider);
-  ref.invalidate(paymentsListProvider);
-  ref.invalidate(paymentFilterOptionsProvider);
-  ref.invalidate(dashboardSummaryProvider);
-  ref.invalidate(debtNotificationsProvider);
-  ref.invalidate(auditLogEntriesProvider);
-  ref.invalidate(customerDetailProvider);
-  ref.invalidate(debtDetailProvider);
+/// Same as [notifyBusinessDataChanged] but callable from provider code.
+void notifyBusinessDataChangedFromRef(Ref ref) {
+  ref.read(dataVersionProvider.notifier).bump();
 }

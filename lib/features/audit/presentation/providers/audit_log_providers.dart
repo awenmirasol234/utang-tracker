@@ -10,6 +10,7 @@ final auditLogEntriesProvider =
 class AuditLogEntriesNotifier extends AsyncNotifier<List<AuditLogEntry>> {
   @override
   Future<List<AuditLogEntry>> build() {
+    ref.watch(dataVersionProvider);
     return ref.watch(auditLogRepositoryProvider).getAll();
   }
 

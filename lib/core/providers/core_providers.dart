@@ -16,6 +16,18 @@ import 'package:utang_tracker/features/payments/domain/repositories/payment_repo
 import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 
+/// Bumped after any business write; business providers watch it to refresh.
+class DataVersionNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+final dataVersionProvider = NotifierProvider<DataVersionNotifier, int>(
+  DataVersionNotifier.new,
+);
+
 final databaseProvider = Provider<AppDatabase>((ref) {
   final appDatabase = AppDatabase();
   ref.onDispose(appDatabase.close);

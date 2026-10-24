@@ -55,6 +55,7 @@ final debtsListProvider = AsyncNotifierProvider<DebtsListNotifier, List<Debt>>(
 class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
   @override
   Future<List<Debt>> build() async {
+    ref.watch(dataVersionProvider);
     final filter = ref.watch(debtStatusFilterProvider);
     final sort = ref.watch(debtSortOrderProvider);
     final debts = await _loadDebts(filter);
@@ -95,5 +96,6 @@ final debtDetailProvider = FutureProvider.family<DebtDetailData?, String>((
   ref,
   id,
 ) async {
+  ref.watch(dataVersionProvider);
   return ref.watch(getDebtDetailUseCaseProvider)(id);
 });

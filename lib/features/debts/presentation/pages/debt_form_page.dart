@@ -348,20 +348,16 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           notes: _notesController.text,
           items: items,
         );
-        invalidateBusinessData(
-          ref,
-          customerId: _customerId,
-          debtId: widget.debtId,
-        );
+        notifyBusinessDataChanged(ref);
       } else {
-        final debt = await repo.create(
+        await repo.create(
           customerId: _customerId!,
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
           items: items,
         );
-        invalidateBusinessData(ref, customerId: _customerId, debtId: debt.id);
+        notifyBusinessDataChanged(ref);
       }
 
       if (!mounted) return;

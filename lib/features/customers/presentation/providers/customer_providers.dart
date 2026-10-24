@@ -47,6 +47,7 @@ final customersListProvider =
 class CustomersListNotifier extends AsyncNotifier<List<Customer>> {
   @override
   Future<List<Customer>> build() async {
+    ref.watch(dataVersionProvider);
     final query = ref.watch(customerSearchQueryProvider);
     final sort = ref.watch(customerSortOrderProvider);
     final repo = ref.watch(customerRepositoryProvider);
@@ -105,5 +106,6 @@ final getCustomerDetailUseCaseProvider = Provider((ref) {
 
 final customerDetailProvider =
     FutureProvider.family<CustomerDetailData?, String>((ref, customerId) async {
+      ref.watch(dataVersionProvider);
       return ref.watch(getCustomerDetailUseCaseProvider)(customerId);
     });

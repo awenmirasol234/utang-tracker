@@ -149,7 +149,7 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     try {
       final status = await _repository.restore(backup);
       ref.invalidate(databaseProvider);
-      invalidateBusinessDataFromRef(ref);
+      notifyBusinessDataChangedFromRef(ref);
       state = state.copyWith(status: status, clearOperation: true);
       return true;
     } catch (error) {

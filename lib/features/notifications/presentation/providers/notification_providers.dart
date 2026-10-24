@@ -10,6 +10,7 @@ final debtNotificationsProvider =
 class DebtNotificationsNotifier extends AsyncNotifier<DebtNotificationFeed> {
   @override
   Future<DebtNotificationFeed> build() async {
+    ref.watch(dataVersionProvider);
     final debts = await ref.watch(debtRepositoryProvider).getAll();
     return DebtNotificationFeed.fromDebts(debts, now: DateTime.now());
   }

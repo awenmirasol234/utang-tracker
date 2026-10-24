@@ -280,11 +280,7 @@ class DebtDetailPage extends ConsumerWidget {
           .read(debtRepositoryProvider)
           .addItems(debtId: debt.id, items: [input]);
       if (!context.mounted) return;
-      invalidateBusinessData(
-        ref,
-        customerId: debt.customerId,
-        debtId: debt.id,
-      );
+      notifyBusinessDataChanged(ref);
       AppSnackBar.success(context, 'Item added');
     } on AppException catch (appException) {
       if (!context.mounted) return;

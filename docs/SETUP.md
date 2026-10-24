@@ -140,10 +140,11 @@ State and navigation details are in §4.
 - **DI:** plain `Provider`s in `lib/core/providers/core_providers.dart`. Repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`.
 - **Refresh model:** Drift reactive streams are NOT used. After any write, call:
   ```dart
-  invalidateBusinessData(ref, customerId: ..., debtId: ...);
+  notifyBusinessDataChanged(ref);
   ```
-  from `lib/app/coordination.dart`. Database restore uses
-  `invalidateBusinessDataFromRef(ref)`. New list/detail providers must be registered there.
+  from `lib/app/coordination.dart`. It bumps `dataVersionProvider`
+  (`lib/core/providers/core_providers.dart`); all business list/detail providers
+  watch it and rebuild automatically, so no per-feature registration is needed.
 
 ### 4.7 Release process
 
