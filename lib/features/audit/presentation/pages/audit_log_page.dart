@@ -75,6 +75,15 @@ class _AuditLogTileState extends State<_AuditLogTile> {
   Widget build(BuildContext context) {
     final entry = widget.entry;
     final hasDetails = entry.details.isNotEmpty;
+    final IconData expandIcon;
+    final String detailsLabel;
+    if (_expanded) {
+      expandIcon = Icons.expand_less_rounded;
+      detailsLabel = 'Hide details';
+    } else {
+      expandIcon = Icons.expand_more_rounded;
+      detailsLabel = 'Show details';
+    }
 
     return AppCard(
       child: Column(
@@ -124,15 +133,13 @@ class _AuditLogTileState extends State<_AuditLogTile> {
                 child: Row(
                   children: [
                     Icon(
-                      _expanded
-                          ? Icons.expand_less_rounded
-                          : Icons.expand_more_rounded,
+                      expandIcon,
                       size: 20,
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
-                      _expanded ? 'Hide details' : 'Show details',
+                      detailsLabel,
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: AppColors.primaryDark,
                         fontWeight: FontWeight.w600,

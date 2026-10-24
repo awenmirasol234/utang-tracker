@@ -26,7 +26,7 @@ Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
 
-Version: `1.2.0+56` (release tag `v1.2.0`; the semver in `pubspec.yaml` and `assets/release_notes/current.json` must match the tag).
+Version: `1.2.2+58` (release tag `v1.2.2`; the semver in `pubspec.yaml` and `assets/release_notes/current.json` must match the tag).
 
 ## Prerequisites
 

@@ -17,12 +17,15 @@ class AppFilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     Color labelColor;
     Color borderColor;
+    double elevation;
     if (selected) {
       labelColor = AppColors.textOnPrimary;
       borderColor = AppColors.primaryDark;
+      elevation = 1;
     } else {
       labelColor = AppColors.textPrimary;
       borderColor = AppColors.outline;
+      elevation = 0;
     }
 
     return FilterChip(
@@ -31,7 +34,7 @@ class AppFilterChip extends StatelessWidget {
       onSelected: (_) => onSelected(),
       showCheckmark: false,
       selectedColor: AppColors.primaryDark,
-      elevation: selected ? 1 : 0,
+      elevation: elevation,
       pressElevation: 2,
       labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: labelColor,

@@ -34,4 +34,6 @@ void invalidateBusinessDataFromRef(Ref ref) {
   ref.invalidate(dashboardSummaryProvider);
   ref.invalidate(debtNotificationsProvider);
   ref.invalidate(auditLogEntriesProvider);
+  ref.invalidate(customerDetailProvider);
+  ref.invalidate(debtDetailProvider);
 }
