@@ -1,12 +1,13 @@
 {
-  "version": "1.2.3",
+  "version": "1.2.4",
   "date": "2026-10-24",
   "notes": {
     "added": [],
     "changed": [
       "Google Drive backups are stored in the Utang Tracker Backups folder, with existing root-level backups migrated automatically",
       "The Google Drive connection flow explains account selection and Drive permission prompts",
-      "The connected Google Drive state uses clearer branding and consistent backup interval sizing"
+      "The connected Google Drive state uses clearer branding and consistent backup interval sizing",
+      "Business data refreshes consistently after customer, debt, and payment changes"
     ],
     "fixed": [
       "Downloaded update APK is preserved when the app restarts during the 'Install unknown apps' permission flow"
