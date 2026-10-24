@@ -123,6 +123,128 @@ void main() {
 
     expect(repository.backupCalls, 1);
   });
+
+  testWidgets('does not back up before the 6-hour interval is due', (
+    tester,
+  ) async {
+    final repository = _LifecycleBackupRepository(
+      isSignedIn: false,
+      interval: BackupInterval.everySixHours,
+      lastBackupAt: DateTime.now().subtract(const Duration(hours: 5)),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          home: Column(
+            children: [
+              CloudBackupAutoChecker(child: SizedBox()),
+              _SignInButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    expect(repository.backupCalls, 0);
+  });
+
+  testWidgets('backs up after the 6-hour interval is due', (tester) async {
+    final repository = _LifecycleBackupRepository(
+      isSignedIn: false,
+      interval: BackupInterval.everySixHours,
+      lastBackupAt: DateTime.now().subtract(const Duration(hours: 7)),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          home: Column(
+            children: [
+              CloudBackupAutoChecker(child: SizedBox()),
+              _SignInButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    expect(repository.backupCalls, 1);
+  });
+
+  testWidgets('backs up every 6 hours within the same day', (tester) async {
+    final repository = _LifecycleBackupRepository(
+      isSignedIn: false,
+      interval: BackupInterval.everySixHours,
+      lastBackupAt: DateTime.now().subtract(const Duration(hours: 7)),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          home: Column(
+            children: [
+              CloudBackupAutoChecker(child: SizedBox()),
+              _SignInButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+
+    expect(repository.backupCalls, 2);
+  });
+
+  testWidgets('waits 24 hours instead of a new calendar day', (tester) async {
+    final repository = _LifecycleBackupRepository(
+      isSignedIn: false,
+      lastBackupAt: DateTime.now().subtract(const Duration(hours: 23)),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          home: Column(
+            children: [
+              CloudBackupAutoChecker(child: SizedBox()),
+              _SignInButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    expect(repository.backupCalls, 0);
+  });
 }
 
 class _SignInButton extends ConsumerWidget {

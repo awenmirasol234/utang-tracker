@@ -236,22 +236,10 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
   }
 
   bool _isBackupDue(BackupStatus status) {
-    if (status.interval == BackupInterval.manual) return false;
+    final window = status.interval.window;
+    if (window == null) return false;
     final lastBackupAt = status.lastBackupAt;
     if (lastBackupAt == null) return true;
-    final now = DateTime.now();
-    final localBackupTime = lastBackupAt.toLocal();
-    if (status.interval == BackupInterval.daily) {
-      return localBackupTime.year != now.year ||
-          localBackupTime.month != now.month ||
-          localBackupTime.day != now.day;
-    }
-    final dueDate = DateTime(
-      localBackupTime.year,
-      localBackupTime.month,
-      localBackupTime.day + 7,
-    );
-    final today = DateTime(now.year, now.month, now.day);
-    return !today.isBefore(dueDate);
+    return !DateTime.now().isBefore(lastBackupAt.add(window));
   }
 }
