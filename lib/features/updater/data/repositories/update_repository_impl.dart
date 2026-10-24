@@ -14,6 +14,8 @@ import 'package:utang_tracker/features/updater/domain/repositories/update_reposi
 
 const _keyLastCheck = 'updater_last_check_ms';
 const _keyDismissedVersion = 'updater_dismissed_version';
+const _keyPendingVersion = 'updater_pending_version';
+const _keyPendingPath = 'updater_pending_path';
 
 class UpdateRepositoryImpl implements UpdateRepository {
   UpdateRepositoryImpl({
@@ -410,5 +412,33 @@ class UpdateRepositoryImpl implements UpdateRepository {
     } catch (_) {
       return false;
     }
+  }
+
+  @override
+  Future<void> savePendingApk(String version, String apkPath) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyPendingVersion, version);
+    await prefs.setString(_keyPendingPath, apkPath);
+  }
+
+  @override
+  Future<PendingApk?> loadPendingApk() async {
+    final prefs = await SharedPreferences.getInstance();
+    final version = prefs.getString(_keyPendingVersion);
+    final path = prefs.getString(_keyPendingPath);
+    if (version == null || path == null) return null;
+    final file = File(path);
+    if (!await file.exists()) {
+      await clearPendingApk();
+      return null;
+    }
+    return PendingApk(version: version, apkPath: path);
+  }
+
+  @override
+  Future<void> clearPendingApk() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyPendingVersion);
+    await prefs.remove(_keyPendingPath);
   }
 }

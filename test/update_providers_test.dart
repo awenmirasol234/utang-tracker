@@ -39,10 +39,10 @@ void main() {
       calls = [];
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async {
-            calls.add(call);
-            if (call.method == 'canInstallUnknownApps') return canInstall;
-            return null;
-          });
+        calls.add(call);
+        if (call.method == 'canInstallUnknownApps') return canInstall;
+        return null;
+      });
 
       final notifier = container.read(updateNotifierProvider.notifier);
       await notifier.checkForUpdates();
@@ -64,14 +64,14 @@ void main() {
     test('granted permission installs the already-downloaded APK', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async {
-            calls.add(call);
-            if (call.method == 'openInstallSettings') {
-              canInstall = true;
-              return null;
-            }
-            if (call.method == 'canInstallUnknownApps') return canInstall;
-            return null;
-          });
+        calls.add(call);
+        if (call.method == 'openInstallSettings') {
+          canInstall = true;
+          return null;
+        }
+        if (call.method == 'canInstallUnknownApps') return canInstall;
+        return null;
+      });
 
       await container
           .read(updateNotifierProvider.notifier)
@@ -103,15 +103,15 @@ void main() {
     test('settings failure becomes an error without installing', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async {
-            calls.add(call);
-            if (call.method == 'openInstallSettings') {
-              throw PlatformException(
-                code: 'SETTINGS_FAILED',
-                message: 'No settings',
-              );
-            }
-            return false;
-          });
+        calls.add(call);
+        if (call.method == 'openInstallSettings') {
+          throw PlatformException(
+            code: 'SETTINGS_FAILED',
+            message: 'No settings',
+          );
+        }
+        return false;
+      });
 
       await container
           .read(updateNotifierProvider.notifier)
@@ -128,15 +128,15 @@ void main() {
       var settingsCalls = 0;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async {
-            calls.add(call);
-            if (call.method == 'openInstallSettings') {
-              settingsCalls++;
-              await settingsReturned.future;
-              return null;
-            }
-            if (call.method == 'canInstallUnknownApps') return false;
-            return null;
-          });
+        calls.add(call);
+        if (call.method == 'openInstallSettings') {
+          settingsCalls++;
+          await settingsReturned.future;
+          return null;
+        }
+        if (call.method == 'canInstallUnknownApps') return false;
+        return null;
+      });
       final notifier = container.read(updateNotifierProvider.notifier);
 
       final first = notifier.openInstallSettings();
@@ -192,10 +192,10 @@ void main() {
         final calls = <MethodCall>[];
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(channel, (call) async {
-              calls.add(call);
-              if (call.method == 'canInstallUnknownApps') return true;
-              return null;
-            });
+          calls.add(call);
+          if (call.method == 'canInstallUnknownApps') return true;
+          return null;
+        });
         addTearDown(() {
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
               .setMockMethodCallHandler(channel, null);
@@ -219,6 +219,192 @@ void main() {
         final state = container.read(updateNotifierProvider);
         expect(state, isA<UpdateDownloaded>());
         expect((state as UpdateDownloaded).apkPath, apkPath);
+      },
+    );
+  });
+
+  group('pending APK persistence across app restart', () {
+    const asset = ReleaseAsset(
+      name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+      browserDownloadUrl: 'https://example.com/update.apk',
+      sizeBytes: 1000,
+    );
+    const apkPath = '/updates/utang-tracker-v1.1.0.apk';
+
+    test(
+      'pending APK is saved when permission is required',
+      () async {
+        var canInstall = false;
+        const channel = MethodChannel(AppConstants.updaterChannel);
+        final calls = <MethodCall>[];
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'canInstallUnknownApps') return canInstall;
+          return null;
+        });
+        addTearDown(() {
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, null);
+        });
+
+        final repository = FakeUpdateRepository(
+          currentVersion: '1.0.0',
+          release: releaseWithAssets(const [asset]),
+          downloadPath: apkPath,
+        );
+        final container = ProviderContainer(
+          overrides: [updateRepositoryProvider.overrideWithValue(repository)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(updateNotifierProvider.notifier);
+        await notifier.checkForUpdates();
+        await notifier.download();
+        await notifier.install();
+
+        expect(repository.pendingVersion, '1.1.0');
+        expect(repository.pendingPath, apkPath);
+      },
+    );
+
+    test(
+      'pending APK is restored after app restart',
+      () async {
+        const channel = MethodChannel(AppConstants.updaterChannel);
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+          if (call.method == 'canInstallUnknownApps') return false;
+          return null;
+        });
+        addTearDown(() {
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, null);
+        });
+
+        // First app session: download and reach permission required
+        final repository = FakeUpdateRepository(
+          currentVersion: '1.0.0',
+          release: releaseWithAssets(const [asset]),
+          downloadPath: apkPath,
+        );
+        var container = ProviderContainer(
+          overrides: [updateRepositoryProvider.overrideWithValue(repository)],
+        );
+        var notifier = container.read(updateNotifierProvider.notifier);
+        await notifier.checkForUpdates();
+        await notifier.download();
+        await notifier.install();
+        expect(container.read(updateNotifierProvider), isA<UpdatePermissionRequired>());
+        container.dispose();
+
+        // Simulate app restart: new container with same repository (persisted data)
+        container = ProviderContainer(
+          overrides: [updateRepositoryProvider.overrideWithValue(repository)],
+        );
+        notifier = container.read(updateNotifierProvider.notifier);
+        // Allow async restore to complete
+        await Future<void>.delayed(Duration.zero);
+        // build() should restore the pending APK
+        expect(container.read(updateNotifierProvider), isA<UpdatePermissionRequired>());
+        final restored = container.read(updateNotifierProvider) as UpdatePermissionRequired;
+        expect(restored.apkPath, apkPath);
+        expect(restored.release.version, '1.1.0');
+        container.dispose();
+      },
+    );
+
+    test(
+      'pending APK is cleared after successful install from settings',
+      () async {
+        var canInstall = false;
+        const channel = MethodChannel(AppConstants.updaterChannel);
+        final calls = <MethodCall>[];
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'openInstallSettings') {
+            canInstall = true;
+            return null;
+          }
+          if (call.method == 'canInstallUnknownApps') return canInstall;
+          return null;
+        });
+        addTearDown(() {
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, null);
+        });
+
+        final repository = FakeUpdateRepository(
+          currentVersion: '1.0.0',
+          release: releaseWithAssets(const [asset]),
+          downloadPath: apkPath,
+        );
+        final container = ProviderContainer(
+          overrides: [updateRepositoryProvider.overrideWithValue(repository)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(updateNotifierProvider.notifier);
+        await notifier.checkForUpdates();
+        await notifier.download();
+        await notifier.install();
+
+        // Verify pending APK was saved
+        expect(repository.pendingVersion, '1.1.0');
+        expect(repository.pendingPath, apkPath);
+
+        // Open settings, permission granted, install succeeds
+        await notifier.openInstallSettings();
+
+        // Pending APK should be cleared
+        expect(repository.pendingVersion, isNull);
+        expect(repository.pendingPath, isNull);
+      },
+    );
+
+    test(
+      'pending APK is cleared on dismiss',
+      () async {
+        var canInstall = false;
+        const channel = MethodChannel(AppConstants.updaterChannel);
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+          if (call.method == 'canInstallUnknownApps') return canInstall;
+          return null;
+        });
+        addTearDown(() {
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, null);
+        });
+
+        final repository = FakeUpdateRepository(
+          currentVersion: '1.0.0',
+          release: releaseWithAssets(const [asset]),
+          downloadPath: apkPath,
+        );
+        final container = ProviderContainer(
+          overrides: [updateRepositoryProvider.overrideWithValue(repository)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(updateNotifierProvider.notifier);
+        await notifier.checkForUpdates();
+        await notifier.download();
+        await notifier.install();
+
+        // Verify pending APK was saved
+        expect(repository.pendingVersion, '1.1.0');
+        expect(repository.pendingPath, apkPath);
+
+        // Dismiss the update
+        await notifier.dismiss();
+
+        // Pending APK should be cleared
+        expect(repository.pendingVersion, isNull);
+        expect(repository.pendingPath, isNull);
+        // Dismissed version should be saved
+        expect(repository.dismissedVersion, '1.1.0');
       },
     );
   });

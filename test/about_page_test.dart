@@ -94,4 +94,13 @@ class _FakeUpdateRepository implements UpdateRepository {
 
   @override
   Future<bool> isAssetAvailable(ReleaseAsset asset) async => true;
+
+  @override
+  Future<void> savePendingApk(String version, String apkPath) async {}
+
+  @override
+  Future<PendingApk?> loadPendingApk() async => null;
+
+  @override
+  Future<void> clearPendingApk() async {}
 }

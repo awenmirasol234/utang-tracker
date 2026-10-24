@@ -25,7 +25,6 @@ class AppRelease extends Equatable {
   });
 
   final String version;
-
   final String releaseNotes;
   final bool isDraft;
   final bool isPrerelease;
@@ -39,4 +38,17 @@ class AppRelease extends Equatable {
     isPrerelease,
     assets,
   ];
+}
+
+class PendingApk extends Equatable {
+  const PendingApk({
+    required this.version,
+    required this.apkPath,
+  });
+
+  final String version;
+  final String apkPath;
+
+  @override
+  List<Object?> get props => [version, apkPath];
 }

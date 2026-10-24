@@ -34,6 +34,8 @@ class FakeUpdateRepository implements UpdateRepository {
   int fetchCount = 0;
   int lastCheckReads = 0;
   int downloadCount = 0;
+  String? pendingVersion;
+  String? pendingPath;
 
   @override
   Future<AppRelease?> fetchLatestRelease() async {
@@ -91,4 +93,22 @@ class FakeUpdateRepository implements UpdateRepository {
 
   @override
   Future<bool> isAssetAvailable(ReleaseAsset asset) async => true;
+
+  @override
+  Future<void> savePendingApk(String version, String apkPath) async {
+    pendingVersion = version;
+    pendingPath = apkPath;
+  }
+
+  @override
+  Future<PendingApk?> loadPendingApk() async {
+    if (pendingVersion == null || pendingPath == null) return null;
+    return PendingApk(version: pendingVersion!, apkPath: pendingPath!);
+  }
+
+  @override
+  Future<void> clearPendingApk() async {
+    pendingVersion = null;
+    pendingPath = null;
+  }
 }

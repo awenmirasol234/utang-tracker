@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
@@ -90,9 +92,37 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
   bool _busy = false;
   bool _openingInstallSettings = false;
+  bool _restored = false;
 
   @override
-  UpdateState build() => const UpdateIdle();
+  UpdateState build() {
+    if (!_restored) {
+      _restored = true;
+      _restorePendingApk();
+    }
+    return const UpdateIdle();
+  }
+
+  Future<void> _restorePendingApk() async {
+    try {
+      final pending = await _repo.loadPendingApk();
+      if (pending != null) {
+        // Fetch the release info to reconstruct the state
+        final release = await _repo.fetchLatestRelease();
+        if (release != null && release.version == pending.version) {
+          state = UpdatePermissionRequired(
+            release: release,
+            apkPath: pending.apkPath,
+          );
+          return;
+        }
+        // Version mismatch, clear stale pending APK
+        await _repo.clearPendingApk();
+      }
+    } catch (_) {
+      // Ignore errors during restore, start fresh
+    }
+  }
 
   UpdateRepository get _repo => ref.read(updateRepositoryProvider);
 
@@ -188,6 +218,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
           release: release,
           apkPath: apkPath,
         );
+        await _repo.savePendingApk(release.version, apkPath);
         return;
       }
 
@@ -205,7 +236,13 @@ class UpdateNotifier extends Notifier<UpdateState> {
     _openingInstallSettings = true;
     try {
       await _channel.invokeMethod<void>('openInstallSettings');
+      // After returning from settings, check if permission is now granted
       await install();
+      // If install succeeded (permission granted), clear the pending APK
+      final newState = state;
+      if (newState is UpdateDownloaded || newState is UpdateInstalling) {
+        await _repo.clearPendingApk();
+      }
     } on PlatformException catch (platformException) {
       state = UpdateError(message: platformException.message ?? 'Could not open settings.');
     } finally {
@@ -222,7 +259,10 @@ class UpdateNotifier extends Notifier<UpdateState> {
       UpdatePermissionRequired(:final release) => release.version,
       _ => null,
     };
-    if (version != null) await _repo.saveDismissedVersion(version);
+    if (version != null) {
+      await _repo.saveDismissedVersion(version);
+      await _repo.clearPendingApk();
+    }
     state = const UpdateIdle();
   }
 

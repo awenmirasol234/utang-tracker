@@ -25,4 +25,8 @@ abstract class UpdateRepository {
   Future<String> loadReleaseNotes();
 
   Future<bool> isAssetAvailable(ReleaseAsset asset);
+
+  Future<void> savePendingApk(String version, String apkPath);
+  Future<PendingApk?> loadPendingApk();
+  Future<void> clearPendingApk();
 }
