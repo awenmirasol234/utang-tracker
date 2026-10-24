@@ -36,9 +36,9 @@ class AppFilterChip extends StatelessWidget {
       selectedColor: AppColors.primaryDark,
       elevation: elevation,
       pressElevation: 2,
-      labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-        color: labelColor,
-      ),
+      labelStyle: Theme.of(
+        context,
+      ).textTheme.labelMedium?.copyWith(color: labelColor),
       backgroundColor: AppColors.surfaceCard,
       side: BorderSide(color: borderColor),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

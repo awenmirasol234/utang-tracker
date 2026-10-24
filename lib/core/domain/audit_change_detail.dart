@@ -5,11 +5,7 @@ import 'package:equatable/equatable.dart';
 /// [before] is null when the field had no value yet or when the value was
 /// removed. [after] is null when the field was removed.
 class AuditChangeDetail extends Equatable {
-  const AuditChangeDetail({
-    required this.field,
-    this.before,
-    this.after,
-  });
+  const AuditChangeDetail({required this.field, this.before, this.after});
 
   final String field;
   final String? before;

@@ -60,32 +60,35 @@ void main() {
     );
   });
 
-  test('updating a customer cannot take a name that is already taken', () async {
-    final maria = await customers.create(name: 'Maria Santos');
-    final juan = await customers.create(name: 'Juan Cruz');
+  test(
+    'updating a customer cannot take a name that is already taken',
+    () async {
+      final maria = await customers.create(name: 'Maria Santos');
+      final juan = await customers.create(name: 'Juan Cruz');
 
-    await expectLater(
-      customers.update(
-        Customer(
-          id: juan.id,
-          name: 'maria santos',
-          createdAt: juan.createdAt,
-          updatedAt: juan.updatedAt,
+      await expectLater(
+        customers.update(
+          Customer(
+            id: juan.id,
+            name: 'maria santos',
+            createdAt: juan.createdAt,
+            updatedAt: juan.updatedAt,
+          ),
         ),
-      ),
-      throwsA(isA<ConflictException>()),
-    );
+        throwsA(isA<ConflictException>()),
+      );
 
-    final updated = await customers.update(
-      Customer(
-        id: maria.id,
-        name: 'Maria Santos-Reyes',
-        createdAt: maria.createdAt,
-        updatedAt: maria.updatedAt,
-      ),
-    );
-    expect(updated.name, 'Maria Santos-Reyes');
-  });
+      final updated = await customers.update(
+        Customer(
+          id: maria.id,
+          name: 'Maria Santos-Reyes',
+          createdAt: maria.createdAt,
+          updatedAt: maria.updatedAt,
+        ),
+      );
+      expect(updated.name, 'Maria Santos-Reyes');
+    },
+  );
 
   test('a soft-deleted name can be reused', () async {
     final maria = await customers.create(name: 'Maria Santos');
@@ -95,17 +98,20 @@ void main() {
     expect(recreated.name, 'Maria Santos');
   });
 
-  test('soft-deleted customers are hidden from lists, search and counts', () async {
-    final maria = await customers.create(name: 'Maria Santos');
-    await customers.create(name: 'Juan Cruz');
-    await customers.delete(maria.id);
+  test(
+    'soft-deleted customers are hidden from lists, search and counts',
+    () async {
+      final maria = await customers.create(name: 'Maria Santos');
+      await customers.create(name: 'Juan Cruz');
+      await customers.delete(maria.id);
 
-    final all = await customers.getAll();
-    expect(all.map((customer) => customer.name), ['Juan Cruz']);
-    expect(await customers.search('Maria'), isEmpty);
-    expect(await customers.count(), 1);
-    expect(await customers.getById(maria.id), isNull);
-  });
+      final all = await customers.getAll();
+      expect(all.map((customer) => customer.name), ['Juan Cruz']);
+      expect(await customers.search('Maria'), isEmpty);
+      expect(await customers.count(), 1);
+      expect(await customers.getById(maria.id), isNull);
+    },
+  );
 
   test('a customer with an unpaid debt cannot be deleted', () async {
     final maria = await customers.create(name: 'Maria Santos');

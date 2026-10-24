@@ -63,12 +63,8 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
       quantityText = '1';
       priceText = '';
     }
-    _quantityController = TextEditingController(
-      text: quantityText,
-    );
-    _priceController = TextEditingController(
-      text: priceText,
-    );
+    _quantityController = TextEditingController(text: quantityText);
+    _priceController = TextEditingController(text: priceText);
     _unit = existing?.unit ?? DebtItemUnits.piece;
   }
 
@@ -160,8 +156,9 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
         children: [
           if (_isEditing)
             TextButton(
-              onPressed: () =>
-                  Navigator.of(context).pop(const DebtItemSheetResult.deleted()),
+              onPressed: () => Navigator.of(
+                context,
+              ).pop(const DebtItemSheetResult.deleted()),
               style: TextButton.styleFrom(foregroundColor: AppColors.danger),
               child: const Text('Delete'),
             ),
@@ -171,10 +168,7 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
             child: const Text('Cancel'),
           ),
           const SizedBox(width: AppSpacing.sm),
-          FilledButton(
-            onPressed: _save,
-            child: Text(saveLabel),
-          ),
+          FilledButton(onPressed: _save, child: Text(saveLabel)),
         ],
       ),
       child: SingleChildScrollView(
@@ -217,7 +211,9 @@ class _DebtItemSheetState extends State<DebtItemSheet> {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(child: _UnitField(unit: _unit, onTap: _pickUnit)),
+                Expanded(
+                  child: _UnitField(unit: _unit, onTap: _pickUnit),
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
@@ -352,9 +348,8 @@ class _UnitPickerSheet extends StatelessWidget {
               onTap: () async {
                 final custom = await showDialog<String>(
                   context: context,
-                  builder: (context) => _CustomUnitDialog(
-                    initialValue: initialValue,
-                  ),
+                  builder: (context) =>
+                      _CustomUnitDialog(initialValue: initialValue),
                 );
                 if (custom == null || !context.mounted) return;
                 Navigator.of(context).pop(custom);

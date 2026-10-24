@@ -4,9 +4,9 @@ import 'package:utang_tracker/core/theme/app_theme.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 
 void main() {
-  testWidgets(
-    'interactive cards use animated depth and settle after press',
-    (tester) async {
+  testWidgets('interactive cards use animated depth and settle after press', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),
@@ -39,6 +39,5 @@ void main() {
     await gesture.up();
     await tester.pumpAndSettle();
     expect(surface().elevation, 1);
-    },
-  );
+  });
 }

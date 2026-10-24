@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/domain/money.dart';
@@ -22,6 +21,8 @@ import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
+import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
+import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
 
 class RecordPaymentPage extends ConsumerStatefulWidget {
   const RecordPaymentPage({super.key, this.initialDebtId});
@@ -80,7 +81,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   Future<void> _resolveInitialDebt(String debtId) async {
     setState(() => _resolvingInitial = true);
     try {
-      final detail = await ref.read(debtRepositoryProvider).getById(debtId);
+      final detail = await ref.read(debtOperationsProvider).getById(debtId);
       if (!mounted || detail == null) return;
       final debt = detail.debt;
       if (debt.status == DebtStatus.paid) {
@@ -178,14 +179,16 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 
     setState(() => _saving = true);
     try {
-      await ref.read(paymentRepositoryProvider).recordPayment(
-        debtId: _debtId!,
-        amount: amount!,
-        paymentDate: _paymentDate,
-        paymentMethod: AppConstants.defaultPaymentMethod,
-        notes: _notesController.text,
-      );
-      notifyBusinessDataChanged(ref);
+      await ref
+          .read(paymentOperationsProvider)
+          .recordPayment(
+            debtId: _debtId!,
+            amount: amount!,
+            paymentDate: _paymentDate,
+            paymentMethod: AppConstants.defaultPaymentMethod,
+            notes: _notesController.text,
+          );
+      ref.read(dataVersionProvider.notifier).bump();
       if (!mounted) return;
       _isDirty = false;
       AppSnackBar.success(context, 'Payment recorded');
@@ -313,12 +316,9 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                 AppTextField.buildLabel(context, 'Notes'),
                 IconButton(
                   tooltip: notesTooltip,
-                  onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
-                  icon: Icon(
-                    notesIcon,
-                    size: 20,
-                    color: AppColors.textMuted,
-                  ),
+                  onPressed: () =>
+                      setState(() => _notesExpanded = !_notesExpanded),
+                  icon: Icon(notesIcon, size: 20, color: AppColors.textMuted),
                   padding: const EdgeInsets.all(AppSpacing.md),
                   constraints: const BoxConstraints(
                     minWidth: 44,
@@ -360,9 +360,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                         } else {
                           displayedBalance = after;
                         }
-                        return MoneyText(
-                          displayedBalance,
-                        );
+                        return MoneyText(displayedBalance);
                       } catch (_) {
                         return MoneyText(selected.balance);
                       }
@@ -386,7 +384,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               children: [
                 Checkbox(
                   value: _confirmed,
-                  onChanged: (value) => setState(() => _confirmed = value ?? false),
+                  onChanged: (value) =>
+                      setState(() => _confirmed = value ?? false),
                 ),
                 Expanded(
                   child: GestureDetector(
@@ -451,10 +450,7 @@ class _DebtField extends StatelessWidget {
         ),
         child: Text(
           displayLabel,
-          style: AppTextField.inputStyle(
-            context,
-            color: displayColor,
-          ),
+          style: AppTextField.inputStyle(context, color: displayColor),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -488,11 +484,14 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
       _error = null;
     });
     try {
-      final repo = ref.read(debtRepositoryProvider);
-      final unpaid = await repo.getAll(status: DebtStatus.unpaid);
-      final partial = await repo.getAll(status: DebtStatus.partial);
-      final open = [...unpaid, ...partial]
-        ..sort((first, second) => second.transactionDate.compareTo(first.transactionDate));
+      final operations = ref.read(debtOperationsProvider);
+      final unpaid = await operations.getAll(status: DebtStatus.unpaid);
+      final partial = await operations.getAll(status: DebtStatus.partial);
+      final open = <Debt>[...unpaid, ...partial]
+        ..sort(
+          (first, second) =>
+              second.transactionDate.compareTo(first.transactionDate),
+        );
 
       final trimmed = query.trim().toLowerCase();
       List<Debt> filtered;
@@ -501,7 +500,8 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
       } else {
         filtered = open
             .where(
-              (debt) => (debt.customerName ?? '').toLowerCase().contains(trimmed),
+              (debt) =>
+                  (debt.customerName ?? '').toLowerCase().contains(trimmed),
             )
             .toList();
       }

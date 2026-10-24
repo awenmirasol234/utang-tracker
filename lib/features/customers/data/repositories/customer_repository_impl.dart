@@ -42,8 +42,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final rows =
         await (_db.select(_db.customers)
               ..where(
-                (table) =>
-                    _active & table.name.lower().like('%$searchQuery%'),
+                (table) => _active & table.name.lower().like('%$searchQuery%'),
               )
               ..orderBy([(table) => OrderingTerm.asc(table.name)]))
             .get();
@@ -52,9 +51,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
   @override
   Future<Customer?> getById(String customerId) async {
-    final row = await (_db.select(
-      _db.customers,
-    )..where((table) => table.id.equals(customerId) & _active)).getSingleOrNull();
+    final row =
+        await (_db.select(_db.customers)
+              ..where((table) => table.id.equals(customerId) & _active))
+            .getSingleOrNull();
     if (row == null) return null;
     return mapCustomer(row);
   }

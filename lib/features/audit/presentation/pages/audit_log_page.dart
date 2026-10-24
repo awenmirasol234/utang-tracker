@@ -50,7 +50,8 @@ class AuditLogPage extends ConsumerWidget {
               ),
               itemCount: entries.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, index) => _AuditLogTile(entry: entries[index]),
+              itemBuilder: (context, index) =>
+                  _AuditLogTile(entry: entries[index]),
             ),
           );
         },
@@ -132,11 +133,7 @@ class _AuditLogTileState extends State<_AuditLogTile> {
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Row(
                   children: [
-                    Icon(
-                      expandIcon,
-                      size: 20,
-                      color: AppColors.textSecondary,
-                    ),
+                    Icon(expandIcon, size: 20, color: AppColors.textSecondary),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       detailsLabel,
@@ -260,11 +257,7 @@ const _friendlyFieldLabels = <String, String>{
 };
 
 /// Fields whose stored value is a `yyyy-MM-dd` day key.
-const _dateFields = <String>{
-  'Transaction date',
-  'Due date',
-  'Payment date',
-};
+const _dateFields = <String>{'Transaction date', 'Due date', 'Payment date'};
 
 class _ActionIcon extends StatelessWidget {
   const _ActionIcon({required this.action});

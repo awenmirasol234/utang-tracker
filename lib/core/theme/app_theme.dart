@@ -289,10 +289,7 @@ class AppTheme {
           } else {
             iconColor = AppColors.textMuted;
           }
-          return IconThemeData(
-            color: iconColor,
-            size: 23,
-          );
+          return IconThemeData(color: iconColor, size: 23);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);

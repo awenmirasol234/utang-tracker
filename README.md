@@ -20,13 +20,13 @@ Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers
 | Layer | Choice |
 |---|---|
 | Framework | Flutter 3.44.0 (stable, Dart SDK ^3.12.0, Android only) |
-| State | `flutter_riverpod` - plain `Provider`s in `lib/core/providers/core_providers.dart` |
+| State | `flutter_riverpod` - Riverpod providers in `lib/core/providers/core_providers.dart` and feature presentation providers |
 | DB | `drift` 2.34.1 + `drift_flutter` 0.3.0 + `sqlite3` 3.5.0, schema v8, `AppDatabase.forTesting()` for tests |
 | Nav | `go_router` `StatefulShellRoute.indexedStack` (5 tabs) |
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
 
-Version: `1.2.2+58` (release tag `v1.2.2`; the semver in `pubspec.yaml` and `assets/release_notes/current.json` must match the tag).
+Version: `1.2.3+59` (release tag `v1.2.3`; the semver in `pubspec.yaml` and `assets/release_notes/current.json` must match the tag).
 
 ## Prerequisites
 
@@ -46,12 +46,11 @@ Full details, env setup, and subsystem docs → [`docs/SETUP.md`](docs/SETUP.md)
 ```
 lib/
   main.dart / app.dart                 # app entry
-  app/coordination.dart                # central business-data invalidation helpers
   core/
     database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart (generated, committed)
     domain/ money.dart / debt_status.dart / audit_action.dart / audit_change_detail.dart
     audit/ audit_log_writer.dart / audit_details.dart / audit_details_codec.dart   # shared audit writer called by every repository write
-    providers/ core_providers.dart     # plain Riverpod Providers
+    providers/ core_providers.dart     # Riverpod DI and business-data refresh signal
     mappers: features/customers|debts|payments|audit/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart / audit_mappers.dart)
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
@@ -102,7 +101,7 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 ## Architecture Notes
 
-- **Push refresh, not streams:** after writes call `notifyBusinessDataChanged(ref)` from `lib/app/coordination.dart`; it bumps `dataVersionProvider`, which business list/detail providers watch to rebuild.
+- **Push refresh, not streams:** after writes call `ref.read(dataVersionProvider.notifier).bump()`; business list/detail providers watch `dataVersionProvider` to rebuild.
 - **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`.
 - **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL.
 - **Method channels:** `MainActivity.kt` holds the updater channel; its install-permission flow uses deprecated `onActivityResult`.

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
@@ -82,9 +81,9 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
 
     Customer? created;
     try {
-      final repo = ref.read(customerRepositoryProvider);
+      final operations = ref.read(customerOperationsProvider);
       if (widget.isEditing && _existing != null) {
-        await repo.update(
+        await operations.update(
           Customer(
             id: _existing!.id,
             name: name,
@@ -94,14 +93,14 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
             updatedAt: _existing!.updatedAt,
           ),
         );
-        notifyBusinessDataChanged(ref);
+        ref.read(dataVersionProvider.notifier).bump();
       } else {
-        created = await repo.create(
+        created = await operations.create(
           name: name,
           phone: _phoneController.text,
           notes: _notesController.text,
         );
-        notifyBusinessDataChanged(ref);
+        ref.read(dataVersionProvider.notifier).bump();
       }
 
       if (!mounted) return;
@@ -211,9 +210,9 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                   if (!confirmed || !mounted) return;
                   try {
                     await ref
-                        .read(customerRepositoryProvider)
+                        .read(customerOperationsProvider)
                         .delete(widget.customerId!);
-                    notifyBusinessDataChanged(ref);
+                    ref.read(dataVersionProvider.notifier).bump();
                     if (!mounted) return;
                     AppSnackBar.success(context, 'Customer deleted');
                     context.pop();

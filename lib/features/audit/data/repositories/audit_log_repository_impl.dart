@@ -11,10 +11,9 @@ class AuditLogRepositoryImpl implements AuditLogRepository {
 
   @override
   Future<List<AuditLogEntry>> getAll() async {
-    final rows =
-        await (_db.select(_db.auditLogs)
-              ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]))
-            .get();
+    final rows = await (_db.select(
+      _db.auditLogs,
+    )..orderBy([(table) => OrderingTerm.desc(table.createdAt)])).get();
 
     return rows.map(mapAuditLogEntry).toList();
   }

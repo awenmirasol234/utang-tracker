@@ -41,10 +41,7 @@ class AppRelease extends Equatable {
 }
 
 class PendingApk extends Equatable {
-  const PendingApk({
-    required this.version,
-    required this.apkPath,
-  });
+  const PendingApk({required this.version, required this.apkPath});
 
   final String version;
   final String apkPath;

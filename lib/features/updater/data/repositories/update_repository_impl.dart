@@ -151,13 +151,19 @@ class UpdateRepositoryImpl implements UpdateRepository {
     return _releaseFromNotesJson(decoded, version);
   }
 
-  AppRelease _releaseFromNotesJson(Map<String, dynamic> decoded, String version) {
+  AppRelease _releaseFromNotesJson(
+    Map<String, dynamic> decoded,
+    String version,
+  ) {
     final date = decoded['date'] as String? ?? '';
     final notesRaw = decoded['notes'] as Map<String, dynamic>?;
 
     List<String> stringList(dynamic value) {
       if (value is List) {
-        return value.whereType<String>().where((item) => item.isNotEmpty).toList();
+        return value
+            .whereType<String>()
+            .where((item) => item.isNotEmpty)
+            .toList();
       }
       return const [];
     }
@@ -199,12 +205,14 @@ class UpdateRepositoryImpl implements UpdateRepository {
     return [
       ReleaseAsset(
         name: '${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
-        browserDownloadUrl: '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+        browserDownloadUrl:
+            '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
         sizeBytes: 0,
       ),
       ReleaseAsset(
         name: '${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
-        browserDownloadUrl: '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+        browserDownloadUrl:
+            '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
         sizeBytes: 0,
       ),
     ];
@@ -384,7 +392,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
           const [];
     } on PlatformException catch (platformException) {
       throw AppException(
-        platformException.message ?? 'Could not determine device compatibility.',
+        platformException.message ??
+            'Could not determine device compatibility.',
       );
     }
   }

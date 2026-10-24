@@ -3,6 +3,7 @@ import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_sort_order.dart';
+import 'package:utang_tracker/features/debts/domain/usecases/debt_operations.dart';
 import 'package:utang_tracker/features/debts/domain/usecases/get_debt_detail.dart';
 
 enum DebtListFilter { all, unpaid, partial, paid, overdue }
@@ -98,4 +99,8 @@ final debtDetailProvider = FutureProvider.family<DebtDetailData?, String>((
 ) async {
   ref.watch(dataVersionProvider);
   return ref.watch(getDebtDetailUseCaseProvider)(id);
+});
+
+final debtOperationsProvider = Provider<DebtOperations>((ref) {
+  return DebtOperations(ref.watch(debtRepositoryProvider));
 });

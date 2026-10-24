@@ -367,9 +367,9 @@ class _DateFilterChip extends StatelessWidget {
       label: Text(label),
       onPressed: onSelected,
       backgroundColor: backgroundColor,
-      labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-        color: foregroundColor,
-      ),
+      labelStyle: Theme.of(
+        context,
+      ).textTheme.labelMedium?.copyWith(color: foregroundColor),
       side: BorderSide(color: borderColor),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );

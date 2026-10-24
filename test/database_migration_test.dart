@@ -183,18 +183,15 @@ INSERT INTO audit_logs (id, action, entity_id, summary, created_at) VALUES
 
     final rows = await database.select(database.auditLogs).get();
 
-    expect(
-      rows.map((row) => row.summary),
-      [
-        'Added customer Maria Santos',
-        'Updated customer Maria Santos',
-        'Deleted customer Maria Santos',
-        'New debt for Maria Santos',
-        'Updated debt for Maria Santos',
-        'Added items to debt for Maria Santos',
-        'Paid by Maria Santos (₱20.00)',
-      ],
-    );
+    expect(rows.map((row) => row.summary), [
+      'Added customer Maria Santos',
+      'Updated customer Maria Santos',
+      'Deleted customer Maria Santos',
+      'New debt for Maria Santos',
+      'Updated debt for Maria Santos',
+      'Added items to debt for Maria Santos',
+      'Paid by Maria Santos (₱20.00)',
+    ]);
   });
 
   test('schema 8 adds the audit details column', () async {

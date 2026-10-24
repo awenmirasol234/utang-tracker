@@ -49,36 +49,39 @@ void main() {
     return debt.id;
   }
 
-  test('adding items to a partially paid debt keeps payments and grows the balance', () async {
-    final debtId = await createPartialDebt();
+  test(
+    'adding items to a partially paid debt keeps payments and grows the balance',
+    () async {
+      final debtId = await createPartialDebt();
 
-    final updated = await debts.addItems(
-      debtId: debtId,
-      items: [
-        DebtItemInput(
-          productName: 'Noodles',
-          quantity: 3,
-          price: Money.fromPesoString('10'),
-        ),
-      ],
-    );
+      final updated = await debts.addItems(
+        debtId: debtId,
+        items: [
+          DebtItemInput(
+            productName: 'Noodles',
+            quantity: 3,
+            price: Money.fromPesoString('10'),
+          ),
+        ],
+      );
 
-    expect(updated.totalAmount.centavos, 6000);
-    expect(updated.paidAmount.centavos, 2000);
-    expect(updated.balance.centavos, 4000);
-    expect(updated.status, DebtStatus.partial);
+      expect(updated.totalAmount.centavos, 6000);
+      expect(updated.paidAmount.centavos, 2000);
+      expect(updated.balance.centavos, 4000);
+      expect(updated.status, DebtStatus.partial);
 
-    final detail = await debts.getById(debtId);
-    expect(detail!.items.length, 2);
-    expect(
-      detail.items.map((item) => item.productName),
-      ['Bigas', 'Noodles'],
-    );
+      final detail = await debts.getById(debtId);
+      expect(detail!.items.length, 2);
+      expect(detail.items.map((item) => item.productName), [
+        'Bigas',
+        'Noodles',
+      ]);
 
-    final recordedPayments = await payments.getByDebt(debtId);
-    expect(recordedPayments.length, 1);
-    expect(recordedPayments.first.amount.centavos, 2000);
-  });
+      final recordedPayments = await payments.getByDebt(debtId);
+      expect(recordedPayments.length, 1);
+      expect(recordedPayments.first.amount.centavos, 2000);
+    },
+  );
 
   test('adding items to a fully paid debt is rejected', () async {
     final customer = await customers.create(name: 'Maria');
@@ -107,7 +110,7 @@ void main() {
           DebtItemInput(
             productName: 'Noodles',
             quantity: 1,
-          price: Money.fromPesoString('10'),
+            price: Money.fromPesoString('10'),
           ),
         ],
       ),

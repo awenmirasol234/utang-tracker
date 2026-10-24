@@ -151,9 +151,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     String? notes,
   }) async {
     if (!amount.isPositive) {
-      throw const ValidationException(
-        'Amount must be greater than 0.',
-      );
+      throw const ValidationException('Amount must be greater than 0.');
     }
     if (paymentMethod.trim().isEmpty) {
       throw const ValidationException('Payment method is required.');
@@ -219,17 +217,15 @@ class PaymentRepositoryImpl implements PaymentRepository {
         ),
       );
 
-      final customer =
-          await (_db.select(_db.customers)
-                ..where((table) => table.id.equals(debt.customerId)))
-              .getSingleOrNull();
+      final customer = await (_db.select(
+        _db.customers,
+      )..where((table) => table.id.equals(debt.customerId))).getSingleOrNull();
 
       await writeAuditLog(
         _db,
         action: AuditAction.paymentRecorded,
         entityId: paymentId,
-        summary:
-            'Paid by ${customer?.name ?? 'Customer'} (${amount.format()})',
+        summary: 'Paid by ${customer?.name ?? 'Customer'} (${amount.format()})',
         createdAt: now,
         details: [
           AuditChangeDetail(field: 'Amount', after: amount.format()),
@@ -250,9 +246,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
       );
     });
 
-    final row = await (_db.select(
-      _db.payments,
-    )..where((table) => table.id.equals(paymentId) & _activePayment)).getSingle();
+    final row =
+        await (_db.select(_db.payments)
+              ..where((table) => table.id.equals(paymentId) & _activePayment))
+            .getSingle();
     return mapPayment(row);
   }
 }

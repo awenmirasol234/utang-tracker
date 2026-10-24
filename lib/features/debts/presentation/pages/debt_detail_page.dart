@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
@@ -163,12 +162,17 @@ class DebtDetailPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 _DebtItemsCard(items: items, totalAmount: debt.totalAmount),
                 const SizedBox(height: AppSpacing.xl),
-                Text('Payments', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Payments',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 if (payments.isEmpty)
                   Center(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.sm,
+                      ),
                       child: Text(
                         'No payments yet.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -218,11 +222,7 @@ class DebtDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _addItem(
-    BuildContext context,
-    WidgetRef ref,
-    Debt debt,
-  ) async {
+  Future<void> _addItem(BuildContext context, WidgetRef ref, Debt debt) async {
     final result = await showDebtItemSheet(context);
     if (result == null) return;
     final input = result.input;
@@ -277,10 +277,10 @@ class DebtDetailPage extends ConsumerWidget {
 
     try {
       await ref
-          .read(debtRepositoryProvider)
+          .read(debtOperationsProvider)
           .addItems(debtId: debt.id, items: [input]);
       if (!context.mounted) return;
-      notifyBusinessDataChanged(ref);
+      ref.read(dataVersionProvider.notifier).bump();
       AppSnackBar.success(context, 'Item added');
     } on AppException catch (appException) {
       if (!context.mounted) return;
@@ -358,10 +358,7 @@ class DebtDetailPage extends ConsumerWidget {
               ),
             ),
           ),
-          MoneyText(
-            money,
-            style: amountStyle,
-          ),
+          MoneyText(money, style: amountStyle),
         ],
       ),
     );

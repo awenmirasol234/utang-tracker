@@ -23,7 +23,10 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            home: const DebtFormPage(),
+          ),
         ),
       );
 
@@ -111,7 +114,10 @@ void main() {
       expect(find.text(Money.fromPesoString('75.50').format()), findsWidgets);
       expect(find.text('No items'), findsNothing);
 
-      expect(find.text(Money.fromPesoString('75.50').format()), findsNWidgets(2));
+      expect(
+        find.text(Money.fromPesoString('75.50').format()),
+        findsNWidgets(2),
+      );
 
       await tester.tap(find.widgetWithText(TextButton, 'Add item'));
       await tester.pumpAndSettle();
@@ -155,10 +161,12 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('sachet'),
         100,
-        scrollable: find.descendant(
-          of: find.byKey(const Key('app-modal-bottom-sheet')),
-          matching: find.byType(Scrollable),
-        ).last,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const Key('app-modal-bottom-sheet')),
+              matching: find.byType(Scrollable),
+            )
+            .last,
       );
       await tester.tap(find.text('sachet'));
       await tester.pumpAndSettle();
@@ -201,10 +209,7 @@ void main() {
     expect(unit, findsOneWidget);
     await tester.ensureVisible(unit);
 
-    final unitInkWell = find.ancestor(
-      of: unit,
-      matching: find.byType(InkWell),
-    );
+    final unitInkWell = find.ancestor(of: unit, matching: find.byType(InkWell));
     expect(unitInkWell, findsWidgets);
     await tester.tap(unitInkWell.first);
     await tester.pumpAndSettle();
@@ -214,10 +219,12 @@ void main() {
     await tester.scrollUntilVisible(
       find.text('Custom unit'),
       300,
-      scrollable: find.descendant(
-        of: find.byKey(const Key('app-modal-bottom-sheet')),
-        matching: find.byType(Scrollable),
-      ).last,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('app-modal-bottom-sheet')),
+            matching: find.byType(Scrollable),
+          )
+          .last,
     );
     expect(find.text('Custom unit'), findsOneWidget);
     await tester.tap(find.text('Custom unit'));
@@ -226,7 +233,9 @@ void main() {
     final dialog = find.descendant(
       of: find.byType(AlertDialog),
       matching: find.byWidgetPredicate(
-        (candidateWidget) => candidateWidget is Material && candidateWidget.type == MaterialType.card,
+        (candidateWidget) =>
+            candidateWidget is Material &&
+            candidateWidget.type == MaterialType.card,
       ),
     );
     final dialogSize = tester.getSize(dialog);
@@ -235,7 +244,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('adding items appends to list without collapsing', (tester) async {
+  testWidgets('adding items appends to list without collapsing', (
+    tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(400, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -248,14 +259,18 @@ void main() {
     expect(find.text('No items'), findsOneWidget);
     expect(find.text('Bugas'), findsNothing);
 
-    expect(find.byWidgetPredicate((candidateWidget) {
-      if (candidateWidget is Text) {
-        return candidateWidget.data != null && candidateWidget.data!.contains('Items');
-      }
-      if (candidateWidget is TextSpan) return false;
+    expect(
+      find.byWidgetPredicate((candidateWidget) {
+        if (candidateWidget is Text) {
+          return candidateWidget.data != null &&
+              candidateWidget.data!.contains('Items');
+        }
+        if (candidateWidget is TextSpan) return false;
 
-      return false;
-    }), findsNothing);
+        return false;
+      }),
+      findsNothing,
+    );
 
     expect(find.textContaining('Items'), findsOneWidget);
 
@@ -266,21 +281,27 @@ void main() {
 
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Product *'),
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Product *',
+        ),
         matching: find.byType(TextField),
       ),
       'Bugas',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Quantity *'),
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Quantity *',
+        ),
         matching: find.byType(TextField),
       ),
       '2',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Price *'),
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Price *',
+        ),
         matching: find.byType(TextField),
       ),
       '10.00',
@@ -300,21 +321,27 @@ void main() {
 
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Product *'),
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Product *',
+        ),
         matching: find.byType(TextField),
       ),
       'Kape',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Quantity *'),
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Quantity *',
+        ),
         matching: find.byType(TextField),
       ),
       '1',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Price *'),
+        of: find.byWidgetPredicate(
+          (widget) => widget is AppTextField && widget.label == 'Price *',
+        ),
         matching: find.byType(TextField),
       ),
       '5.00',
@@ -329,7 +356,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('required debt fields show and clear inline errors', (tester) async {
+  testWidgets('required debt fields show and clear inline errors', (
+    tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(400, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -415,7 +444,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('customer picker check follows the selected customer', (tester) async {
+  testWidgets('customer picker check follows the selected customer', (
+    tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(400, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -528,111 +559,112 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('confirmation dialog hides notes when empty and shows them when set', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(400, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets(
+    'confirmation dialog hides notes when empty and shows them when set',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final database = AppDatabase.forTesting();
-    addTearDown(database.close);
-    final customers = CustomerRepositoryImpl(database);
-    final customer = await customers.create(name: 'Test Customer');
+      final database = AppDatabase.forTesting();
+      addTearDown(database.close);
+      final customers = CustomerRepositoryImpl(database);
+      final customer = await customers.create(name: 'Test Customer');
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(database)],
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          home: DebtFormPage(initialCustomerId: customer.id),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [databaseProvider.overrideWithValue(database)],
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            home: DebtFormPage(initialCustomerId: customer.id),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(TextButton, 'Add item'));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) => widget is AppTextField && widget.label == 'Product *',
+      await tester.tap(find.widgetWithText(TextButton, 'Add item'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.descendant(
+          of: find.byWidgetPredicate(
+            (widget) => widget is AppTextField && widget.label == 'Product *',
+          ),
+          matching: find.byType(TextField),
         ),
-        matching: find.byType(TextField),
-      ),
-      'Rice',
-    );
-    await tester.enterText(
-      find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) => widget is AppTextField && widget.label == 'Quantity *',
+        'Rice',
+      );
+      await tester.enterText(
+        find.descendant(
+          of: find.byWidgetPredicate(
+            (widget) => widget is AppTextField && widget.label == 'Quantity *',
+          ),
+          matching: find.byType(TextField),
         ),
-        matching: find.byType(TextField),
-      ),
-      '1',
-    );
-    await tester.enterText(
-      find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) => widget is AppTextField && widget.label == 'Price *',
+        '1',
+      );
+      await tester.enterText(
+        find.descendant(
+          of: find.byWidgetPredicate(
+            (widget) => widget is AppTextField && widget.label == 'Price *',
+          ),
+          matching: find.byType(TextField),
         ),
-        matching: find.byType(TextField),
-      ),
-      '10.00',
-    );
-    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
-    await tester.pumpAndSettle();
+        '10.00',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Confirm debt?'), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('Notes'),
-      ),
-      findsNothing,
-    );
-
-    await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
-    await tester.pumpAndSettle();
-
-    await tester.scrollUntilVisible(
-      find.byTooltip('Add note'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.byTooltip('Add note'));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) =>
-              widget is AppTextField &&
-              widget.hint == 'Add any details (optional)',
+      expect(find.text('Confirm debt?'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Notes'),
         ),
-        matching: find.byType(TextField),
-      ),
-      'Deliver on Friday',
-    );
-    await tester.pump();
+        findsNothing,
+      );
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
 
-    expect(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('Notes'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('Deliver on Friday'),
-      ),
-      findsOneWidget,
-    );
-  });
+      await tester.scrollUntilVisible(
+        find.byTooltip('Add note'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.byTooltip('Add note'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.descendant(
+          of: find.byWidgetPredicate(
+            (widget) =>
+                widget is AppTextField &&
+                widget.hint == 'Add any details (optional)',
+          ),
+          matching: find.byType(TextField),
+        ),
+        'Deliver on Friday',
+      );
+      await tester.pump();
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Notes'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Deliver on Friday'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 }

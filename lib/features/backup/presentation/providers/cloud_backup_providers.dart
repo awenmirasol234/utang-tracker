@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/user_facing_error.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
@@ -149,7 +148,7 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     try {
       final status = await _repository.restore(backup);
       ref.invalidate(databaseProvider);
-      notifyBusinessDataChangedFromRef(ref);
+      ref.read(dataVersionProvider.notifier).bump();
       state = state.copyWith(status: status, clearOperation: true);
       return true;
     } catch (error) {

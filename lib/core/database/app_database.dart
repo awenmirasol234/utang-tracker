@@ -144,11 +144,7 @@ CREATE TABLE audit_logs (
       await customStatement(
         'UPDATE audit_logs SET summary = ? || SUBSTR(summary, LENGTH(?) + 1) '
         'WHERE summary LIKE ?',
-        [
-          replacement.english,
-          replacement.legacy,
-          '${replacement.legacy}%',
-        ],
+        [replacement.english, replacement.legacy, '${replacement.legacy}%'],
       );
     }
   }

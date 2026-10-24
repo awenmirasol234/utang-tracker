@@ -83,9 +83,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(
-      _db.debts.id.equals(debtId) & _activeDebt & _activeCustomer,
-    );
+    ])..where(_db.debts.id.equals(debtId) & _activeDebt & _activeCustomer);
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -343,9 +341,7 @@ class DebtRepositoryImpl implements DebtRepository {
       throw const NotFoundException('Debt not found.');
     }
     if (existing.debt.status == DebtStatus.paid) {
-      throw const ConflictException(
-        'Cannot add items to a fully paid debt.',
-      );
+      throw const ConflictException('Cannot add items to a fully paid debt.');
     }
 
     _validateItems(items);
@@ -396,7 +392,10 @@ class DebtRepositoryImpl implements DebtRepository {
             'Added items to debt for ${existing.debt.customerName ?? 'Customer'}',
         createdAt: now,
         details: [
-          AuditChangeDetail(field: 'Items added', after: _itemsSummary(prepared)),
+          AuditChangeDetail(
+            field: 'Items added',
+            after: _itemsSummary(prepared),
+          ),
           ...auditChange(
             field: 'Total',
             before: existing.debt.totalAmount.format(),
@@ -494,17 +493,20 @@ class DebtRepositoryImpl implements DebtRepository {
 
   /// Describes the items of a debt for the audit log.
   String _itemsSummary(
-    List<({String productName, double quantity, String unit, Money price})> items,
+    List<({String productName, double quantity, String unit, Money price})>
+    items,
   ) {
     if (items.isEmpty) return 'No items';
-    final names = items.map((item) {
-      final unitName = DebtItemUnits.displayNameForQuantity(
-        item.unit,
-        item.quantity,
-      );
-      return '${item.productName} x${DebtItemUnits.formatQuantity(item.quantity)} '
-          '$unitName (${item.price.format()})';
-    }).join(', ');
+    final names = items
+        .map((item) {
+          final unitName = DebtItemUnits.displayNameForQuantity(
+            item.unit,
+            item.quantity,
+          );
+          return '${item.productName} x${DebtItemUnits.formatQuantity(item.quantity)} '
+              '$unitName (${item.price.format()})';
+        })
+        .join(', ');
     String label = '${items.length} items';
     if (items.length == 1) {
       label = '1 item';

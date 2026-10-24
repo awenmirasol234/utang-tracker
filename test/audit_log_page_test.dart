@@ -100,17 +100,14 @@ void main() {
       final entries = await auditLogs.getAll();
 
       expect(entries.length, 6);
-      expect(
-        entries.map((entry) => entry.action),
-        [
-          AuditAction.paymentRecorded,
-          AuditAction.debtItemsAdded,
-          AuditAction.debtUpdated,
-          AuditAction.debtCreated,
-          AuditAction.customerUpdated,
-          AuditAction.customerCreated,
-        ],
-      );
+      expect(entries.map((entry) => entry.action), [
+        AuditAction.paymentRecorded,
+        AuditAction.debtItemsAdded,
+        AuditAction.debtUpdated,
+        AuditAction.debtCreated,
+        AuditAction.customerUpdated,
+        AuditAction.customerCreated,
+      ]);
       expect(entries.first.summary, 'Paid by Maria Santos (₱20.00)');
       expect(entries[1].summary, 'Added items to debt for Maria Santos');
       expect(entries[2].summary, 'Updated debt for Maria Santos');
@@ -161,11 +158,7 @@ void main() {
           before: 'Maria',
           after: 'Maria Santos',
         ),
-        const AuditChangeDetail(
-          field: 'Phone',
-          before: '0917',
-          after: '0918',
-        ),
+        const AuditChangeDetail(field: 'Phone', before: '0917', after: '0918'),
         const AuditChangeDetail(field: 'Notes', before: null, after: 'Tagalog'),
       ]);
     });
@@ -224,18 +217,15 @@ void main() {
   });
 
   testWidgets('audit log page lists recorded actions', (tester) async {
-    await _pumpPage(
-      tester,
-      [
-        AuditLogEntry(
-          id: '1',
-          action: AuditAction.customerCreated,
-          entityId: 'customer-1',
-          summary: 'Added customer Maria Santos',
-          createdAt: DateTime.utc(2030, 1, 1, 10),
-        ),
-      ],
-    );
+    await _pumpPage(tester, [
+      AuditLogEntry(
+        id: '1',
+        action: AuditAction.customerCreated,
+        entityId: 'customer-1',
+        summary: 'Added customer Maria Santos',
+        createdAt: DateTime.utc(2030, 1, 1, 10),
+      ),
+    ]);
 
     expect(find.text('Audit Log'), findsOneWidget);
     expect(find.text('Customer added'), findsOneWidget);
@@ -257,7 +247,11 @@ void main() {
         summary: 'Updated customer Maria Santos',
         createdAt: DateTime.utc(2030, 1, 1, 10),
         details: const [
-          AuditChangeDetail(field: 'Name', before: 'Maria', after: 'Maria Santos'),
+          AuditChangeDetail(
+            field: 'Name',
+            before: 'Maria',
+            after: 'Maria Santos',
+          ),
         ],
       ),
     ]);
@@ -314,33 +308,33 @@ void main() {
     expect(find.text('Method'), findsNothing);
   });
 
-  testWidgets('audit log tile hides the details toggle when nothing was recorded', (
-    tester,
-  ) async {
-    await _pumpPage(tester, [
-      AuditLogEntry(
-        id: '1',
-        action: AuditAction.customerCreated,
-        entityId: 'customer-1',
-        summary: 'Added customer Maria Santos',
-        createdAt: DateTime.utc(2030, 1, 1, 10),
-      ),
-    ]);
+  testWidgets(
+    'audit log tile hides the details toggle when nothing was recorded',
+    (tester) async {
+      await _pumpPage(tester, [
+        AuditLogEntry(
+          id: '1',
+          action: AuditAction.customerCreated,
+          entityId: 'customer-1',
+          summary: 'Added customer Maria Santos',
+          createdAt: DateTime.utc(2030, 1, 1, 10),
+        ),
+      ]);
 
-    expect(find.text('Show details'), findsNothing);
-    expect(find.text('Hide details'), findsNothing);
-    expect(find.text('Record id'), findsNothing);
-    expect(find.text('customer_created'), findsNothing);
-  });
+      expect(find.text('Show details'), findsNothing);
+      expect(find.text('Hide details'), findsNothing);
+      expect(find.text('Record id'), findsNothing);
+      expect(find.text('customer_created'), findsNothing);
+    },
+  );
 }
 
-Future<void> _pumpPage(
-  WidgetTester tester,
-  List<AuditLogEntry> entries,
-) async {
+Future<void> _pumpPage(WidgetTester tester, List<AuditLogEntry> entries) async {
   final container = ProviderContainer(
     overrides: [
-      auditLogRepositoryProvider.overrideWithValue(_FakeAuditLogRepository(entries)),
+      auditLogRepositoryProvider.overrideWithValue(
+        _FakeAuditLogRepository(entries),
+      ),
     ],
   );
   addTearDown(container.dispose);

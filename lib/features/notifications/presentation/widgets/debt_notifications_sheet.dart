@@ -109,10 +109,7 @@ class _AttentionSummary extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: iconColor,
-          ),
+          Icon(icon, color: iconColor),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
@@ -290,9 +287,9 @@ class _EmptyNotifications extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'No reminders',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: AppColors.textPrimary,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(color: AppColors.textPrimary),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(

@@ -70,16 +70,15 @@ flutter doctor      # Android toolchain must be green
 ```
 lib/
   main.dart / app.dart                 # app entry
-  app/coordination.dart                # central business-data invalidation helpers
   core/database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart
   core/domain/ money.dart / debt_status.dart / audit_action.dart
   core/audit/ audit_log_writer.dart   # shared audit writer called by every repository write
-  core/providers/ core_providers.dart  # plain Riverpod Providers
+  core/providers/ core_providers.dart  # Riverpod DI and business-data refresh signal
   mappers: features/customers|debts|payments|audit/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart / audit_mappers.dart)
   core/router/ app_router.dart / app_shell.dart   # go_router StatefulShellRoute.indexedStack (5 tabs)
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
   features/customers|debts|payments|dashboard|notifications|audit|backup|updater|settings  # 9 dirs
-    domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, updater)
+    domain/entities + domain/repositories (interface) + domain/usecases (customers, debts, payments, updater)
     data/repositories (impl) + data/repositories/*_mappers.dart
     presentation/pages + presentation/providers + presentation/widgets
   android/app/src/main/kotlin/.../MainActivity.kt  # updater channel com.example.utang_tracker/updater
@@ -135,16 +134,15 @@ State and navigation details are in §4.
 - `go_router ^17.3.0`, `StatefulShellRoute.indexedStack` with 5 tabs: `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`. Top-level routes outside the shell: `/about`, `/audit-log`, `/cloud-backup`.
 - Add new top-level routes in `app_router.dart` and add the shell branch in `app_shell.dart`.
 
-### 4.6 State (Riverpod) — push invalidation, not streams
+### 4.6 State (Riverpod) — push refresh, not streams
 
 - **DI:** plain `Provider`s in `lib/core/providers/core_providers.dart`. Repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`.
 - **Refresh model:** Drift reactive streams are NOT used. After any write, call:
   ```dart
-  notifyBusinessDataChanged(ref);
+  ref.read(dataVersionProvider.notifier).bump();
   ```
-  from `lib/app/coordination.dart`. It bumps `dataVersionProvider`
-  (`lib/core/providers/core_providers.dart`); all business list/detail providers
-  watch it and rebuild automatically, so no per-feature registration is needed.
+  All business list/detail providers watch `dataVersionProvider` and rebuild
+  automatically, so no per-feature registration is needed.
 
 ### 4.7 Release process
 

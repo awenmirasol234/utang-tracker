@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
+import 'package:utang_tracker/features/customers/domain/usecases/customer_operations.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
 
 enum CustomerSortOrder {
@@ -82,16 +83,19 @@ List<Customer> applyCustomerSort(
   CustomerSortOrder sort,
 ) {
   final sorted = List<Customer>.from(customers);
-  final int Function(Customer first, Customer second) comparator = switch (sort) {
-    CustomerSortOrder.nameAsc => (first, second) =>
-      first.name.toLowerCase().compareTo(second.name.toLowerCase()),
-    CustomerSortOrder.nameDesc => (first, second) =>
-      second.name.toLowerCase().compareTo(first.name.toLowerCase()),
-    CustomerSortOrder.newest => (first, second) =>
-      second.createdAt.compareTo(first.createdAt),
-    CustomerSortOrder.oldest => (first, second) =>
-      first.createdAt.compareTo(second.createdAt),
-  };
+  final int Function(Customer first, Customer second) comparator =
+      switch (sort) {
+        CustomerSortOrder.nameAsc =>
+          (first, second) =>
+              first.name.toLowerCase().compareTo(second.name.toLowerCase()),
+        CustomerSortOrder.nameDesc =>
+          (first, second) =>
+              second.name.toLowerCase().compareTo(first.name.toLowerCase()),
+        CustomerSortOrder.newest =>
+          (first, second) => second.createdAt.compareTo(first.createdAt),
+        CustomerSortOrder.oldest =>
+          (first, second) => first.createdAt.compareTo(second.createdAt),
+      };
   sorted.sort(comparator);
   return sorted;
 }
@@ -109,3 +113,7 @@ final customerDetailProvider =
       ref.watch(dataVersionProvider);
       return ref.watch(getCustomerDetailUseCaseProvider)(customerId);
     });
+
+final customerOperationsProvider = Provider<CustomerOperations>((ref) {
+  return CustomerOperations(ref.watch(customerRepositoryProvider));
+});

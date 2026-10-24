@@ -23,5 +23,12 @@ class AuditLogEntry extends Equatable {
   final List<AuditChangeDetail> details;
 
   @override
-  List<Object?> get props => [id, action, entityId, summary, createdAt, details];
+  List<Object?> get props => [
+    id,
+    action,
+    entityId,
+    summary,
+    createdAt,
+    details,
+  ];
 }

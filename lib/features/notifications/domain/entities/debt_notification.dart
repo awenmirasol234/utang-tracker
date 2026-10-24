@@ -64,7 +64,9 @@ class DebtNotificationFeed extends Equatable {
       final dueOrder = first.dueDate.compareTo(second.dueDate);
       if (dueOrder != 0) return dueOrder;
 
-      return second.debt.balance.centavos.compareTo(first.debt.balance.centavos);
+      return second.debt.balance.centavos.compareTo(
+        first.debt.balance.centavos,
+      );
     });
     return DebtNotificationFeed(items: List.unmodifiable(items));
   }

@@ -19,7 +19,7 @@ void main() {
     final payment = _payment(
       id: 'payment-id',
       debtId: 'debt-id',
-       amount: '125',
+      amount: '125',
       paymentDate: paymentDate,
       paymentMethod: 'Cash',
       customerName: 'Maria Santos',

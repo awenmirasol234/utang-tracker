@@ -25,7 +25,7 @@
 
 ## Architecture
 
-- Data refresh is push-based: after writes call `notifyBusinessDataChanged(ref)` from `lib/app/coordination.dart`, which bumps `dataVersionProvider` in `lib/core/providers/core_providers.dart` — NOT Drift reactive streams. Business list/detail providers watch `dataVersionProvider` and rebuild automatically.
+- Data refresh is push-based: after writes call `ref.read(dataVersionProvider.notifier).bump()` — NOT Drift reactive streams. Business list/detail providers watch `dataVersionProvider` and rebuild automatically.
 - DI: plain Riverpod `Provider`s in `lib/core/providers/core_providers.dart`; repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`
 - Repo tests use `AppDatabase.forTesting()` (in-memory SQLite); migration tests seed legacy schemas via raw SQL
 - Android method channels live in `android/.../MainActivity.kt`: updater (`com.example.utang_tracker/updater`); the updater permission flow uses deprecated onActivityResult

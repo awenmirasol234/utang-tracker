@@ -110,9 +110,8 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                             releaseNotes.date,
                             locale: Localizations.localeOf(context).toString(),
                           ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textMuted,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textMuted),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         for (
@@ -120,16 +119,13 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                           index < releaseNotes.sections.length;
                           index++
                         ) ...[
-                          if (index > 0)
-                            const SizedBox(height: AppSpacing.md),
+                          if (index > 0) const SizedBox(height: AppSpacing.md),
                           Text(
                             releaseNotes.sections[index].label,
                             style: Theme.of(context).textTheme.labelMedium,
                           ),
                           const SizedBox(height: AppSpacing.xs),
-                          for (
-                            final note in releaseNotes.sections[index].notes
-                          )
+                          for (final note in releaseNotes.sections[index].notes)
                             ReleaseNoteBullet(note),
                         ],
                       ],

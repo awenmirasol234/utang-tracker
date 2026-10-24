@@ -37,8 +37,7 @@ class CheckForUpdates {
       if (!available) {
         return const CheckResult(
           updateAvailable: false,
-          error:
-              'Update is being prepared, please try again in a few minutes.',
+          error: 'Update is being prepared, please try again in a few minutes.',
         );
       }
     } on AppException catch (appException) {

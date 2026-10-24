@@ -160,8 +160,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
       );
     } on AppException catch (appException) {
       final isNetwork =
-          appException.message.contains('internet') || appException.message.contains('Network');
-      state = UpdateError(message: appException.message, isNetworkError: isNetwork);
+          appException.message.contains('internet') ||
+          appException.message.contains('Network');
+      state = UpdateError(
+        message: appException.message,
+        isNetworkError: isNetwork,
+      );
     } catch (caughtError) {
       state = UpdateError(message: userFacingError(caughtError));
     } finally {
@@ -185,8 +189,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
       state = UpdateDownloaded(release: current.release, apkPath: path);
     } on AppException catch (appException) {
       final isNetwork =
-          appException.message.contains('internet') || appException.message.contains('interrupted');
-      state = UpdateError(message: appException.message, isNetworkError: isNetwork);
+          appException.message.contains('internet') ||
+          appException.message.contains('interrupted');
+      state = UpdateError(
+        message: appException.message,
+        isNetworkError: isNetwork,
+      );
     } catch (caughtError) {
       state = UpdateError(message: userFacingError(caughtError));
     } finally {
@@ -214,10 +222,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
       final canInstall =
           await _channel.invokeMethod<bool>('canInstallUnknownApps') ?? false;
       if (!canInstall) {
-        state = UpdatePermissionRequired(
-          release: release,
-          apkPath: apkPath,
-        );
+        state = UpdatePermissionRequired(release: release, apkPath: apkPath);
         await _repo.savePendingApk(release.version, apkPath);
         return;
       }
@@ -227,7 +232,9 @@ class UpdateNotifier extends Notifier<UpdateState> {
       // The installer can be cancelled, so the downloaded APK stays offerable.
       state = UpdateDownloaded(release: release, apkPath: apkPath);
     } on PlatformException catch (platformException) {
-      state = UpdateError(message: platformException.message ?? 'Installation failed.');
+      state = UpdateError(
+        message: platformException.message ?? 'Installation failed.',
+      );
     }
   }
 
@@ -244,7 +251,9 @@ class UpdateNotifier extends Notifier<UpdateState> {
         await _repo.clearPendingApk();
       }
     } on PlatformException catch (platformException) {
-      state = UpdateError(message: platformException.message ?? 'Could not open settings.');
+      state = UpdateError(
+        message: platformException.message ?? 'Could not open settings.',
+      );
     } finally {
       _openingInstallSettings = false;
     }

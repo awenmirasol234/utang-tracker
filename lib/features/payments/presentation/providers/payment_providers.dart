@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/local_date_time.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
+import 'package:utang_tracker/features/payments/domain/usecases/payment_operations.dart';
 
 class PaymentFilters {
   const PaymentFilters({
@@ -91,6 +92,10 @@ final paymentFilterOptionsProvider = FutureProvider<PaymentFilterOptions>((
     paymentMethods: methods,
     hasPayments: payments.isNotEmpty,
   );
+});
+
+final paymentOperationsProvider = Provider<PaymentOperations>((ref) {
+  return PaymentOperations(ref.watch(paymentRepositoryProvider));
 });
 
 final paymentsListProvider =

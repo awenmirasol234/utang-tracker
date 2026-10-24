@@ -19,7 +19,10 @@ void main() {
     expect(theme.listTileTheme.tileColor, AppColors.surfaceCard);
     expect(theme.listTileTheme.selectedTileColor, AppColors.primaryLight);
     expect(theme.textSelectionTheme.cursorColor, AppColors.primaryDark);
-    expect(theme.textSelectionTheme.selectionHandleColor, AppColors.primaryDark);
+    expect(
+      theme.textSelectionTheme.selectionHandleColor,
+      AppColors.primaryDark,
+    );
   });
 
   test('button elevation responds to interaction state', () {

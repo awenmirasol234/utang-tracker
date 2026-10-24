@@ -100,7 +100,9 @@ class DateFormatters {
   static bool isSameLocalDay(DateTime first, DateTime second) {
     final localA = first.toLocal();
     final localB = second.toLocal();
-    return localA.year == localB.year && localA.month == localB.month && localA.day == localB.day;
+    return localA.year == localB.year &&
+        localA.month == localB.month &&
+        localA.day == localB.day;
   }
 
   static String _smartDateLabel(

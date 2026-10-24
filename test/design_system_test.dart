@@ -131,7 +131,8 @@ void main() {
       for (final match in spacingCall.allMatches(source)) {
         final arguments = match.group(1)!;
         if (!rawToken.hasMatch(arguments)) continue;
-        final line = '\n'.allMatches(source.substring(0, match.start)).length + 1;
+        final line =
+            '\n'.allMatches(source.substring(0, match.start)).length + 1;
         offenders.add(
           '${entity.path}:$line: ${match.group(0)!.replaceAll('\n', ' ')}',
         );

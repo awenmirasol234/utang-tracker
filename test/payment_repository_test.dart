@@ -81,7 +81,7 @@ void main() {
     expect(
       () => payments.recordPayment(
         debtId: debt.id,
-      amount: Money.fromPesoString('1'),
+        amount: Money.fromPesoString('1'),
         paymentDate: DateTime.now(),
         paymentMethod: 'Cash',
       ),
@@ -181,7 +181,7 @@ void main() {
     expect(
       () => payments.recordPayment(
         debtId: debt.id,
-      amount: Money.fromPesoString('50'),
+        amount: Money.fromPesoString('50'),
         paymentDate: DateTime.now(),
         paymentMethod: 'Cash',
       ),
@@ -235,7 +235,7 @@ void main() {
     await expectLater(
       () => payments.recordPayment(
         debtId: debt.id,
-      amount: Money.fromPesoString('5'),
+        amount: Money.fromPesoString('5'),
         paymentDate: DateTime.now(),
         paymentMethod: '   ',
       ),
@@ -299,7 +299,10 @@ void main() {
     await customers.delete(customer.id);
 
     final listed = await customers.getAll();
-    expect(listed.where((customerEntry) => customerEntry.id == customer.id), isEmpty);
+    expect(
+      listed.where((customerEntry) => customerEntry.id == customer.id),
+      isEmpty,
+    );
     expect(await customers.getById(customer.id), isNull);
 
     final row = await (appDatabase.select(
@@ -334,6 +337,9 @@ void main() {
     await customers.delete(customer.id);
 
     final listed = await customers.getAll();
-    expect(listed.where((customerEntry) => customerEntry.id == customer.id), isEmpty);
+    expect(
+      listed.where((customerEntry) => customerEntry.id == customer.id),
+      isEmpty,
+    );
   });
 }

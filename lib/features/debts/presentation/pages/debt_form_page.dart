@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
@@ -21,6 +20,7 @@ import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
+import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/domain/usecases/get_debt_detail.dart';
@@ -66,7 +66,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _resolveCustomerName(String customerId) async {
-    final customer = await ref.read(customerRepositoryProvider).getById(customerId);
+    final customer = await ref
+        .read(customerOperationsProvider)
+        .getById(customerId);
     if (!mounted || customer == null) return;
     if (_customerId != customerId) return;
     setState(() => _customerName = customer.name);
@@ -314,9 +316,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   notesText,
-                  style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
+                  style: Theme.of(
+                    dialogContext,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary),
                 ),
               ],
             ],
@@ -339,25 +341,25 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
     setState(() => _saving = true);
     try {
-      final repo = ref.read(debtRepositoryProvider);
+      final operations = ref.read(debtOperationsProvider);
       if (widget.isEditing) {
-        await repo.update(
+        await operations.update(
           debtId: widget.debtId!,
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
           items: items,
         );
-        notifyBusinessDataChanged(ref);
+        ref.read(dataVersionProvider.notifier).bump();
       } else {
-        await repo.create(
+        await operations.create(
           customerId: _customerId!,
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
           items: items,
         );
-        notifyBusinessDataChanged(ref);
+        ref.read(dataVersionProvider.notifier).bump();
       }
 
       if (!mounted) return;
@@ -368,10 +370,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       } else {
         successMessage = 'Debt recorded';
       }
-      AppSnackBar.success(
-        context,
-        successMessage,
-      );
+      AppSnackBar.success(context, successMessage);
       context.pop();
     } on AppException catch (appException) {
       if (!mounted) return;
@@ -528,9 +527,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         if (!didPop) _confirmBack();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-        ),
+        appBar: AppBar(title: Text(title)),
         bottomNavigationBar: _buildBottomBar(),
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.pagePadding),
@@ -590,9 +587,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 child: Center(
                   child: Text(
                     'No items',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -658,8 +655,11 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                       size: 20,
                                       color: AppColors.textMuted,
                                     ),
-                                    onPressed: () => _showItemDialog(index: index),
-                                    padding: const EdgeInsets.all(AppSpacing.md),
+                                    onPressed: () =>
+                                        _showItemDialog(index: index),
+                                    padding: const EdgeInsets.all(
+                                      AppSpacing.md,
+                                    ),
                                     constraints: const BoxConstraints(
                                       minWidth: 44,
                                       minHeight: 44,
@@ -692,11 +692,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                   tooltip: notesTooltip,
                   onPressed: () =>
                       setState(() => _notesExpanded = !_notesExpanded),
-                  icon: Icon(
-                    notesIcon,
-                    size: 20,
-                    color: AppColors.textMuted,
-                  ),
+                  icon: Icon(notesIcon, size: 20, color: AppColors.textMuted),
                   padding: const EdgeInsets.all(AppSpacing.md),
                   constraints: const BoxConstraints(
                     minWidth: 44,
@@ -766,11 +762,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            AppButton(
-              label: saveLabel,
-              onPressed: _save,
-              isLoading: _saving,
-            ),
+            AppButton(label: saveLabel, onPressed: _save, isLoading: _saving),
           ],
         ),
       ),
@@ -819,18 +811,11 @@ class _CustomerField extends StatelessWidget {
       child: InputDecorator(
         decoration: InputDecoration(
           errorText: errorText,
-          suffixIcon: Icon(
-            suffixIcon,
-            size: 20,
-            color: AppColors.textMuted,
-          ),
+          suffixIcon: Icon(suffixIcon, size: 20, color: AppColors.textMuted),
         ),
         child: Text(
           displayName,
-          style: AppTextField.inputStyle(
-            context,
-            color: displayColor,
-          ),
+          style: AppTextField.inputStyle(context, color: displayColor),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -868,12 +853,12 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
     });
     try {
       final trimmed = query.trim();
-      final repo = ref.read(customerRepositoryProvider);
+      final operations = ref.read(customerOperationsProvider);
       List<Customer> results;
       if (trimmed.isEmpty) {
-        results = await repo.getAll();
+        results = await operations.getAll();
       } else {
-        results = await repo.search(trimmed);
+        results = await operations.search(trimmed);
       }
       if (!mounted) return;
       setState(() {
@@ -1031,9 +1016,7 @@ class _DateField extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(10),
           child: InputDecorator(
-            decoration: InputDecoration(
-              suffixIcon: suffixIcon,
-            ),
+            decoration: InputDecoration(suffixIcon: suffixIcon),
             child: Text(
               value,
               style: AppTextField.inputStyle(context),
