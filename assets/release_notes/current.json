@@ -1,6 +1,6 @@
 {
-  "version": "1.2.2",
-  "date": "2026-10-23",
+  "version": "1.2.3",
+  "date": "2026-10-24",
   "notes": {
     "added": [],
     "changed": [
@@ -8,6 +8,8 @@
       "The Google Drive connection flow explains account selection and Drive permission prompts",
       "The connected Google Drive state uses clearer branding and consistent backup interval sizing"
     ],
-    "fixed": []
+    "fixed": [
+      "Downloaded update APK is preserved when the app restarts during the 'Install unknown apps' permission flow"
+    ]
   }
 }
