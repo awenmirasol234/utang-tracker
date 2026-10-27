@@ -23,6 +23,12 @@ class CloudBackupPage extends ConsumerStatefulWidget {
 
 class _CloudBackupPageState extends ConsumerState<CloudBackupPage> {
   @override
+  void initState() {
+    super.initState();
+    ref.read(cloudBackupNotifierProvider.notifier).loadStatus();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(cloudBackupNotifierProvider);
     return Scaffold(

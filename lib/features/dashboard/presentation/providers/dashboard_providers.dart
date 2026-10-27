@@ -9,7 +9,7 @@ final dashboardSummaryProvider =
 
 class DashboardSummaryNotifier extends AsyncNotifier<DashboardSummary> {
   @override
-  Future<DashboardSummary> build() {
+  Future<DashboardSummary> build() async {
     ref.watch(dataVersionProvider);
     return ref.watch(dashboardRepositoryProvider).getDashboardData();
   }

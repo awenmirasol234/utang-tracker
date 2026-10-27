@@ -1,20 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
+import 'package:utang_tracker/features/customers/domain/entities/customer_sort_order.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/customer_operations.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
-
-enum CustomerSortOrder {
-  nameAsc('Name A-Z'),
-  nameDesc('Name Z-A'),
-  newest('Newest'),
-  oldest('Oldest');
-
-  const CustomerSortOrder(this.label);
-
-  final String label;
-}
 
 class CustomerSearchQueryNotifier extends Notifier<String> {
   @override
@@ -76,28 +66,6 @@ Future<List<Customer>> _loadCustomers(
     return repo.getAll();
   }
   return repo.search(query);
-}
-
-List<Customer> applyCustomerSort(
-  List<Customer> customers,
-  CustomerSortOrder sort,
-) {
-  final sorted = List<Customer>.from(customers);
-  final int Function(Customer first, Customer second) comparator =
-      switch (sort) {
-        CustomerSortOrder.nameAsc =>
-          (first, second) =>
-              first.name.toLowerCase().compareTo(second.name.toLowerCase()),
-        CustomerSortOrder.nameDesc =>
-          (first, second) =>
-              second.name.toLowerCase().compareTo(first.name.toLowerCase()),
-        CustomerSortOrder.newest =>
-          (first, second) => second.createdAt.compareTo(first.createdAt),
-        CustomerSortOrder.oldest =>
-          (first, second) => first.createdAt.compareTo(second.createdAt),
-      };
-  sorted.sort(comparator);
-  return sorted;
 }
 
 final getCustomerDetailUseCaseProvider = Provider((ref) {

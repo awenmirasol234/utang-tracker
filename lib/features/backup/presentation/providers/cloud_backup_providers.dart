@@ -213,6 +213,16 @@ class CloudBackupNotifier extends Notifier<CloudBackupState> {
     }
   }
 
+  Future<void> loadStatus() async {
+    if (state.isBusy) return;
+    try {
+      final status = await _repository.getStatus();
+      state = state.copyWith(status: status, clearSelectedBackup: true);
+    } catch (_) {
+      // A passive check on page open must not show an error.
+    }
+  }
+
   Future<void> backupIfDue() async {
     try {
       final status = await _repository.getStatus();

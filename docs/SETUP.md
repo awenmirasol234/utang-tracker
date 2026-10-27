@@ -162,12 +162,15 @@ Version is triple-locked — CI fails if any drift:
 ### 4.8 Google Drive cloud backup
 
 Cloud backup uses Google Sign-In and the Google Drive API. The app keeps the
-five newest SQLite backups per Google account. Users can choose daily, weekly,
-or manual-only automatic backups. Automatic backup starts only after explicit
-sign-in during the current app session, runs when due, and checks again when
-the app resumes. Automatic failures are silent so they do not block startup or
-interrupt the user. Manual backup and restore show errors in the cloud-backup
-page. The page shows the last backup status, interval settings, and collapsible
+five newest SQLite backups per Google account. Users can choose every 6 hours,
+daily, weekly, or manual-only automatic backups. Automatic backup starts only
+after the app detects a connected account during the current app session
+(sign-in, or opening the cloud backup page), runs when due, and checks again
+when the app resumes. Automatic failures are silent so they do not block
+startup or interrupt the user. Manual backup and restore show errors in the
+cloud-backup page. The page loads the saved connection when it opens, so an
+account Google still authorizes shows its backup history without signing in
+again. The page shows the last backup status, interval settings, and collapsible
 backup history. Restore replaces the local database after an explicit
 confirmation and refreshes the business-data providers. The existing
 `utang_tracker_latest.sqlite` file is included in history when upgrading to

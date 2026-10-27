@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
-import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
+import 'package:utang_tracker/features/customers/domain/entities/customer_sort_order.dart';
 
 void main() {
   final older = _customer('1', 'Ana', DateTime.utc(2024));

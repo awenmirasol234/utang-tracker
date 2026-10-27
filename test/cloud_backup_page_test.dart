@@ -39,7 +39,46 @@ void main() {
     );
     expect(find.text('Connect Google Drive'), findsOneWidget);
     expect(find.bySemanticsLabel('Google'), findsOneWidget);
-    expect(repository.statusCalls, 0);
+    expect(repository.statusCalls, 1);
+  });
+
+  testWidgets('cloud backup page loads a saved connection on open', (
+    tester,
+  ) async {
+    final repository = _FakeCloudBackupRepository(
+      BackupStatus(
+        isSignedIn: true,
+        email: 'owner@example.com',
+        lastBackupAt: DateTime(2026, 10, 23, 10),
+        backups: [
+          BackupRecord(
+            id: 'backup-1',
+            name: 'backup.sqlite',
+            modifiedAt: DateTime(2026, 10, 23, 10),
+            sizeBytes: 1024,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudBackupRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: const CloudBackupPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Google Drive connected'), findsOneWidget);
+    expect(find.text('Not connected'), findsNothing);
+    expect(find.text('Connect Google Drive'), findsNothing);
+    expect(find.text('owner@example.com'), findsOneWidget);
+    expect(find.text('Back up now'), findsOneWidget);
+    expect(repository.statusCalls, 1);
   });
 
   testWidgets('cloud backup page shows backup actions after sign-in', (

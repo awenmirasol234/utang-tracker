@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
-import 'package:utang_tracker/features/backup/data/repositories/google_drive_backup_repository.dart';
+import 'package:utang_tracker/features/backup/data/repositories/cloud_backup_repository_impl.dart';
 import 'package:utang_tracker/features/backup/data/services/database_backup_service.dart';
 import 'package:utang_tracker/features/backup/data/services/google_drive_client.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
@@ -43,7 +43,7 @@ void main() {
         email: 'owner@example.com',
       ),
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,
@@ -66,7 +66,7 @@ void main() {
       ),
       uploadError: const AppException('upload failed'),
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,
@@ -97,7 +97,7 @@ void main() {
         ),
       ),
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,
@@ -117,7 +117,7 @@ void main() {
         email: 'owner@example.com',
       ),
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,
@@ -143,7 +143,7 @@ void main() {
         ),
       ],
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,
@@ -172,7 +172,7 @@ void main() {
       ),
       deleteError: const AppException('delete failed'),
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,
@@ -199,7 +199,7 @@ void main() {
       ),
       backups: [backup],
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,
@@ -232,7 +232,7 @@ void main() {
       downloadSource: cloudSnapshot,
       backups: [backup],
     );
-    final repository = GoogleDriveBackupRepository(
+    final repository = CloudBackupRepositoryImpl(
       backupService,
       client: client,
       temporaryDirectory: () async => temporaryDirectory,

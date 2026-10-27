@@ -9,6 +9,7 @@ import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
+import 'package:utang_tracker/features/customers/domain/entities/customer_sort_order.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 
 class CustomersListPage extends ConsumerWidget {

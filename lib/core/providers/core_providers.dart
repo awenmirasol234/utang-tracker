@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/features/audit/data/repositories/audit_log_repository_impl.dart';
 import 'package:utang_tracker/features/audit/domain/repositories/audit_log_repository.dart';
-import 'package:utang_tracker/features/backup/data/repositories/google_drive_backup_repository.dart';
+import 'package:utang_tracker/features/backup/data/repositories/cloud_backup_repository_impl.dart';
 import 'package:utang_tracker/features/backup/data/services/database_backup_service.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/cloud_backup_repository.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
@@ -55,7 +55,7 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
 });
 
 final updateRepositoryProvider = Provider<UpdateRepository>(
-  (_) => UpdateRepositoryImpl(),
+  (ref) => UpdateRepositoryImpl(),
 );
 
 final auditLogRepositoryProvider = Provider<AuditLogRepository>((ref) {
@@ -63,7 +63,7 @@ final auditLogRepositoryProvider = Provider<AuditLogRepository>((ref) {
 });
 
 final cloudBackupRepositoryProvider = Provider<CloudBackupRepository>((ref) {
-  return GoogleDriveBackupRepository(
+  return CloudBackupRepositoryImpl(
     DatabaseBackupService(ref.watch(databaseProvider)),
   );
 });

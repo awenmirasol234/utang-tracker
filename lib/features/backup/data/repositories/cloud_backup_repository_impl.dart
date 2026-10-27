@@ -11,8 +11,8 @@ import 'package:utang_tracker/features/backup/domain/entities/backup_record.dart
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/cloud_backup_repository.dart';
 
-class GoogleDriveBackupRepository implements CloudBackupRepository {
-  GoogleDriveBackupRepository(
+class CloudBackupRepositoryImpl implements CloudBackupRepository {
+  CloudBackupRepositoryImpl(
     this._databaseBackupService, {
     GoogleDriveClient? client,
     Future<Directory> Function()? temporaryDirectory,

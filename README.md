@@ -10,7 +10,7 @@ Sari-sari store debt/payment ledger - Android-only Flutter app. Tracks customers
 - **Debts** - one debt = many `debt_items` (product, qty, unit, price), editable only while `paid_amount == 0`, items can be appended to a partially paid debt
 - **Payments** - record partial/full payments, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
-- **Cloud backup** - configurable every-6-hours, daily, weekly, or manual Google Drive backups after sign-in during the current app session, with five-backup history and restore
+- **Cloud backup** - configurable every-6-hours, daily, weekly, or manual Google Drive backups after sign-in or opening the cloud backup page during the current app session, with five-backup history and restore
 - **Overdue & notifications** - due-date aware
 - **Audit log** - Settings page lists every recorded change (customers, debts, payments); rows are written by the repositories
 - **Updater** - GitHub Releases check, in-app update sheet + About page
@@ -115,8 +115,9 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 Google Drive backup requires the public Web OAuth client ID at build time. The
 app keeps the five newest backups per Google account and lets users choose
-daily, weekly, or manual-only automatic backups. Automatic backup starts after
-explicit sign-in during the current app session and checks again when the app
+every 6 hours, daily, weekly, or manual-only automatic backups. Automatic backup
+starts once the app detects a connected account during the current app session
+(sign-in or opening the cloud backup page) and checks again when the app
 resumes.
 
 Backups are stored in the `Utang Tracker Backups` folder in the user's Google

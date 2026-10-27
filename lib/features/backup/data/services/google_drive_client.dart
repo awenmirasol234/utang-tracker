@@ -69,7 +69,7 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
     try {
       await _ensureInitialized();
     } on GoogleSignInException catch (error) {
-      throw _mapGoogleSignInException(error);
+      throw mapGoogleSignInException(error);
     }
     final account = _account;
     if (account == null) return null;
@@ -85,7 +85,7 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
       await account.authorizationClient.authorizeScopes(_scopes);
       return GoogleDriveAccount(id: account.id, email: account.email);
     } on GoogleSignInException catch (error) {
-      throw _mapGoogleSignInException(error);
+      throw mapGoogleSignInException(error);
     }
   }
 
@@ -94,7 +94,7 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
     try {
       await _ensureInitialized();
     } on GoogleSignInException catch (error) {
-      throw _mapGoogleSignInException(error);
+      throw mapGoogleSignInException(error);
     }
     await _signIn.signOut();
     _account = null;
@@ -223,7 +223,7 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
         _account = await authentication;
       }
     } on GoogleSignInException catch (error) {
-      throw _mapGoogleSignInException(error);
+      throw mapGoogleSignInException(error);
     }
   }
 
@@ -231,17 +231,8 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
     try {
       return await _signIn.authenticate(scopeHint: _scopes);
     } on GoogleSignInException catch (error) {
-      throw _mapGoogleSignInException(error);
+      throw mapGoogleSignInException(error);
     }
-  }
-
-  AppException _mapGoogleSignInException(GoogleSignInException error) {
-    if (error.code == GoogleSignInExceptionCode.canceled) {
-      return const AppException('Google sign-in was cancelled.');
-    }
-    return const AppException(
-      'Google sign-in failed. Check your Google account and try again.',
-    );
   }
 
   Future<GoogleSignInAccount> _requireAccount() async {
@@ -275,7 +266,7 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
     } on AppException {
       rethrow;
     } on GoogleSignInException catch (error) {
-      throw _mapGoogleSignInException(error);
+      throw mapGoogleSignInException(error);
     } on SocketException {
       throw const AppException('No internet connection.');
     } on TimeoutException {
@@ -288,6 +279,16 @@ class GoogleDriveClientImpl implements GoogleDriveClient {
       client.close();
     }
   }
+}
+
+/// Maps Google Sign-In failures to the message shown to the user.
+AppException mapGoogleSignInException(GoogleSignInException error) {
+  if (error.code == GoogleSignInExceptionCode.canceled) {
+    return const AppException('Google sign-in was cancelled.');
+  }
+  return const AppException(
+    'Google sign-in failed. Check your Google account and try again.',
+  );
 }
 
 class _AuthorizedClient extends http.BaseClient {
